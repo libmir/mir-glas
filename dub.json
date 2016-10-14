@@ -1,0 +1,13 @@
+{
+	"name": "mir-glas",
+	"authors": [
+		"Iaroshenko Ilia"
+	],
+	"dependencies": {
+		"mir": "~>0.18.6",
+		"cpuid": "~>0.3.0"
+	},
+	"description": "Generic Linear Algebra Subroutines",
+	"copyright": "Copyright © 2016, Ilya Yaroshenko",
+	"license": "BSL-1.0"
+}
