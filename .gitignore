@@ -22,3 +22,7 @@ docs/
 
 # Code coverage
 *.lst
+
+dub.selections.json
+
+*.sublime-project
