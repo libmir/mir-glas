@@ -33,7 +33,7 @@ GLAS is generalization of $(LINK2 http://www.netlib.org/blas/, BLAS) (Basic Line
 Because the BLAS are efficient, portable, and widely available, they are commonly used in the development of
 high quality linear algebra or related software, such as
 $(LINK2 http://www.netlib.org/lapack/, LAPACK),
-$(LINK2 http://www.numpy.org/,  NumPy), or $(LINK2 http://julialang.org/, The Julia language).
+$(LINK2 http://www.numpy.org/, NumPy), or $(LINK2 http://julialang.org/, The Julia language).
 
 Efficient Level 3 BLAS implementation requires
 $(LINK2 https://en.wikipedia.org/wiki/CPU_cache, cache)-friendly matrix blocking.
@@ -62,6 +62,14 @@ SUBMODULE = $(MREF_ALTTEXT $1, glas, $1)
 SUBREF = $(REF_ALTTEXT $(TT $2), $2, glas, $1)$(NBSP)
 +/
 module glas;
+
+version(LDC)
+{
+    version(unittest) {} else
+    {
+        pragma(LDC_no_moduleinfo);
+    }
+}
 
 public import glas.l1;
 public import glas.l2;

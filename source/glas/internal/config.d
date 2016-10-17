@@ -1,5 +1,10 @@
 module glas.internal.config;
 
+version(LDC)
+{
+    pragma(LDC_no_moduleinfo);
+}
+
 import std.traits;
 import std.meta;
 import mir.internal.utility;

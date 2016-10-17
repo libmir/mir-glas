@@ -1,5 +1,13 @@
 module glas.internal.context;
 
+version(LDC)
+{
+    version(unittest) {} else
+    {
+        pragma(LDC_no_moduleinfo);
+    }
+}
+
 import std.range.primitives;
 import cpuid.unified;
 import mir.internal.memory;

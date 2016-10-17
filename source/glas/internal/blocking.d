@@ -1,5 +1,13 @@
 module glas.internal.blocking;
 
+version(LDC)
+{
+    version(unittest) {} else
+    {
+        pragma(LDC_no_moduleinfo);
+    }
+}
+
 import core.sync.mutex;
 import std.meta;
 import std.traits;

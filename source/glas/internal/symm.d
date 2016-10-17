@@ -1,12 +1,22 @@
 module glas.internal.symm;
 
+version(LDC)
+{
+    version(unittest) {} else
+    {
+        pragma(LDC_no_moduleinfo);
+    }
+}
+
 import std.traits;
 import std.meta;
 
 public import glas.common;
 import mir.ndslice.slice : Slice;
 import mir.internal.utility;
-import glas.internal;
+import glas.internal.config;
+import glas.internal.blocking;
+import glas.internal.copy;
 import glas.internal.gemm;
 
 import ldc.attributes : fastmath;

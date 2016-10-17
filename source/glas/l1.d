@@ -78,6 +78,14 @@ unittest
     assert(y == [0, 1, 2, 3]);
 }
 
+version(LDC)
+{
+    version(unittest) {} else
+    {
+        pragma(LDC_no_moduleinfo);
+    }
+}
+
 import std.traits;
 import std.meta;
 import std.typecons: Flag, Yes, No;

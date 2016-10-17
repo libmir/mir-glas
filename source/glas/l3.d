@@ -28,6 +28,15 @@ SUBREF = $(REF_ALTTEXT $(TT $2), $2, glas, $1)$(NBSP)
 NDSLICEREF = $(REF_ALTTEXT $(TT $2), $2, mir, ndslice, $1)$(NBSP)
 +/
 module glas.l3;
+
+version(LDC)
+{
+    version(unittest) {} else
+    {
+        pragma(LDC_no_moduleinfo);
+    }
+}
+
 public import glas.common;
 
 import std.traits;
