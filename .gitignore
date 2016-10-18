@@ -28,3 +28,5 @@ dub.selections.json
 *.sublime-project
 
 __test__library__
+
+*.s

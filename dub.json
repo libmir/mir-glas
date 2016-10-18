@@ -1,13 +1,49 @@
 {
-	"name": "mir-glas",
-	"authors": [
-		"Iaroshenko Ilia"
-	],
-	"dependencies": {
-		"mir": "~master",
-		"mir-cpuid": "~>0.4.0"
-	},
-	"description": "Generic Linear Algebra Subroutines",
-	"copyright": "Copyright © 2016, Ilya Yaroshenko",
-	"license": "BSL-1.0"
+    "name": "mir-glas",
+    "authors": [
+        "Iaroshenko Ilia"
+    ],
+    "dependencies": {
+        "mir": "~>0.20.2",
+        "mir-cpuid": "~>0.4.0"
+    },
+    "buildTypes": {
+        "release": {
+            "buildOptions": ["noBoundsCheck", "releaseMode", "optimize", "inline"]
+        },
+        "release-native": {
+            "buildOptions": ["noBoundsCheck", "releaseMode", "optimize", "inline"],
+            "dflags-ldc": ["-mcpu=native"]
+        },
+    },
+    "configurations": [
+        {
+            "name": "library",
+            "targetType": "library"
+        },
+        {
+            "name": "static",
+            "targetType": "staticLibrary"
+        },
+        {
+            "name": "dynamic",
+            "targetType": "dynamicLibrary"
+        },
+        {
+            "name": "source",
+            "targetType": "sourceLibrary"
+        }
+    ],
+    "description": "Generic Linear Algebra Subroutines",
+    "copyright": "Copyright © 2016, Ilya Yaroshenko",
+    "license": "BSL-1.0",
+    "sourcePaths": [],
+    "sourceFiles": [
+        "source/glas/internal/memory.d",
+        "source/glas/context.d",
+        "source/glas/precompiled/l3s.d",
+        "source/glas/precompiled/l3d.d",
+        "source/glas/precompiled/l3c.d",
+        "source/glas/precompiled/l3z.d"
+        ]
 }

@@ -47,6 +47,9 @@ import mir.internal.utility;
 import ldc.attributes : fastmath;
 @fastmath:
 
+private enum bool hasPrecompiled(A, B, C) =
+    is(B == C) && is(A == C) && (is(C == float) || is(C == double) || is(C == cfloat) || is(C == cdouble));
+
 /++
 Performs general matrix-matrix multiplication.
 
@@ -82,29 +85,19 @@ void gemm(A, B, C)
     Conjugated conja = Conjugated.no,
     Conjugated conjb = Conjugated.no,
 )
-in
-{
-    assert(asl.length!1 == bsl.length!0, "constraint: asl.length!1 == bsl.length!0");
-    assert(csl.length!0 == asl.length!0, "constraint: csl.length!0 == asl.length!0");
-    assert(csl.length!1 == bsl.length!1, "constraint: csl.length!1 == bsl.length!1");
-    assert(csl.stride!0 == +1
-        || csl.stride!0 == -1
-        || csl.stride!1 == +1
-        || csl.stride!1 == -1, "constraint: csl.stride!0 or csl.stride!1 must be equal to +/-1");
-}
-body
 {
     static assert(is(Unqual!C == C), msgWrongType);
-    import glas.internal.gemm: gemm_impl;
-    gemm_impl(
-        alpha,
-            cast(Slice!(2, Unqual!A*)) asl,
-            cast(Slice!(2, Unqual!B*)) bsl,
-        beta,
-                                       csl,
-        conja,
-        conjb,
-        );
+    static if (hasPrecompiled!(A, B, C))
+    {
+        import glas.precompiled.l3;
+        alias impl = glas_gemm;
+    }
+    else
+    {
+        import glas.internal.gemm: gemm_impl;
+        alias impl = gemm_impl;
+    }
+    impl(alpha, asl, bsl, beta, csl, conja, conjb);
 }
 
 ///
@@ -210,43 +203,19 @@ void symm(A, B, C)
     Conjugated conja = Conjugated.no,
     Conjugated conjb = Conjugated.no,
 )
-in
-{
-    assert(asl.length!0 == asl.length!1, "constraint: asl.length!0 == asl.length!1");
-    assert(asl.length!1 == bsl.length!0, "constraint: asl.length!1 == bsl.length!0");
-    assert(csl.length!0 == asl.length!0, "constraint: csl.length!0 == asl.length!0");
-    assert(csl.length!1 == bsl.length!1, "constraint: csl.length!1 == bsl.length!1");
-    assert(csl.stride!0 == +1
-        || csl.stride!0 == -1
-        || csl.stride!1 == +1
-        || csl.stride!1 == -1, "constraint: csl.stride!0 or csl.stride!1 must be equal to +/-1");
-}
-body
 {
     static assert(is(Unqual!C == C), msgWrongType);
-
-    import mir.ndslice.iteration : transposed;
-    if (side == Side.right)
+    static if (hasPrecompiled!(A, B, C))
     {
-        asl = asl.transposed;
-        bsl = bsl.transposed;
-        csl = csl.transposed;
+        import glas.precompiled.l3;
+        alias impl = glas_symm;
     }
-    if (uplo == Uplo.upper)
+    else
     {
-        asl = asl.transposed;
+        import glas.internal.symm: symm_impl;
+        alias impl = symm_impl;
     }
-
-    import glas.internal.symm: symm_impl;
-    symm_impl(
-        alpha,
-            cast(Slice!(2, Unqual!A*)) asl,
-            cast(Slice!(2, Unqual!B*)) bsl,
-        beta,
-                                       csl,
-        conja,
-        conjb,
-        );
+    impl(side, uplo, alpha, asl, bsl, beta, csl, conja, conjb);
 }
 
 /// Symmetric matrix

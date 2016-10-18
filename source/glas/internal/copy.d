@@ -15,13 +15,78 @@ import glas.common;
 import ldc.attributes : fastmath;
 @fastmath:
 
-pragma(inline, true)
+pragma(inline, false)
 T* pack_b_nano(size_t n, size_t P, bool conj = false, F, T)(size_t length, sizediff_t stride, sizediff_t elemStride, const(F)* from, T* to)
 {
+    enum s = n * P;
     if (elemStride == 1)
-        return pack_b_dense_nano!(n, P, conj)(length, stride, from, to);
+    {
+        do
+        {
+            static if (conj == false && n * P > 1 && !is(T == real) && (is(T == F) && P == 1 || is(Complex!T == F) && P == 2))
+            {
+                import ldc.simd;
+                alias V = __vector(T[s]);
+                static if (conj == false)
+                    storeUnaligned!V(loadUnaligned!V(cast(T*)from), to);
+                else
+                    storeUnaligned!V(-loadUnaligned!V(cast(T*)from), to);
+            }
+            else
+            {
+                foreach (i; Iota!n)
+                {
+                    static if (P == 2)
+                    {
+                        to[2 * i + 0] = cast(T) from[i].re;
+                        static if (conj == false)
+                            to[2 * i + 1] = cast(T) from[i].im;
+                        else
+                            to[2 * i + 1] = -cast(T) from[i].im;
+                    }
+                    else
+                    {
+                        static if (isComplex!F)
+                            to[i] = cast(T) from[i].re;
+                        else
+                            to[i] = cast(T) from[i];
+                    }
+                }
+            }
+            from += stride;
+            to += s;
+        }
+        while (--length);
+        return to;
+    }
     else
-        return pack_b_strided_nano!(n, P, conj)(length, stride, elemStride, from, to);
+    {
+        do
+        {
+            foreach (i; Iota!n)
+            {
+                static if (P == 2)
+                {
+                    to[2 * i + 0] = cast(T) from[elemStride * i].re;
+                    static if (conj == false)
+                        to[2 * i + 1] = cast(T) from[elemStride * i].im;
+                    else
+                        to[2 * i + 1] = -cast(T) from[elemStride * i].im;
+                }
+                else
+                {
+                    static if (isComplex!F)
+                        to[i] = cast(T) from[elemStride * i].re;
+                    else
+                        to[i] = cast(T) from[elemStride * i];
+                }
+            }
+            from += stride;
+            to += s;
+        }
+        while (--length);
+        return to;
+    }
 }
 
 pragma(inline, false)
@@ -93,108 +158,67 @@ T* pack_b_sym_nano(size_t n, size_t P, bool conj = false, F, T)(size_t length, S
     return pack_b_nano!(n, P, conj, F, T)(length, sl.stride!1, sl.stride!0, from, to);
 }
 
-pragma(inline, false)
-T* pack_b_strided_nano(size_t n, size_t P, bool conj = false, F, T)(size_t length, sizediff_t stride, sizediff_t elemStride, const(F)* from, T* to)
-{
-    enum s = n * P;
-    do
-    {
-        foreach (i; Iota!n)
-        {
-            static if (P == 2)
-            {
-                to[2 * i + 0] = cast(T) from[elemStride * i].re;
-                static if (conj == false)
-                    to[2 * i + 1] = cast(T) from[elemStride * i].im;
-                else
-                    to[2 * i + 1] = -cast(T) from[elemStride * i].im;
-            }
-            else
-            {
-                static if (isComplex!F)
-                    to[i] = cast(T) from[elemStride * i].re;
-                else
-                    to[i] = cast(T) from[elemStride * i];
-            }
-        }
-        from += stride;
-        to += s;
-    }
-    while (--length);
-    return to;
-}
+//pragma(inline, false)
+//T* pack_b_strided_nano(size_t n, size_t P, bool conj = false, F, T)(size_t length, sizediff_t stride, sizediff_t elemStride, const(F)* from, T* to)
+//{
+//    enum s = n * P;
+
+//}
 
 //pragma(inline, false)
-T* pack_b_dense_nano(size_t n, size_t P, bool conj = false, F, T)(size_t length, sizediff_t stride, const(F)* from, T* to)
+//T* pack_b_dense_nano(size_t n, size_t P, bool conj = false, F, T)(size_t length, sizediff_t stride, const(F)* from, T* to)
+//{
+
+//}
+
+pragma(inline, false)
+T* pack_a_nano(size_t n, size_t P, bool conj = false, F, T)(size_t length, sizediff_t stride, sizediff_t elemStride, const(F)* from, T* to)
 {
     enum s = n * P;
-    do
+    if (elemStride == 1)
     {
-        static if (conj == false && n * P > 1 && !is(T == real) && (is(T == F) && P == 1 || is(Complex!T == F) && P == 2))
+        do
         {
-            import ldc.simd;
-            alias V = __vector(T[s]);
-            static if (conj == false)
-                storeUnaligned!V(loadUnaligned!V(cast(T*)from), to);
+            static if (n > 1 && !is(T == real) && (is(T == F) && P == 1 || is(Complex!T == F) && P == 2))
+            {
+                import ldc.simd;
+                alias V = __vector(T[n]);
+                static if (P == 1)
+                {
+                    auto rv = loadUnaligned!V(cast(T*)from);
+                    *cast(V*)to = rv;
+                }
+                else
+                {
+                    auto r0 = loadUnaligned!V(cast(T*)from);
+                    auto r1 = loadUnaligned!V(cast(T*)((cast(V*)from) + 1));
+                    auto re = _re!V(r0, r1);
+                    auto im = _im!V(r0, r1);
+                    *cast(V*)to = re;
+                    static if (conj == false)
+                        *((cast(V*)to) + 1) = im;
+                    else
+                        *((cast(V*)to) + 1) = -im;
+                }
+            }
             else
-                storeUnaligned!V(-loadUnaligned!V(cast(T*)from), to);
-        }
-        else
-        {
-            foreach (i; Iota!n)
+            foreach (j; Iota!n)
             {
                 static if (P == 2)
                 {
-                    to[2 * i + 0] = cast(T) from[i].re;
+                    to[ 0 + j] = cast(T) from[j].re;
                     static if (conj == false)
-                        to[2 * i + 1] = cast(T) from[i].im;
+                        to[n + j] = cast(T) from[j].im;
                     else
-                        to[2 * i + 1] = -cast(T) from[i].im;
+                        to[n + j] = -cast(T) from[j].im;
                 }
                 else
                 {
                     static if (isComplex!F)
-                        to[i] = cast(T) from[i].re;
+                        to[j] = cast(T) from[j].re;
                     else
-                        to[i] = cast(T) from[i];
+                        to[j] = cast(T) from[j];
                 }
-            }
-        }
-        from += stride;
-        to += s;
-    }
-    while (--length);
-    return to;
-}
-
-pragma(inline, true)
-T* pack_a_nano(size_t n, size_t P, bool conj = false, F, T)(size_t length, sizediff_t stride, sizediff_t elemStride, const(F)* from, T* to)
-{
-    if (elemStride == 1)
-        return pack_a_dense_nano!(n, P, conj)(length, stride, from, to);
-    else
-        return pack_a_strided_nano!(n, P, conj)(length, stride, elemStride, from, to);
-}
-
-//pragma(inline, false)
-T* pack_a_strided_nano(size_t n, size_t P, bool conj = false, F, T)(size_t length, sizediff_t stride, sizediff_t elemStride, const(F)* from, T* to)
-{
-    static if (P == 1)
-    {
-        return pack_b_strided_nano!(n, P, conj, F, T)(length, stride, elemStride, from, to);
-    }
-    else
-    {
-        enum s = n * P;
-        do
-        {
-            foreach (i; Iota!n)
-            {
-                to[i + 0] = cast(T) from[elemStride * i].re;
-                static if (conj == false)
-                    to[i + n] = cast(T) from[elemStride * i].im;
-                else
-                    to[i + n] = -cast(T) from[elemStride * i].im;
             }
             from += stride;
             to += s;
@@ -202,86 +226,70 @@ T* pack_a_strided_nano(size_t n, size_t P, bool conj = false, F, T)(size_t lengt
         while (--length);
         return to;
     }
-}
-
-//pragma(inline, false)
-T* pack_a_dense_nano(size_t mr, size_t P, bool conj = false, T, F)(size_t length, sizediff_t stride, const(F)* from, T* to)
-{
-    do
+    else
     {
-        static if (mr > 1 && !is(T == real) && (is(T == F) && P == 1 || is(Complex!T == F) && P == 2))
+        static if (P == 1)
         {
-            import ldc.simd;
-            alias V = __vector(T[mr]);
-            static if (P == 1)
-            {
-                auto rv = loadUnaligned!V(cast(T*)from);
-                *cast(V*)to = rv;
-            }
-            else
-            {
-                auto r0 = loadUnaligned!V(cast(T*)from);
-                auto r1 = loadUnaligned!V(cast(T*)((cast(V*)from) + 1));
-                auto re = _re!V(r0, r1);
-                auto im = _im!V(r0, r1);
-                *cast(V*)to = re;
-                static if (conj == false)
-                    *((cast(V*)to) + 1) = im;
-                else
-                    *((cast(V*)to) + 1) = -im;
-            }
+            return pack_b_nano!(n, P, conj, F, T)(length, stride, elemStride, from, to);
         }
         else
-        foreach (j; Iota!mr)
         {
-            static if (P == 2)
+            do
             {
-                to[ 0 + j] = cast(T) from[j].re;
-                static if (conj == false)
-                    to[mr + j] = cast(T) from[j].im;
-                else
-                    to[mr + j] = -cast(T) from[j].im;
+                foreach (i; Iota!n)
+                {
+                    to[i + 0] = cast(T) from[elemStride * i].re;
+                    static if (conj == false)
+                        to[i + n] = cast(T) from[elemStride * i].im;
+                    else
+                        to[i + n] = -cast(T) from[elemStride * i].im;
+                }
+                from += stride;
+                to += s;
             }
-            else
-            {
-                static if (isComplex!F)
-                    to[j] = cast(T) from[j].re;
-                else
-                    to[j] = cast(T) from[j];
-            }
+            while (--length);
+            return to;
         }
-        from += stride;
-        to += mr * P;
     }
-    while (--length);
-    return to;
 }
 
+//pragma(inline, true)
+//T* pack_a_strided_nano(size_t n, size_t P, bool conj = false, F, T)(size_t length, sizediff_t stride, sizediff_t elemStride, const(F)* from, T* to)
+//{
+
+//}
+
+//pragma(inline, true)
+//T* pack_a_dense_nano(size_t mr, size_t P, bool conj = false, T, F)(size_t length, sizediff_t stride, const(F)* from, T* to)
+//{
+
+//}
+
 pragma(inline, false)
-void pack_a(size_t PA, size_t PB, size_t PC, bool conj = false, T, C)(Slice!(2, const(C)*) sl, T* a)
+void pack_a(size_t PA, size_t PB, size_t PC, T, C)(Slice!(2, const(C)*) sl, T* a, bool conj)
 {
     import mir.ndslice.iteration: transposed;
     mixin RegisterConfig!(PC, PA, PB, T);
-    if (sl.stride!0 == 1)
+    static if (PA == 2)
     {
-        foreach (mri, mr; mr_chain)
-        if (sl.length >= mr) do
+        if (conj)
         {
-            a = pack_a_dense_nano!(mr, PA, conj, T, C)(sl.length!1, sl.stride!1, sl.ptr, a);
-            sl.popFrontExactly(mr);
+            foreach (mri, mr; mr_chain)
+            if (sl.length >= mr) do
+            {
+                a = pack_a_nano!(mr, PA, true, C, T)(sl.length!1, sl.stride!1, sl.stride!0, sl.ptr, a);
+                sl.popFrontExactly(mr);
+            }
+            while (!mri && sl.length >= mr);
         }
-        while (!mri && sl.length >= mr);
     }
-    else
+    foreach (mri, mr; mr_chain)
+    if (sl.length >= mr) do
     {
-        foreach (mri, mr; mr_chain)
-        if (sl.length >= mr) do
-        {
-            a = pack_a_strided_nano!(mr, PA, conj, C, T)(sl.length!1, sl.stride!1, sl.stride!0, sl.ptr, a);
-            sl.popFrontExactly(mr);
-        }
-        while (!mri && sl.length >= mr);
+        a = pack_a_nano!(mr, PA, false, C, T)(sl.length!1, sl.stride!1, sl.stride!0, sl.ptr, a);
+        sl.popFrontExactly(mr);
     }
+    while (!mri && sl.length >= mr);
 }
 
 pragma(inline, false)
@@ -329,7 +337,6 @@ void pack_a_sym(size_t PA, size_t PB, size_t PC, bool conj = false, T, F)(Slice!
                 else
                 {
                     to[ 0] = cast(T) pfrom.re;
-                    //to[mr] = cast(T) pfrom.im;
                     static if (conj == false)
                         to[mr] = cast(T) pfrom.im;
                     else
@@ -352,10 +359,6 @@ void pack_a_sym(size_t PA, size_t PB, size_t PC, bool conj = false, T, F)(Slice!
                 {
                     to[ 0] = cast(T) pfrom.re;
                     to[mr] = cast(T) pfrom.im;
-                    //static if (conj == false)
-                    //    to[mr] = cast(T) pfrom.im;
-                    //else
-                    //    to[mr] = -cast(T) pfrom.im;
                 }
                 to++;
                 pfrom += sl.stride!0;
@@ -378,7 +381,7 @@ void pack_a_sym(size_t PA, size_t PB, size_t PC, bool conj = false, T, F)(Slice!
 }
 
 
-//pragma(inline, false)
+pragma(inline, false)
 void pack_b_triangular(Uplo uplo, bool inverseDiagonal, size_t PA, size_t PB, size_t PC, T, C)(Slice!(2, const(C)*) sl, T* b)
 {
     assert(sl.length!0 == sl.length!1);
@@ -428,6 +431,7 @@ void pack_b_triangular(Uplo uplo, bool inverseDiagonal, size_t PA, size_t PB, si
     while (!nri && sl.length >= nr);
 }
 
+pragma(inline, true)
 void load_simd(size_t mr, size_t P, T)(T* to, const(T[P])* from)
 {
     static if (mr > 1 && !is(T == real))

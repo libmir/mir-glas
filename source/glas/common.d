@@ -49,7 +49,7 @@ Params:
     option1 = first type of conjugation, optional
     option2 = second type of conjugation, optional
 +/
-Uplo swapUplo(Uplo type)
+Uplo swapUplo()(Uplo type)
 {
     if (type == Uplo.lower)
         return Uplo.upper;

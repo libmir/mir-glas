@@ -18,13 +18,15 @@ import glas.internal.blocking;
 import glas.internal.copy;
 import glas.internal.config;
 
-import ldc.attributes : fastmath;
+import ldc.attributes;
+import ldc.intrinsics;
 @fastmath:
 
 version = PREFETCH;
 
 pragma(inline, false)
-//nothrow @nogc
+@optStrategy("optsize")
+nothrow @nogc
 void gemm_impl(A, B, C)
 (
     C alpha,
@@ -36,18 +38,34 @@ void gemm_impl(A, B, C)
     Conjugated conjb,
 )
 {
+    assert(asl.length!1 == bsl.length!0, "constraint: asl.length!1 == bsl.length!0");
+    assert(csl.length!0 == asl.length!0, "constraint: csl.length!0 == asl.length!0");
+    assert(csl.length!1 == bsl.length!1, "constraint: csl.length!1 == bsl.length!1");
+    assert(csl.stride!0 == +1
+        || csl.stride!0 == -1
+        || csl.stride!1 == +1
+        || csl.stride!1 == -1, "constraint: csl.stride!0 or csl.stride!1 must be equal to +/-1");
+
     mixin prefix3;
+    mixin RegisterConfig!(PA, PB, PC, T);
     import mir.ndslice.iteration: reversed, transposed;
 
-    if (csl.anyEmpty)
-        return;
+    Kernel!(PC, T)[nr_chain.length]
+        beta_kernels = void,
+        one_kernels = void;
 
-    if (csl.stride!0 < 0)
+    Kernel!(PC, T)* kernels = void;
+    BlockInfo!T bl = void;
+
+    if (llvm_expect(csl.anyEmpty, false))
+        goto End;
+
+    if (llvm_expect(csl.stride!0 < 0, false))
     {
         csl = csl.reversed!0;
         asl = asl.reversed!0;
     }
-    if (csl.stride!1 < 0)
+    if (llvm_expect(csl.stride!1 < 0, false))
     {
         csl = csl.reversed!1;
         bsl = bsl.reversed!1;
@@ -69,42 +87,37 @@ void gemm_impl(A, B, C)
         else
         {
             gemm_impl!(B, A, C)(alpha, bsl.transposed, asl.transposed, beta, csl.transposed, conjb, conja);
-            return;
+            goto End;
         }
     }
 
     assert(csl.stride!0 == 1);
 
-    if (asl.empty!1 || alpha == 0)
+    if (llvm_expect(asl.empty!1 || alpha == 0, false))
     {
         csl = csl.transposed;
         if (beta == 0)
         {
             do {
-                (cast(T[])(csl.front.toDense))[] = T(0); // memset
+                setZero(cast(T[])(csl.front.toDense)); // memset
                 csl.popFront;
             } while (csl.length);
-            return;
+            //csl[] = cast(C)0;
+            goto End;
         }
         if (beta == 1)
-            return;
+            goto End;
         do {
-            csl.front.toDense[] *= beta;
+            scale(csl.front.toDense, beta);
             csl.popFront;
         } while (csl.length);
-        return;
+        goto End;
     }
-
-    mixin RegisterConfig!(PA, PB, PC, T);
-
-    Kernel!(PC, T)[nr_chain.length]
-        beta_kernels = void,
-        one_kernels = void;
 
     foreach (nri, nr; nr_chain)
         one_kernels [nri] = &gemv_reg!(BetaType.one, PA, PB, PC, nr, T);
 
-    Kernel!(PC, T)* kernels = one_kernels.ptr;
+    kernels = one_kernels.ptr;
     if (beta == 0)
     {
         foreach (nri, nr; nr_chain)
@@ -118,7 +131,7 @@ void gemm_impl(A, B, C)
             beta_kernels[nri] = &gemv_reg!(BetaType.beta, PA, PB, PC, nr, T);
         kernels = beta_kernels.ptr;
     }
-    auto bl = blocking!(PA, PB, PC, T)(asl.length!0, bsl.length!1, asl.length!1);
+    bl = blocking!(PA, PB, PC, T)(asl.length!0, bsl.length!1, asl.length!1);
     with(bl)
     {
         sizediff_t incb;
@@ -139,10 +152,7 @@ void gemm_impl(A, B, C)
                 if (aslp.length!0 < mc)
                     mc = aslp.length!0;
                 ////////////////////////
-                if (PA && conja)
-                    pack_a!(PA, PB, PC, true, T, A)(aslp[0 .. mc], a);
-                else
-                    pack_a!(PA, PB, PC, false, T, A)(aslp[0 .. mc], a);
+                pack_a!(PA, PB, PC, T, A)(aslp[0 .. mc], a, PA == 2 && conja);
                 //======================
                 gebp!(PA, PB, PC, T)(
                     mc,
@@ -159,7 +169,7 @@ void gemm_impl(A, B, C)
                     cast(T*) cslm.ptr,
                     cslm.stride!1,
                     kernels,
-                    conjb,
+                    PB == 2 && conjb,
                     );
                 ////////////////////////
                 bsl_ptr = null;
@@ -174,9 +184,34 @@ void gemm_impl(A, B, C)
         }
         while (asl.length!1);
     }
+    End: return;
 }
 
-pragma(inline, true)
+pragma(inline, false)
+void setZero(T)(T[] a)
+{
+    assert(a.length);
+    do
+    {
+        a[0] = 0;
+        a = a[1 .. $];
+    }
+    while(a.length);
+}
+
+pragma(inline, false)
+void scale(T)(T[] a, T c)
+{
+    assert(a.length);
+    do
+    {
+        a[0] *= c;
+        a = a[1 .. $];
+    }
+    while(a.length);
+}
+
+pragma(inline, false)
 void gebp(size_t PA, size_t PB, size_t PC, F, C)(
     size_t mc,
     size_t nc,
@@ -192,7 +227,7 @@ void gebp(size_t PA, size_t PB, size_t PC, F, C)(
     scope F* c,
     sizediff_t ldc,
     Kernel!(PC, F)* kernels,
-    Conjugated conj,
+    bool conj,
     )
 {
     mixin RegisterConfig!(PA, PB, PC, F);
@@ -201,7 +236,7 @@ void gebp(size_t PA, size_t PB, size_t PC, F, C)(
     {
         if (ptrb)
         {
-            if (PB && conj)
+            if (PB == 2 && conj)
                 pack_b_nano!(nr, PB, true)(kc, ldb, ldbe, ptrb, b);
             else
                 pack_b_nano!(nr, PB, false)(kc, ldb, ldbe, ptrb, b);

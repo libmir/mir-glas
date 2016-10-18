@@ -13,7 +13,7 @@ import std.meta;
 import std.traits;
 import glas.common;
 import glas.internal.config;
-import glas.internal.context;
+import glas.context;
 import mir.internal.utility;
 static import cpuid.unified;
 
@@ -30,9 +30,11 @@ struct BlockInfo(T)
     T* b;
 }
 
+pragma(inline, false)
 BlockInfo!T blocking(size_t PA, size_t PB, size_t PC, T)(size_t m, size_t n, size_t k)
 {
-    import glas.internal.context;
+    import glas.context;
+    glas_init();
     mixin RegisterConfig!(PC, PA, PB, T);
     BlockInfo!T ret = void;
     sizediff_t l2 = c2 >> 1; // half cache
@@ -64,16 +66,16 @@ BlockInfo!T blocking(size_t PA, size_t PB, size_t PC, T)(size_t m, size_t n, siz
     return ret;
 }
 
+version(none)
 BlockInfo!T blocking_triangular(size_t PA, size_t PB, T)(size_t m, size_t n)
 {
-    import glas.internal.context;
+    import glas.context;
     mixin RegisterConfig!(PB, PA, PB, T);
     BlockInfo!T ret = void;
 
     sizediff_t l2 = c2; // half matrix
     //ret.kc = (c1 - 2 * (T[PB][main_nr][main_mr].sizeof + main_nr * line) - 512) / (T[PA][main_nr].sizeof + T[PB][main_mr].sizeof);
 
-        import std.stdio;
     if (l2 >= (m * ((m + main_nr) * PA + PB * main_mr * 2)) * T.sizeof)
     {
         //ret.kc = ret.mc = ret.kc > m ? m : ret.kc;

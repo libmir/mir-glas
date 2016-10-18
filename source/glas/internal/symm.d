@@ -19,13 +19,17 @@ import glas.internal.blocking;
 import glas.internal.copy;
 import glas.internal.gemm;
 
-import ldc.attributes : fastmath;
+import ldc.attributes;
+import ldc.intrinsics;
 @fastmath:
 
 pragma(inline, false)
-//nothrow @nogc
+@optStrategy("optsize")
+nothrow @nogc
 void symm_impl(A, B, C)
 (
+    Side side,
+    Uplo uplo,
     C alpha,
         Slice!(2, const(A)*) asl,
         Slice!(2, const(B)*) bsl,
@@ -35,24 +39,54 @@ void symm_impl(A, B, C)
     Conjugated conjb,
 )
 {
+    assert(asl.length!0 == asl.length!1, "constraint: asl.length!0 == asl.length!1");
+    assert(asl.length!1 == bsl.length!0, "constraint: asl.length!1 == bsl.length!0");
+    assert(csl.length!0 == asl.length!0, "constraint: csl.length!0 == asl.length!0");
+    assert(csl.length!1 == bsl.length!1, "constraint: csl.length!1 == bsl.length!1");
+    assert(csl.stride!0 == +1
+        || csl.stride!0 == -1
+        || csl.stride!1 == +1
+        || csl.stride!1 == -1, "constraint: csl.stride!0 or csl.stride!1 must be equal to +/-1");
+
     mixin prefix3;
+
     import mir.ndslice.iteration: reversed, transposed;
 
-    if (csl.anyEmpty)
-        return;
+    mixin RegisterConfig!(PA, PB, PC, T);
 
-    if (csl.stride!0 < 0)
+    Kernel!(PC, T)[nr_chain.length]
+        beta_kernels = void,
+        one_kernels = void;
+
+    Kernel!(PC, T)* kernels = void;
+    BlockInfo!T bl = void;
+
+    if (side == Side.right)
+    {
+        asl = asl.transposed;
+        bsl = bsl.transposed;
+        csl = csl.transposed;
+    }
+    if (uplo == Uplo.upper)
+    {
+        asl = asl.transposed;
+    }
+
+    if (llvm_expect(csl.anyEmpty, false))
+        goto End;
+
+    if (llvm_expect(csl.stride!0 < 0, false))
     {
         csl = csl.reversed!0;
         asl = asl.reversed!0;
     }
-    if (csl.stride!1 < 0)
+    if (llvm_expect(csl.stride!1 < 0, false))
     {
         csl = csl.reversed!1;
         bsl = bsl.reversed!1;
     }
 
-    if (asl.empty!1 || alpha == 0)
+    if (llvm_expect(asl.empty!1 || alpha == 0, false))
     {
         if (csl.stride!1 != 1)
             csl = csl.transposed;
@@ -62,29 +96,23 @@ void symm_impl(A, B, C)
                 (cast(T[])(csl.front.toDense))[] = T(0); // memset
                 csl.popFront;
             } while (csl.length);
-            return;
+            goto End;
         }
         if (beta == 1)
-            return;
+            goto End;
         do {
             csl.front.toDense[] *= beta;
             csl.popFront;
         } while (csl.length);
-        return;
+        goto End;
     }
-
-    mixin RegisterConfig!(PA, PB, PC, T);
-
-    Kernel!(PC, T)[nr_chain.length]
-        beta_kernels = void,
-        one_kernels = void;
 
     static if (PA == PB)
     {
         foreach (nri, nr; nr_chain)
             one_kernels [nri] = &gemv_reg!(BetaType.one, PA, PB, PC, nr, T);
 
-        Kernel!(PC, T)* kernels = one_kernels.ptr;
+        kernels = one_kernels.ptr;
         if (beta == 0)
         {
             foreach (nri, nr; nr_chain)
@@ -106,7 +134,7 @@ void symm_impl(A, B, C)
             foreach (nri, nr; nr_chain)
                 one_kernels [nri] = &gemv_reg!(BetaType.one, PA, PB, PC, nr, T);
 
-            Kernel!(PC, T)* kernels = one_kernels.ptr;
+            kernels = one_kernels.ptr;
             if (beta == 0)
             {
                 foreach (nri, nr; nr_chain)
@@ -122,7 +150,7 @@ void symm_impl(A, B, C)
             }
         }
 
-        auto bl = blocking!(PA, PB, PC, T)(asl.length!0, bsl.length!1, asl.length!0);
+        bl = blocking!(PA, PB, PC, T)(asl.length!0, bsl.length!1, asl.length!0);
         size_t j;
         sizediff_t incb;
         if (bl.mc  < asl.length!0)
@@ -162,7 +190,7 @@ void symm_impl(A, B, C)
                     cast(T*) cslm.ptr,
                     cslm.stride!1,
                     kernels,
-                    conjb
+                    PB == 2 && conjb
                     );
                 ////////////////////////
                 bsl_ptr = null;
@@ -184,7 +212,7 @@ void symm_impl(A, B, C)
             foreach (nri, nr; nr_chain)
                 one_kernels [nri] = &gemv_reg!(BetaType.one, PB, PA, PC, nr, T);
 
-            Kernel!(PC, T)* kernels = one_kernels.ptr;
+            kernels = one_kernels.ptr;
             if (beta == 0)
             {
                 foreach (nri, nr; nr_chain)
@@ -203,7 +231,7 @@ void symm_impl(A, B, C)
         bsl = bsl.transposed;
         csl = csl.transposed;
         assert(csl.stride!0 == 1);
-        auto bl = blocking!(PB, PA, PC, T)(bsl.length!0, asl.length!0, bsl.length!1);
+        bl = blocking!(PB, PA, PC, T)(bsl.length!0, asl.length!0, bsl.length!1);
         sizediff_t incb;
         if (bl.mc < bsl.length!0)
             incb = bl.kc;
@@ -223,10 +251,7 @@ void symm_impl(A, B, C)
                 if (bslp.length!0 < mc)
                     mc = bslp.length!0;
                 ////////////////////////
-                if (conjb)
-                    pack_a!(PB, PA, PC, true, T, B)(bslp[0 .. mc], a);
-                else
-                    pack_a!(PB, PA, PC, false, T, B)(bslp[0 .. mc], a);
+                pack_a!(PB, PA, PC, T, B)(bslp[0 .. mc], a, PB == 2 && conjb);
                 //======================
                 sybp!(PB, PA, PC, T, A)(
                     mc,
@@ -243,7 +268,7 @@ void symm_impl(A, B, C)
                     cast(T*) cslm.ptr,
                     cslm.stride!1,
                     kernels,
-                    conja,
+                    PA == 2 && conja,
                     );
                 ////////////////////////
                 copy = false;
@@ -258,9 +283,10 @@ void symm_impl(A, B, C)
         }
         while (bsl.length!1);
     }
+    End: return;
 }
 
-pragma(inline, true)
+pragma(inline, false)
 void sybp(size_t PA, size_t PB, size_t PC, F, B, C)(
     size_t mc,
     size_t nc,
@@ -276,7 +302,7 @@ void sybp(size_t PA, size_t PB, size_t PC, F, B, C)(
     scope F* c,
     sizediff_t ldc,
     Kernel!(PC, F)* kernels,
-    Conjugated conj,
+    bool conj,
     )
 {
     mixin RegisterConfig!(PA, PB, PC, F);
@@ -286,7 +312,7 @@ void sybp(size_t PA, size_t PB, size_t PC, F, B, C)(
     {
         if (copy)
         {
-            if (PB && conj)
+            if (PB == 2 && conj)
                 pack_b_sym_nano!(nr, PB, true)(kc, bsl, j, i, b);
             else
                 pack_b_sym_nano!(nr, PB, false)(kc, bsl, j, i, b);
