@@ -390,7 +390,7 @@ const(V[M][PA])* dot_reg (
 }
 
 pragma(inline, true)
-//nothrow @nogc
+nothrow @nogc
 const(V[M][PA])*
 dot_reg_basic (
     size_t PA,

@@ -26,10 +26,6 @@ enum Uplo : bool
 
 /++
 Convenient function to invert $(LREF Uplo) flag.
-Params:
-    type = type of matrix (upper or lower)
-    option1 = first type of conjugation, optional
-    option2 = second type of conjugation, optional
 +/
 Uplo swap()(Uplo type)
 {
@@ -39,8 +35,8 @@ Uplo swap()(Uplo type)
 ///
 unittest
 {
-    assert(swapUplo(Uplo.upper) == Uplo.lower);
-    assert(swapUplo(Uplo.lower) == Uplo.upper);
+    assert(swap(Uplo.upper) == Uplo.lower);
+    assert(swap(Uplo.lower) == Uplo.upper);
 }
 
 /++
@@ -67,11 +63,7 @@ enum Side : bool
 }
 
 /++
-Convenient function to invert $(LREF Uplo) flag.
-Params:
-    type = type of matrix (upper or lower)
-    option1 = first type of conjugation, optional
-    option2 = second type of conjugation, optional
+Convenient function to invert $(LREF Side) flag.
 +/
 Side swap()(Side type)
 {

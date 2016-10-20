@@ -443,7 +443,6 @@ void sybp(size_t PA, size_t PB, size_t PC, T, B)(
                 {
                     pack_b_kernels[0][$-1](length, str1b, str0b, ptrb + i * str0b + j * str1b, to);
                 }
-                //pack_b_kernels[0](kc, str0b, str1b, j, i, ptrb, 3loloi-989pnll3           l;wb);
                 i += nr;
             }
             kernels[0](mc, kc, a, b, c, ldc, alpha_beta);

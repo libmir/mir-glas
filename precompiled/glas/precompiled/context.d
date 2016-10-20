@@ -1,4 +1,4 @@
-module glas.context;
+module glas.precompiled.context;
 
 version(LDC)
 {
@@ -8,13 +8,13 @@ version(LDC)
     }
 }
 
-import glas.internal.memory;
+import glas.precompiled.memory;
 
-package __gshared uint c1;
-package __gshared uint c2;
-package __gshared uint line;
-package __gshared uint initialized;
-package __gshared void[] _memory;
+package(glas) __gshared uint c1;
+package(glas) __gshared uint c2;
+package(glas) __gshared uint line;
+package(glas) __gshared uint initialized;
+package(glas) __gshared void[] _memory;
 
 
 import ldc.attributes : fastmath;
@@ -90,7 +90,7 @@ export extern(C) nothrow @nogc void glas_release()
 }
 
 // Returns: reused unaligned memory chunk
-package nothrow @nogc void[] memory(size_t size)
+package(glas) nothrow @nogc void[] memory(size_t size)
 {
     if (_memory.length < size)
     {

@@ -1,4 +1,4 @@
-module glas.internal.memory;
+module glas.precompiled.memory;
 
 version(LDC)
 {

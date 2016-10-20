@@ -13,7 +13,7 @@ import std.meta;
 import std.traits;
 import glas.common;
 import glas.internal.config;
-import glas.context;
+import glas.precompiled.context;
 static import cpuid.unified;
 
 import ldc.attributes : fastmath;
@@ -32,7 +32,6 @@ struct BlockInfo(T)
 pragma(inline, false)
 BlockInfo!T blocking(size_t PA, size_t PB, size_t PC, T)(size_t m, size_t n, size_t k)
 {
-    import glas.context;
     glas_init();
     mixin RegisterConfig!(PC, PA, PB, T);
     BlockInfo!T ret = void;
@@ -68,7 +67,6 @@ BlockInfo!T blocking(size_t PA, size_t PB, size_t PC, T)(size_t m, size_t n, siz
 version(none)
 BlockInfo!T blocking_triangular(size_t PA, size_t PB, T)(size_t m, size_t n)
 {
-    import glas.context;
     mixin RegisterConfig!(PB, PA, PB, T);
     BlockInfo!T ret = void;
 

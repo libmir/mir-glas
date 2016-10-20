@@ -1,6 +1,5 @@
 module glas.internal.copy;
 
-
 version(LDC)
 {
     version(unittest) {} else
@@ -127,13 +126,10 @@ T* pack_a_tri(size_t P, F, T, int hem)(const(F)* from, sizediff_t str0, sizediff
             while (v < u)
             {
                 to[0] = cast(T) pfrom[0];
-                static if (P == 2)
-                {
-                    static if (hem > 0)
-                        to[n] = -cast(T) pfrom[0].im;
-                    else
-                        to[n] =  cast(T) pfrom[0].im;
-                }
+                static if (hem > 0)
+                    to[n] = -cast(T) pfrom[0].im;
+                else
+                    to[n] =  cast(T) pfrom[0].im;
                 to++;
                 pfrom += str1;
                 v++;
@@ -150,19 +146,15 @@ T* pack_a_tri(size_t P, F, T, int hem)(const(F)* from, sizediff_t str0, sizediff
             while (v < n)
             {
                 to[0] = cast(T) pfrom[0];
-                static if (P == 2)
-                {
-                    static if (hem < 0)
-                        to[n] = -cast(T) pfrom[0].im;
-                    else
-                        to[n] =  cast(T) pfrom[0].im;
-                }
+                static if (hem < 0)
+                    to[n] = -cast(T) pfrom[0].im;
+                else
+                    to[n] =  cast(T) pfrom[0].im;
                 to++;
                 pfrom += str0;
                 v++;
             }
-            static if (P == 2)
-                to += n;
+            to += n;
             from += str0;
             u++;
             length--;
@@ -450,39 +442,6 @@ void load_simd(size_t mr, size_t P, T)(T* to, const(T[P])* from)
     foreach (p; Iota!P)
         to[mr * p + j] = cast(T) from[j * P][p];
 }
-
-
-//pragma(inline, false)
-//void save_transposed_nano(size_t P, size_t N, V, T)
-//    (size_t length, sizediff_t stride, sizediff_t elemStride, V[N][P]* from, T[P]* to)
-//{
-//    enum M = N * V.sizeof / T.sizeof;
-//    size_t j = M;
-//    auto f = cast(T*)from;
-//    do
-//    {
-//        auto len = length;
-//        auto t = to;
-//        auto ff = f;
-//        do
-//        {
-//            foreach (p; Iota!P)
-//            {
-//                enum i = (P-1) * M;
-//                t[p][0] = ff[i];
-//            }
-//            t += elemStride;
-//            ff += P * M;
-//        }
-//        while (--len);
-//        to += stride;
-//        f += P;
-//    }
-//    while (--j);
-//}
-
-//pragma(inline, false)
-//void save_transposed_nano(size_t P, size_t N, V, T)
 
 pragma(inline, true)
 void save_nano(size_t P, size_t N, size_t M, V, T)

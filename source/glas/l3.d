@@ -266,7 +266,6 @@ unittest
     auto d = slice!cdouble(3, 4);
     auto alpha = 1 + 0i;
     auto beta  = 0 + 0i;
-    import core.stdc.stdio;
 
     symm(Side.left, Uplo.lower, alpha, a, b, beta, c, Conjugated.yes);
 

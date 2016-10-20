@@ -7,49 +7,9 @@
         "mir": "~>0.20.2",
         "mir-cpuid": "~>0.4.1"
     },
-    "buildTypes": {
-        "release": {
-            "buildOptions": ["noBoundsCheck", "releaseMode", "optimize", "inline"],
-            "dflags-ldc": ["-linkonce-templates"]
-        },
-        "release-native": {
-            "buildOptions": ["noBoundsCheck", "releaseMode", "optimize", "inline"],
-            "dflags-ldc": ["-mcpu=native", "-linkonce-templates"]
-        },
-        "unittest": {
-            "buildOptions": ["unittests", "debugMode", "debugInfo"],
-        }
-    },
-    "configurations": [
-        {
-            "name": "library",
-            "targetType": "library"
-        },
-        {
-            "name": "static",
-            "targetType": "staticLibrary"
-        },
-        {
-            "name": "dynamic",
-            "targetType": "dynamicLibrary"
-        },
-        {
-            "name": "source",
-            "targetType": "sourceLibrary"
-        }
-    ],
     "description": "Generic Linear Algebra Subroutines",
     "copyright": "Copyright © 2016, Ilya Yaroshenko",
     "license": "BSL-1.0",
-    "dflags-ldc": ["-linkonce-templates"],
-    "sourcePaths": [],
-    "sourceFiles": [
-        "source/glas/internal/memory.d",
-        "source/glas/context.d",
-        "source/glas/precompiled/utility.d",
-        "source/glas/precompiled/l3s.d",
-        "source/glas/precompiled/l3d.d",
-        "source/glas/precompiled/l3c.d",
-        "source/glas/precompiled/l3z.d"
-        ]
+    "importPaths": ["source", "precompiled"],
+    "sourcePaths": ["source", "precompiled"]
 }
