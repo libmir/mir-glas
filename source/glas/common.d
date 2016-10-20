@@ -9,37 +9,19 @@ Authors: Ilya Yaroshenko
 +/
 module glas.common;
 
+import ldc.attributes: fastmath;
+
+@fastmath:
+
 /++
 Uplo specifies whether a matrix is an upper or lower triangular matrix.
 +/
-enum Uplo
+enum Uplo : bool
 {
     /// upper triangular matrix.
     lower,
     /// lower triangular matrix
     upper,
-}
-
-/++
-Convenient template to invert $(LREF Uplo) flag.
-Params:
-    type = type of matrix (upper or lower)
-    option1 = first type of conjugation, optional
-    option2 = second type of conjugation, optional
-+/
-template swapUplo(Uplo type)
-{
-    static if (type == Uplo.lower)
-        alias swapUplo = Uplo.upper;
-    else
-        alias swapUplo = Uplo.lower;
-}
-
-///
-unittest
-{
-    static assert(swapUplo!(Uplo.upper) == Uplo.lower);
-    static assert(swapUplo!(Uplo.lower) == Uplo.upper);
 }
 
 /++
@@ -49,12 +31,9 @@ Params:
     option1 = first type of conjugation, optional
     option2 = second type of conjugation, optional
 +/
-Uplo swapUplo()(Uplo type)
+Uplo swap()(Uplo type)
 {
-    if (type == Uplo.lower)
-        return Uplo.upper;
-    else
-        return Uplo.lower;
+    return cast(Uplo) (type ^ 1);
 }
 
 ///
@@ -67,7 +46,7 @@ unittest
 /++
 Diag specifies whether or not a matrix is unitriangular.
 +/
-enum Diag
+enum Diag : bool
 {
     /// a matrix assumed to be unit triangular
     unit,
@@ -79,7 +58,7 @@ enum Diag
 On entry, `Side`  specifies whether  the  symmetric matrix  A
 appears on the  left or right.
 +/
-enum Side
+enum Side : bool
 {
     ///
     left,
@@ -87,8 +66,21 @@ enum Side
     right,
 }
 
+/++
+Convenient function to invert $(LREF Uplo) flag.
+Params:
+    type = type of matrix (upper or lower)
+    option1 = first type of conjugation, optional
+    option2 = second type of conjugation, optional
++/
+Side swap()(Side type)
+{
+    return cast(Side) (type ^ 1);
+}
+
+
 ///
-enum Conjugated
+enum Conjugated : bool
 {
     ///
     no,

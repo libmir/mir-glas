@@ -214,6 +214,7 @@ void rot(C, S, size_t N, R1, R2)(in C c, in S s, Slice!(N, R1) x, Slice!(N, R2) 
 }
 
 ///
+@fastmath
 unittest
 {
     import mir.ndslice.slice: slice;

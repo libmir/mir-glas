@@ -8,16 +8,10 @@ version(LDC)
     }
 }
 
-import glas.precompiled.l3s;
-import glas.precompiled.l3d;
-import glas.precompiled.l3c;
-import glas.precompiled.l3z;
-
-import glas.common;
-import mir.ndslice.slice: Slice;
-import ldc.attributes: fastmath;
-
-//extern(C) @system nothrow @nogc @fastmath pragma(inline, true):
+public import glas.precompiled.l3s;
+public import glas.precompiled.l3d;
+public import glas.precompiled.l3c;
+public import glas.precompiled.l3z;
 
 alias glas_gemm = glas_sgemm;
 alias glas_gemm = glas_dgemm;
@@ -26,11 +20,18 @@ alias glas_gemm = glas_zgemm;
 
 alias glas_symm = glas_ssymm;
 alias glas_symm = glas_dsymm;
-alias glas_symm = glas_csymm;
-alias glas_symm = glas_zsymm;
+alias glas_symm = glas_csymm; // includes hemm
+alias glas_symm = glas_zsymm; // includes hemm
 
-void foo(Slice!(2, float*) a, Slice!(2, float*) b, Slice!(2, float*) c)
-{
-	import glas.l3;
-	gemm(1.0, a, b, 0.0, c);
-}
+alias gemm_ = sgemm_;
+alias gemm_ = dgemm_;
+alias gemm_ = cgemm_;
+alias gemm_ = zgemm_;
+
+alias symm_ = ssymm_;
+alias symm_ = dsymm_;
+alias symm_ = csymm_;
+alias symm_ = zsymm_;
+
+alias hemm_ = chemm_;
+alias hemm_ = zhemm_;

@@ -14,7 +14,6 @@ import std.traits;
 import glas.common;
 import glas.internal.config;
 import glas.context;
-import mir.internal.utility;
 static import cpuid.unified;
 
 import ldc.attributes : fastmath;

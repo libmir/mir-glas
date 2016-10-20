@@ -24,20 +24,51 @@ import ldc.intrinsics;
 
 version = PREFETCH;
 
+template SL3(A, B, C)
+{
+    pragma(LDC_no_typeinfo)
+    struct SL3
+    {
+        Slice!(2, const(A)*) asl = void;
+        Slice!(2, const(B)*) bsl = void;
+        Slice!(2, C*) csl = void;
+        C[2] alpha_beta = void;
+    }
+}
+
+pragma(inline, false)
+void gemm_fast_path(A, B, C)(ref SL3!(A, B, C) abc)
+{with(abc){
+    mixin prefix3;
+    mixin RegisterConfig!(PA, PB, PC, T);
+    if (alpha_beta[1] == 0)
+    {
+        do {
+            setZero(cast(T[])(csl.front!1.toDense)); // memset
+            csl.popFront!1;
+        }
+        while (csl.length!1);
+        return;
+    }
+    if (alpha_beta[1] == 1)
+        return;
+    do {
+        scale(csl.front!1.toDense, alpha_beta[1]);
+        csl.popFront!1;
+    } 
+    while (csl.length!1);
+}}
+
 pragma(inline, false)
 @optStrategy("optsize")
 nothrow @nogc
 void gemm_impl(A, B, C)
 (
-    C alpha,
-        Slice!(2, const(A)*) asl,
-        Slice!(2, const(B)*) bsl,
-    C beta,
-        Slice!(2, C*) csl,
+    ref SL3!(A, B, C) abc,
     Conjugated conja,
     Conjugated conjb,
 )
-{
+{with(abc){
     assert(asl.length!1 == bsl.length!0, "constraint: asl.length!1 == bsl.length!0");
     assert(csl.length!0 == asl.length!0, "constraint: csl.length!0 == asl.length!0");
     assert(csl.length!1 == bsl.length!1, "constraint: csl.length!1 == bsl.length!1");
@@ -49,17 +80,9 @@ void gemm_impl(A, B, C)
     mixin prefix3;
     mixin RegisterConfig!(PA, PB, PC, T);
     import mir.ndslice.iteration: reversed, transposed;
-
-    Kernel!(PC, T)[nr_chain.length]
-        beta_kernels = void,
-        one_kernels = void;
-
-    Kernel!(PC, T)* kernels = void;
-    BlockInfo!T bl = void;
-
+    //#########################################################
     if (llvm_expect(csl.anyEmpty, false))
-        goto End;
-
+        return;
     if (llvm_expect(csl.stride!0 < 0, false))
     {
         csl = csl.reversed!0;
@@ -70,7 +93,6 @@ void gemm_impl(A, B, C)
         csl = csl.reversed!1;
         bsl = bsl.reversed!1;
     }
-
     // change row based to column based
     if (csl.stride!0 != 1)
     {
@@ -86,53 +108,77 @@ void gemm_impl(A, B, C)
         }
         else
         {
-            gemm_impl!(B, A, C)(alpha, bsl.transposed, asl.transposed, beta, csl.transposed, conjb, conja);
-            goto End;
+            SL3!(B, A, C) tr = void;
+            tr.asl = bsl;
+            tr.bsl = asl;
+            tr.csl = csl;
+            tr.alpha_beta[0] = alpha_beta[0];
+            tr.alpha_beta[1] = alpha_beta[1];
+            gemm_impl!(B, A, C)(tr, conjb, conja);
+            return;
         }
     }
-
     assert(csl.stride!0 == 1);
-
-    if (llvm_expect(asl.empty!1 || alpha == 0, false))
+    if (llvm_expect(asl.empty!1 || alpha_beta[0] == 0, false))
     {
-        csl = csl.transposed;
-        if (beta == 0)
-        {
-            do {
-                setZero(cast(T[])(csl.front.toDense)); // memset
-                csl.popFront;
-            } while (csl.length);
-            //csl[] = cast(C)0;
-            goto End;
-        }
-        if (beta == 1)
-            goto End;
-        do {
-            scale(csl.front.toDense, beta);
-            csl.popFront;
-        } while (csl.length);
-        goto End;
+        gemm_fast_path(abc);
+        return;
     }
+    //#########################################################
+    PackKernel!(B, T)[mr_chain.length] pack_a_kernels = void;
+    PackKernel!(B, T)[nr_chain.length] pack_b_kernels = void;
+    Kernel!(PC, T)   [nr_chain.length]   beta_kernels = void;
+    Kernel!(PC, T)   [nr_chain.length]    one_kernels = void;
+    Kernel!(PC, T)*                           kernels = void;
 
+    static if (PA == 2)
+    {
+        if (conja)
+        foreach (mri, mr; mr_chain)
+            pack_a_kernels[mri] = &pack_a_nano!(mr, PA, 1, A, T);
+        else
+        foreach (mri, mr; mr_chain)
+            pack_a_kernels[mri] = &pack_a_nano!(mr, PA, 0, A, T);
+    }
+    else
+    {
+        foreach (mri, mr; mr_chain)
+            pack_a_kernels[mri] = &pack_a_nano!(mr, PA, 0, A, T);
+    }
+    static if (PB == 2)
+    {
+        if (conjb)
+        foreach (nri, nr; nr_chain)
+            pack_b_kernels[nri] = &pack_b_nano!(nr, PB, 1, B, T);
+        else
+        foreach (nri, nr; nr_chain)
+            pack_b_kernels[nri] = &pack_b_nano!(nr, PB, 0, B, T);
+    }
+    else
+    {
+        foreach (nri, nr; nr_chain)
+            pack_b_kernels[nri] = &pack_b_nano!(nr, PB, 0, B, T);
+    }
     foreach (nri, nr; nr_chain)
-        one_kernels [nri] = &gemv_reg!(BetaType.one, PA, PB, PC, nr, T);
-
+    {
+        one_kernels[nri] = &gemv_reg!(BetaType.one, PA, PB, PC, nr, T);
+    }
     kernels = one_kernels.ptr;
-    if (beta == 0)
+    if (alpha_beta[1] == 0)
     {
         foreach (nri, nr; nr_chain)
             beta_kernels[nri] = &gemv_reg!(BetaType.zero, PA, PB, PC, nr, T);
         kernels = beta_kernels.ptr;
     }
     else
-    if (beta != 1)
+    if (alpha_beta[1] != 1)
     {
         foreach (nri, nr; nr_chain)
             beta_kernels[nri] = &gemv_reg!(BetaType.beta, PA, PB, PC, nr, T);
         kernels = beta_kernels.ptr;
     }
-    bl = blocking!(PA, PB, PC, T)(asl.length!0, bsl.length!1, asl.length!1);
-    with(bl)
+    //#########################################################
+    with(blocking!(PA, PB, PC, T)(asl.length!0, bsl.length!1, asl.length!1))
     {
         sizediff_t incb;
         if (mc < asl.length!0)
@@ -152,24 +198,24 @@ void gemm_impl(A, B, C)
                 if (aslp.length!0 < mc)
                     mc = aslp.length!0;
                 ////////////////////////
-                pack_a!(PA, PB, PC, T, A)(aslp[0 .. mc], a, PA == 2 && conja);
+                pack_a!(A, T)(aslp[0 .. mc], a, pack_a_kernels.ptr, main_mr);
                 //======================
-                gebp!(PA, PB, PC, T)(
+                gebp!(PA, PB, PC, T, B)(
                     mc,
                     bsl.length!1,
                     kc,
-                    alpha.castByRef,
                     a,
                     b,
                     incb,
                     bsl_ptr,
                     bsl.stride!0,
                     bsl.stride!1,
-                    beta.castByRef,
                     cast(T*) cslm.ptr,
                     cslm.stride!1,
+                    *cast(T[PC][2]*)&alpha_beta,
+                    pack_b_kernels.ptr,
                     kernels,
-                    PB == 2 && conjb,
+                    main_nr,
                     );
                 ////////////////////////
                 bsl_ptr = null;
@@ -184,8 +230,7 @@ void gemm_impl(A, B, C)
         }
         while (asl.length!1);
     }
-    End: return;
-}
+}}
 
 pragma(inline, false)
 void setZero(T)(T[] a)
@@ -211,60 +256,65 @@ void scale(T)(T[] a, T c)
     while(a.length);
 }
 
-pragma(inline, false)
-void gebp(size_t PA, size_t PB, size_t PC, F, C)(
+pragma(inline, true)
+void gebp(size_t PA, size_t PB, size_t PC, T, B)(
     size_t mc,
     size_t nc,
     size_t kc,
-    const F[PC] alpha,
-    scope const(F)* a,
-    scope F* b,
+    const(T)* a,
+    T* b,
     sizediff_t incb,
-    const(C)* ptrb,
+    const(B)* ptrb,
     sizediff_t ldb,
     sizediff_t ldbe,
-    ref const F[PC] beta,
-    scope F* c,
+    T* c,
     sizediff_t ldc,
-    Kernel!(PC, F)* kernels,
-    bool conj,
+    ref const T[PC][2] alpha_beta,
+    PackKernel!(B, T)* pack_b_kernels,
+    Kernel!(PC, T)* kernels,
+    size_t nr,
     )
 {
-    mixin RegisterConfig!(PA, PB, PC, F);
-    foreach (nri, nr; nr_chain)
-    if (nc >= nr) do
+    mixin RegisterConfig!(PA, PB, PC, T);
+    do
     {
-        if (ptrb)
+        if (nc >= nr) do
         {
-            if (PB == 2 && conj)
-                pack_b_nano!(nr, PB, true)(kc, ldb, ldbe, ptrb, b);
-            else
-                pack_b_nano!(nr, PB, false)(kc, ldb, ldbe, ptrb, b);
-            ptrb += nr * ldbe;
+            if (ptrb)
+            {
+                pack_b_kernels[0](kc, ldb, ldbe, ptrb, b);
+                ptrb += nr * ldbe;
+            }
+            kernels[0](mc, kc, a, b, c, ldc, alpha_beta);
+            b +=  nr * PB * incb;
+            nc -= nr;
+            c += nr * PC * ldc;
         }
-        kernels[nri](mc, kc, alpha, a, b, beta, c, ldc);
-        b +=  nr * PB * incb;
-        nc -= nr;
-        c += nr * PC * ldc;
+        while (nc >= nr);
+        //import core.bitop: bsr;
+        pack_b_kernels++;
+        kernels++;
+        import ldc.intrinsics: llvm_ctlz;
+        auto newNr = size_t(1) << (size_t.sizeof * 8 - 1 - llvm_ctlz(nr, true));
+        nr = nr == newNr ? newNr / 2 : newNr;
     }
-    while (!nri && nc >= nr);
+    while (nr);
 }
 
-alias Kernel(size_t PC, F) =
-    nothrow @nogc
+alias Kernel(size_t P, T) =
+    pure nothrow @nogc
     void function(
         size_t mc,
         size_t kc,
-        ref const F[PC] alpha,
-        scope const(F)* a,
-        scope const(F)* b,
-        ref const F[PC] beta,
-        scope F* c,
+        const(T)* a,
+        const(T)* b,
+        T* c,
         sizediff_t ldc,
+        ref const T[P][2] alpha_beta,
     );
 
 pragma(inline, false)
-//nothrow @nogc
+pure nothrow @nogc
 void gemv_reg (
     BetaType beta_type,
     size_t PA,
@@ -276,12 +326,11 @@ void gemv_reg (
 (
     size_t mc,
     size_t kc,
-    ref const F[PC] alpha,
-    scope const(F)* a,
-    scope const(F)* b,
-    ref const F[PC] beta,
-    scope F* c,
+    const(F)* a,
+    const(F)* b,
+    F* c,
     sizediff_t ldc,
+    ref const F[PC][2] alpha_beta,
 )
 {
     mixin RegisterConfig!(PA, PB, PC, F);
@@ -291,7 +340,7 @@ void gemv_reg (
         enum M = Mi!(mri);
         alias V = Vi!(mri);
         auto as = a;
-        a = cast(typeof(a)) dot_reg!beta_type(alpha, cast(const(V[M][PA])*)a, cast(const(F[PB][N])*)b, kc, beta, cast(F[PC]*)c, ldc);
+        a = cast(typeof(a)) dot_reg!beta_type(cast(const(V[M][PA])*)a, cast(const(F[PB][N])*)b, kc, cast(F[PC]*)c, ldc, alpha_beta);
         mc -= mr;
         c += mr * PC;
     }
@@ -306,7 +355,7 @@ enum BetaType
 }
 
 pragma(inline, true)
-//nothrow @nogc
+pure nothrow @nogc
 const(V[M][PA])* dot_reg (
     BetaType beta_type,
     size_t PA,
@@ -318,26 +367,25 @@ const(V[M][PA])* dot_reg (
     F,
 )
 (
-    ref const F[PC] alpha,
     const(V[M][PA])* a,
     const(F[PB][N])* b,
     size_t length,
-    ref const F[PC] beta,
-    scope F[PC]* c,
+    F[PC]* c,
     sizediff_t ldc,
+    ref const F[PC][2] alpha_beta,
 )
 {
     prefetch_w!(V[M][PC].sizeof, N, 1)(c, ldc * c[0].sizeof);
     V[M][PC][N] reg = void;
     a = dot_reg_basic(a, b, length, reg);
-    scale_nano(alpha, reg);
+    scale_nano(alpha_beta[0], reg);
     static if (beta_type == BetaType.zero)
         save_nano(reg, c, ldc);
     else
     static if (beta_type == BetaType.one)
         save_add_nano(reg, c, ldc);
     else
-        save_madd_nano(reg, beta, c, ldc);
+        save_madd_nano(reg, alpha_beta[1], c, ldc);
     return a;
 }
 
@@ -407,13 +455,16 @@ dot_reg_basic (
     return a;
 }
 
+pragma(LDC_intrinsic, "llvm.prefetch")
+    pure nothrow @nogc
+    void llvm_prefetch(void* ptr, uint rw, uint locality, uint cachetype);
 
 pragma(inline, true)
+pure
 void prefetch_w(size_t M, size_t N, size_t rem = 1)(void* ptr, sizediff_t ld)
 {
     version(PREFETCH)
     {
-        import ldc.intrinsics: llvm_prefetch;
         foreach (n; Iota!N)
         {
             foreach (m; Iota!(M / 64 + bool(M % 64 >= rem)))
@@ -424,11 +475,11 @@ void prefetch_w(size_t M, size_t N, size_t rem = 1)(void* ptr, sizediff_t ld)
 }
 
 pragma(inline, true)
+pure
 void prefetch_r(size_t M, size_t N, size_t rem, size_t shift)(void* ptr, sizediff_t ld)
 {
     version(PREFETCH)
     {
-        import ldc.intrinsics: llvm_prefetch;
         foreach (n; Iota!N)
         {
             foreach (m; Iota!(M / 64 + bool(M % 64 >= rem)))

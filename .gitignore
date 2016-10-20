@@ -30,3 +30,9 @@ dub.selections.json
 __test__library__
 
 *.s
+
+*.SYMDEF
+
+help
+
+*.zip

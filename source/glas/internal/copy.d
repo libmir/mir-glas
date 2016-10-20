@@ -1,8 +1,12 @@
 module glas.internal.copy;
 
+
 version(LDC)
 {
-    pragma(LDC_no_moduleinfo);
+    version(unittest) {} else
+    {
+        pragma(LDC_no_moduleinfo);
+    }
 }
 
 import std.traits;
@@ -12,8 +16,31 @@ import mir.internal.utility;
 import glas.internal.config;
 import glas.common;
 
-import ldc.attributes : fastmath;
+import ldc.attributes : fastmath, optStrategy;
+import ldc.intrinsics : llvm_expect;
 @fastmath:
+
+alias PackKernel(F, T) =
+    pure nothrow @nogc
+    T* function(
+        size_t length,
+        sizediff_t str0,
+        sizediff_t str1,
+        const(F)* from,
+        T* to,
+    );
+
+alias PackKernelTri(F, T) =
+    pure nothrow @nogc
+    T* function(
+        const(F)* from,
+        sizediff_t str0,
+        sizediff_t str1,
+        T* to,
+        size_t length,
+        size_t start,
+        size_t n,
+    );
 
 pragma(inline, false)
 T* pack_b_nano(size_t n, size_t P, bool conj = false, F, T)(size_t length, sizediff_t stride, sizediff_t elemStride, const(F)* from, T* to)
@@ -38,18 +65,15 @@ T* pack_b_nano(size_t n, size_t P, bool conj = false, F, T)(size_t length, sized
                 {
                     static if (P == 2)
                     {
-                        to[2 * i + 0] = cast(T) from[i].re;
+                        to[2 * i + 0] = cast(T) from[i];
                         static if (conj == false)
-                            to[2 * i + 1] = cast(T) from[i].im;
+                            to[2 * i + 1] =  cast(T) from[i].im;
                         else
                             to[2 * i + 1] = -cast(T) from[i].im;
                     }
                     else
                     {
-                        static if (isComplex!F)
-                            to[i] = cast(T) from[i].re;
-                        else
-                            to[i] = cast(T) from[i];
+                        to[i] = cast(T) from[i];
                     }
                 }
             }
@@ -67,7 +91,7 @@ T* pack_b_nano(size_t n, size_t P, bool conj = false, F, T)(size_t length, sized
             {
                 static if (P == 2)
                 {
-                    to[2 * i + 0] = cast(T) from[elemStride * i].re;
+                    to[2 * i + 0] = cast(T) from[elemStride * i];
                     static if (conj == false)
                         to[2 * i + 1] = cast(T) from[elemStride * i].im;
                     else
@@ -75,10 +99,7 @@ T* pack_b_nano(size_t n, size_t P, bool conj = false, F, T)(size_t length, sized
                 }
                 else
                 {
-                    static if (isComplex!F)
-                        to[i] = cast(T) from[elemStride * i].re;
-                    else
-                        to[i] = cast(T) from[elemStride * i];
+                    to[i] = cast(T) from[elemStride * i];
                 }
             }
             from += stride;
@@ -90,86 +111,118 @@ T* pack_b_nano(size_t n, size_t P, bool conj = false, F, T)(size_t length, sized
 }
 
 pragma(inline, false)
-T* pack_b_sym_nano(size_t n, size_t P, bool conj = false, F, T)(size_t length, Slice!(2, const(F)*) sl, size_t j, size_t i, T* to)
+T* pack_a_tri(size_t P, F, T, int hem)(const(F)* from, sizediff_t str0, sizediff_t str1, T* to, size_t u, size_t length, size_t n)
 {
+    static if (P == 1)
     {
-        sizediff_t diff = i - j;
-        if (diff > 0)
-        {
-            diff++;
-            if (diff > length)
-                diff = length;
-            to = pack_b_nano!(n, P, false, F, T)(diff, sl.stride!0, sl.stride!1, &sl[j, i], to);
-            j += diff;
-            length -= diff;
-            if (length == 0)
-                return to;
-        }
+        pragma(inline, true);
+        return pack_b_tri!(P, F, T, hem)(from, str1, str0, to, u, length, n);
     }
-
-    auto from = &sl[i, j];
-    foreach (u; sizediff_t(j - i) .. n - 1)
+    else
     {
-        auto pfrom = from;
-        foreach (v; 0 .. u)
+        do
         {
-            static if (P == 1)
+            auto pfrom = from;
+            size_t v;
+            while (v < u)
             {
-                static if (isComplex!F)
-                    to[0] = cast(T) pfrom[0].re;
-                else
-                    to[0] = cast(T) pfrom[0];
+                to[0] = cast(T) pfrom[0];
+                static if (P == 2)
+                {
+                    static if (hem > 0)
+                        to[n] = -cast(T) pfrom[0].im;
+                    else
+                        to[n] =  cast(T) pfrom[0].im;
+                }
+                to++;
+                pfrom += str1;
+                v++;
             }
-            else
+            static if (hem)
+            if (v < n)
             {
-                to[0] = cast(T) pfrom.re;
-                static if (conj == false)
-                    to[1] = cast(T) pfrom.im;
-                else
-                    to[1] = -cast(T) pfrom.im;
-
+                to[0] = cast(T) pfrom[0];
+                to[n] = 0;
+                to++;
+                pfrom += str0;
+                v++;
             }
-            to += P;
-            pfrom += sl.stride!0;
+            while (v < n)
+            {
+                to[0] = cast(T) pfrom[0];
+                static if (P == 2)
+                {
+                    static if (hem < 0)
+                        to[n] = -cast(T) pfrom[0].im;
+                    else
+                        to[n] =  cast(T) pfrom[0].im;
+                }
+                to++;
+                pfrom += str0;
+                v++;
+            }
+            static if (P == 2)
+                to += n;
+            from += str0;
+            u++;
+            length--;
         }
-        foreach (v; u .. n)
-        {
-            static if (P == 1)
-            {
-                static if (isComplex!F)
-                    to[0] = cast(T) pfrom[0].re;
-                else
-                    to[0] = cast(T) pfrom[0];
-            }
-            else
-            {
-                to[0] = cast(T) pfrom.re;
-                to[1] = cast(T) pfrom.im;
-            }
-            to += P;
-            pfrom += sl.stride!1;
-        }
-        from += sl.stride!1;
-        j++;
-        length--;
-        if (length == 0)
-            return to;
+        while(length);        
+        return to;
     }
-    return pack_b_nano!(n, P, conj, F, T)(length, sl.stride!1, sl.stride!0, from, to);
 }
 
-//pragma(inline, false)
-//T* pack_b_strided_nano(size_t n, size_t P, bool conj = false, F, T)(size_t length, sizediff_t stride, sizediff_t elemStride, const(F)* from, T* to)
-//{
-//    enum s = n * P;
-
-//}
-
-//pragma(inline, false)
-//T* pack_b_dense_nano(size_t n, size_t P, bool conj = false, F, T)(size_t length, sizediff_t stride, const(F)* from, T* to)
-//{
-
-//}
+pragma(inline, false)
+T* pack_b_tri(size_t P, F, T, int hem)(const(F)* from, sizediff_t str0, sizediff_t str1, T* to, size_t u, size_t length, size_t n)
+{
+    do
+    {
+        auto pfrom = from;
+        size_t v;
+        while (v < u)
+        {
+            to[0] = cast(T) pfrom[0];
+            static if (P == 2)
+            {
+                static if (hem > 0)
+                    to[1] = -cast(T) pfrom[0].im;
+                else
+                    to[1] =  cast(T) pfrom[0].im;
+            }
+            to += P;
+            pfrom += str0;
+            v++;
+        }
+        static if (hem)
+        if (v < n)
+        {
+            to[0] = cast(T) pfrom[0];
+            to[1] = 0;
+            to += P;
+            pfrom += str1;
+            v++;
+        }
+        while (v < n)
+        {
+            to[0] = cast(T) pfrom[0];
+            static if (P == 2)
+            {
+                static if (hem < 0)
+                    to[1] = -cast(T) pfrom[0].im;
+                else
+                    to[1] =  cast(T) pfrom[0].im;
+            }
+            to += P;
+            pfrom += str1;
+            v++;
+        }
+        from += str1;
+        u++;
+        length--;
+    }
+    while(length);
+    return to;
+}
 
 pragma(inline, false)
 T* pack_a_nano(size_t n, size_t P, bool conj = false, F, T)(size_t length, sizediff_t stride, sizediff_t elemStride, const(F)* from, T* to)
@@ -196,7 +249,7 @@ T* pack_a_nano(size_t n, size_t P, bool conj = false, F, T)(size_t length, sized
                     auto im = _im!V(r0, r1);
                     *cast(V*)to = re;
                     static if (conj == false)
-                        *((cast(V*)to) + 1) = im;
+                        *((cast(V*)to) + 1) =  im;
                     else
                         *((cast(V*)to) + 1) = -im;
                 }
@@ -204,20 +257,14 @@ T* pack_a_nano(size_t n, size_t P, bool conj = false, F, T)(size_t length, sized
             else
             foreach (j; Iota!n)
             {
+                to[j] = cast(T) from[j];
                 static if (P == 2)
                 {
                     to[ 0 + j] = cast(T) from[j].re;
                     static if (conj == false)
-                        to[n + j] = cast(T) from[j].im;
+                        to[n + j] =  cast(T) from[j].im;
                     else
                         to[n + j] = -cast(T) from[j].im;
-                }
-                else
-                {
-                    static if (isComplex!F)
-                        to[j] = cast(T) from[j].re;
-                    else
-                        to[j] = cast(T) from[j];
                 }
             }
             from += stride;
@@ -230,7 +277,7 @@ T* pack_a_nano(size_t n, size_t P, bool conj = false, F, T)(size_t length, sized
     {
         static if (P == 1)
         {
-            return pack_b_nano!(n, P, conj, F, T)(length, stride, elemStride, from, to);
+            return pack_b_nano!(n, P, false, F, T)(length, stride, elemStride, from, to);
         }
         else
         {
@@ -238,9 +285,9 @@ T* pack_a_nano(size_t n, size_t P, bool conj = false, F, T)(size_t length, sized
             {
                 foreach (i; Iota!n)
                 {
-                    to[i + 0] = cast(T) from[elemStride * i].re;
+                    to[i + 0] = cast(T) from[elemStride * i];
                     static if (conj == false)
-                        to[i + n] = cast(T) from[elemStride * i].im;
+                        to[i + n] =  cast(T) from[elemStride * i].im;
                     else
                         to[i + n] = -cast(T) from[elemStride * i].im;
                 }
@@ -253,139 +300,84 @@ T* pack_a_nano(size_t n, size_t P, bool conj = false, F, T)(size_t length, sized
     }
 }
 
-//pragma(inline, true)
-//T* pack_a_strided_nano(size_t n, size_t P, bool conj = false, F, T)(size_t length, sizediff_t stride, sizediff_t elemStride, const(F)* from, T* to)
-//{
 
-//}
-
-//pragma(inline, true)
-//T* pack_a_dense_nano(size_t mr, size_t P, bool conj = false, T, F)(size_t length, sizediff_t stride, const(F)* from, T* to)
-//{
-
-//}
-
-pragma(inline, false)
-void pack_a(size_t PA, size_t PB, size_t PC, T, C)(Slice!(2, const(C)*) sl, T* a, bool conj)
+pragma(inline, true)
+void pack_a(C, T)(Slice!(2, const(C)*) sl, T* a, PackKernel!(C, T)* kernels, size_t mr)
 {
-    import mir.ndslice.iteration: transposed;
-    mixin RegisterConfig!(PC, PA, PB, T);
-    static if (PA == 2)
+    do
     {
-        if (conj)
+        while (sl.length >= mr)
         {
-            foreach (mri, mr; mr_chain)
-            if (sl.length >= mr) do
-            {
-                a = pack_a_nano!(mr, PA, true, C, T)(sl.length!1, sl.stride!1, sl.stride!0, sl.ptr, a);
-                sl.popFrontExactly(mr);
-            }
-            while (!mri && sl.length >= mr);
+            a = kernels[0](sl.length!1, sl.stride!1, sl.stride!0, sl.ptr, a);
+            sl.popFrontExactly(mr);
         }
+        kernels++;
+        mr /= 2;
     }
-    foreach (mri, mr; mr_chain)
-    if (sl.length >= mr) do
-    {
-        a = pack_a_nano!(mr, PA, false, C, T)(sl.length!1, sl.stride!1, sl.stride!0, sl.ptr, a);
-        sl.popFrontExactly(mr);
-    }
-    while (!mri && sl.length >= mr);
+    while(mr);
+    return;
 }
 
-pragma(inline, false)
-void pack_a_sym(size_t PA, size_t PB, size_t PC, bool conj = false, T, F)(Slice!(2, const(F)*) sl, size_t i, size_t t, size_t mc, size_t kc, T* to)
+pragma(inline, true)
+void pack_a_sym(size_t PA, F, T)(scope const(F)* ptr, sizediff_t str0, sizediff_t str1, size_t i, size_t t, size_t mc, size_t kc, scope T* to, PackKernel!(F, T)[PA]* kernels, PackKernelTri!(F, T) tri_kernel, size_t mr)
 {
-    import mir.ndslice.iteration: transposed, reversed;
-    mixin RegisterConfig!(PC, PA, PB, T);
-    foreach (mri, mr; mr_chain)
-    if (mc >= mr) do
+    do
     {
-        size_t j = t;
-        size_t length = kc;
+        if (mc >= mr) do
         {
-            sizediff_t diff = i - j;
-            if (diff > 0)
+            size_t j = t;
+            size_t length = kc;
             {
-                diff++;
-                if (diff > length)
-                    diff = length;
-                to = pack_a_nano!(mr, PA, false, F, T)(diff, sl.stride!1, sl.stride!0, &sl[i, j], to);
-                j += diff;
-                length -= diff;
-                if (length == 0)
+                sizediff_t diff = i - j;
+                static if(PA == 1)
+                    diff++;
+                if (diff > 0)
                 {
-                    mc -= mr;
-                    i += mr;
-                    continue;
+                    if (diff > length)
+                        diff = length;
+                    to = kernels[0][0](diff, str1, str0, ptr + i * str0 + j * str1, to);
+                    j += diff;
+                    length -= diff;
+                    if (length == 0)
+                    {
+                        mc -= mr;
+                        i += mr;
+                        continue;
+                    }
                 }
             }
-        }
-        auto tos = to;
-        auto from = &sl[j, i];
-        foreach (u; sizediff_t(j - i) .. mr - 1)
-        {
-            auto pfrom = from;
-            foreach (v; 0 .. u)
             {
+                sizediff_t start = j - i;
+                sizediff_t len = mr - start;
                 static if (PA == 1)
+                    len--;
+                if (len > length)
+                    len = length;
+                if (len > 0)
                 {
-                    static if (isComplex!F)
-                        to[0] = cast(T) pfrom[0].re;
-                    else
-                        to[0] = cast(T) pfrom[0];
+                    to = tri_kernel(ptr + j * str0 + i * str1, str0, str1, to, start, len, mr);
+                    length -= len;
+                    j += len;
                 }
-                else
-                {
-                    to[ 0] = cast(T) pfrom.re;
-                    static if (conj == false)
-                        to[mr] = cast(T) pfrom.im;
-                    else
-                        to[mr] = -cast(T) pfrom.im;
-
-                }
-                to++;
-                pfrom += sl.stride!1;
             }
-            foreach (v; u .. mr)
+            if (length)
             {
-                static if (PA == 1)
-                {
-                    static if (isComplex!F)
-                        to[0] = cast(T) pfrom[0].re;
-                    else
-                        to[0] = cast(T) pfrom[0];
-                }
-                else
-                {
-                    to[ 0] = cast(T) pfrom.re;
-                    to[mr] = cast(T) pfrom.im;
-                }
-                to++;
-                pfrom += sl.stride!0;
+                to = kernels[0][$-1](length, str0, str1, ptr + j * str0 + i * str1, to);
             }
-            static if (PA == 2)
-                to += mr;
-            from += sl.stride!0;
-            j++;
-            length--;
-            if (length == 0)
-                break;
+            mc -= mr;
+            i += mr;
         }
-        tos = to;
-        if (length)
-            to = pack_a_nano!(mr, PA, conj, F, T)(length, sl.stride!0, sl.stride!1, from, to);
-        mc -= mr;
-        i += mr;
+        while (mc >= mr);
+        kernels++;
+        mr /= 2;
     }
-    while (!mri && mc >= mr);
+    while(mr);
 }
-
 
 pragma(inline, false)
 void pack_b_triangular(Uplo uplo, bool inverseDiagonal, size_t PA, size_t PB, size_t PC, T, C)(Slice!(2, const(C)*) sl, T* b)
 {
     assert(sl.length!0 == sl.length!1);
-    import mir.ndslice.iteration: transposed;
 
     mixin RegisterConfig!(PC, PA, PB, T);
     static if (uplo == Uplo.lower)
@@ -459,32 +451,6 @@ void load_simd(size_t mr, size_t P, T)(T* to, const(T[P])* from)
         to[mr * p + j] = cast(T) from[j * P][p];
 }
 
-//pragma(inline, false)
-//void pack_b(size_t PA, size_t PB, size_t PC, T, C)(Slice!(2, C*) sl, T* b)
-//{
-//    import mir.ndslice.iteration: transposed;
-//    mixin RegisterConfig!(PC, PA, PB, T);
-//    if (sl.stride!0 == 1)
-//    {
-//        foreach (nri, nr; nr_chain)
-//        if (sl.length >= nr) do
-//        {
-//            b = pack_b_dense_nano!(nr, PB)(sl.length!1, sl.stride!1, sl.ptr, b);
-//            sl.popFrontExactly(nr);
-//        }
-//        while (!nri && sl.length >= nr);
-//    }
-//    else
-//    {
-//        foreach (nri, nr; nr_chain)
-//        if (sl.length >= nr) do
-//        {
-//            b = pack_b_strided_nano!(nr, PB)(sl.length!1, sl.stride!1, sl.stride!0, sl.ptr, b);
-//            sl.popFrontExactly(nr);
-//        }
-//        while (!nri && sl.length >= nr);
-//    }
-//}
 
 //pragma(inline, false)
 //void save_transposed_nano(size_t P, size_t N, V, T)

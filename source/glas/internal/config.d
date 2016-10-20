@@ -2,7 +2,10 @@ module glas.internal.config;
 
 version(LDC)
 {
-    pragma(LDC_no_moduleinfo);
+    version(unittest) {} else
+    {
+        pragma(LDC_no_moduleinfo);
+    }
 }
 
 import std.traits;
