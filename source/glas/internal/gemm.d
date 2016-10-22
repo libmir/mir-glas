@@ -170,8 +170,7 @@ void gemm_impl(A, B, C)
                 kc = asl.length!1;
             ////////////////////////
             auto aslp = asl[0 .. $, 0 .. kc];
-            auto bsl_ptr = bsl.ptr(
-                );
+            auto bsl_ptr = bsl.ptr;
             auto cslm = csl;
             auto mc = mc;
             //======================

@@ -54,7 +54,7 @@ export extern(C) nothrow @nogc void glas_init()
 
     while (uc.length && uc[$-1].size > (1024 * 64)) // > 64 MB is CPU memory
     {
-        uc = uc[1..$];
+        uc = uc[0..$-1];
     }
 
     if (dc.length)
