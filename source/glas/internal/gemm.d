@@ -1,63 +1,38 @@
+/++
+Copyright: Ilya Yaroshenko 2016-.
+License: $(HTTP boost.org/LICENSE_1_0.txt, Boost License 1.0).
+Authors: Ilya Yaroshenko
++/
 module glas.internal.gemm;
-
-version(LDC)
-{
-    version(unittest) {} else
-    {
-        pragma(LDC_no_moduleinfo);
-    }
-}
+pragma(LDC_no_moduleinfo);
 
 import std.traits;
 import std.meta;
+import std.experimental.ndslice.slice : Slice;
 
-public import glas.common;
-import mir.ndslice.slice : Slice;
-import mir.internal.utility;
+import ldc.attributes;
+import ldc.intrinsics;
+
+import glas.common;
+import glas.internal.utility;
 import glas.internal.blocking;
 import glas.internal.copy;
 import glas.internal.config;
 
-import ldc.attributes;
-import ldc.intrinsics;
+
 @fastmath:
 
-version = PREFETCH;
+version = GLAS_PREFETCH;
 
-template SL3(A, B, C)
+pragma(LDC_no_typeinfo)
+struct SL3(A, B, C)
 {
-    pragma(LDC_no_typeinfo)
-    struct SL3
-    {
-        Slice!(2, const(A)*) asl = void;
-        Slice!(2, const(B)*) bsl = void;
-        Slice!(2, C*) csl = void;
-        C[2] alpha_beta = void;
-    }
+    Slice!(2, const(A)*) asl = void;
+    Slice!(2, const(B)*) bsl = void;
+    Slice!(2, C*) csl = void;
+    C[2] alpha_beta = void;
+    ulong settings = void;
 }
-
-pragma(inline, false)
-void gemm_fast_path(A, B, C)(ref SL3!(A, B, C) abc)
-{with(abc){
-    mixin prefix3;
-    mixin RegisterConfig!(PA, PB, PC, T);
-    if (alpha_beta[1] == 0)
-    {
-        do {
-            setZero(cast(T[])(csl.front!1.toDense)); // memset
-            csl.popFront!1;
-        }
-        while (csl.length!1);
-        return;
-    }
-    if (alpha_beta[1] == 1)
-        return;
-    do {
-        scale(csl.front!1.toDense, alpha_beta[1]);
-        csl.popFront!1;
-    } 
-    while (csl.length!1);
-}}
 
 pragma(inline, false)
 @optStrategy("optsize")
@@ -65,8 +40,6 @@ nothrow @nogc
 void gemm_impl(A, B, C)
 (
     ref SL3!(A, B, C) abc,
-    Conjugated conja,
-    Conjugated conjb,
 )
 {with(abc){
     assert(asl.length!1 == bsl.length!0, "constraint: asl.length!1 == bsl.length!0");
@@ -79,9 +52,9 @@ void gemm_impl(A, B, C)
 
     mixin prefix3;
     mixin RegisterConfig!(PA, PB, PC, T);
-    import mir.ndslice.iteration: reversed, transposed;
+    import std.experimental.ndslice.iteration: reversed, transposed;
     //#########################################################
-    if (llvm_expect(csl.anyEmpty, false))
+    if (llvm_expect(csl.empty!0 || csl.empty!1, false))
         return;
     if (llvm_expect(csl.stride!0 < 0, false))
     {
@@ -102,9 +75,7 @@ void gemm_impl(A, B, C)
             asl = bsl.transposed;
             bsl = tsl.transposed;
             csl = csl.transposed;
-            auto conjt = conja;
-            conja = conjb;
-            conjb = conjt;
+            settings ^= ConjA | ConjB;
         }
         else
         {
@@ -114,7 +85,8 @@ void gemm_impl(A, B, C)
             tr.csl = csl;
             tr.alpha_beta[0] = alpha_beta[0];
             tr.alpha_beta[1] = alpha_beta[1];
-            gemm_impl!(B, A, C)(tr, conjb, conja);
+            tr.settings = settings ^ (ConjA | ConjB);
+            gemm_impl!(B, A, C)(tr);
             return;
         }
     }
@@ -133,7 +105,7 @@ void gemm_impl(A, B, C)
 
     static if (PA == 2)
     {
-        if (conja)
+        if (settings & ConjA)
         foreach (mri, mr; mr_chain)
             pack_a_kernels[mri] = &pack_a_nano!(mr, PA, 1, A, T);
         else
@@ -147,7 +119,7 @@ void gemm_impl(A, B, C)
     }
     static if (PB == 2)
     {
-        if (conjb)
+        if (settings & ConjB)
         foreach (nri, nr; nr_chain)
             pack_b_kernels[nri] = &pack_b_nano!(nr, PB, 1, B, T);
         else
@@ -232,30 +204,6 @@ void gemm_impl(A, B, C)
     }
 }}
 
-pragma(inline, false)
-void setZero(T)(T[] a)
-{
-    assert(a.length);
-    do
-    {
-        a[0] = 0;
-        a = a[1 .. $];
-    }
-    while(a.length);
-}
-
-pragma(inline, false)
-void scale(T)(T[] a, T c)
-{
-    assert(a.length);
-    do
-    {
-        a[0] *= c;
-        a = a[1 .. $];
-    }
-    while(a.length);
-}
-
 pragma(inline, true)
 void gebp(size_t PA, size_t PB, size_t PC, T, B)(
     size_t mc,
@@ -314,6 +262,53 @@ alias Kernel(size_t P, T) =
     );
 
 pragma(inline, false)
+void gemm_fast_path(A, B, C)(ref SL3!(A, B, C) abc)
+{with(abc){
+    mixin prefix3;
+    mixin RegisterConfig!(PA, PB, PC, T);
+    if (alpha_beta[1] == 0)
+    {
+        do {
+            setZero(cast(T[])(csl.front!1.toDense)); // memset
+            csl.popFront!1;
+        }
+        while (csl.length!1);
+        return;
+    }
+    if (alpha_beta[1] == 1)
+        return;
+    do {
+        scale(csl.front!1.toDense, alpha_beta[1]);
+        csl.popFront!1;
+    } 
+    while (csl.length!1);
+}}
+
+pragma(inline, false)
+void setZero(T)(T[] a)
+{
+    assert(a.length);
+    do
+    {
+        a[0] = 0;
+        a = a[1 .. $];
+    }
+    while(a.length);
+}
+
+pragma(inline, false)
+void scale(T)(T[] a, T c)
+{
+    assert(a.length);
+    do
+    {
+        a[0] *= c;
+        a = a[1 .. $];
+    }
+    while(a.length);
+}
+
+pragma(inline, false)
 pure nothrow @nogc
 void gemv_reg (
     BetaType beta_type,
@@ -346,6 +341,22 @@ void gemv_reg (
     }
     while (!mri && mc >= mr);
 }
+
+mixin template prefix3()
+{
+    enum CA = isComplex!A && (isComplex!C || isComplex!B);
+    enum CB = isComplex!B && (isComplex!C || isComplex!A);
+    enum CC = isComplex!C;
+
+    enum PA = CA ? 2 : 1;
+    enum PB = CB ? 2 : 1;
+    enum PC = CC ? 2 : 1;
+
+    alias T = realType!C;
+    static assert(!isComplex!T);
+}
+
+enum msgWrongType = "result slice must be not qualified (const/immutable/shared)";
 
 enum BetaType
 {
@@ -463,7 +474,7 @@ pragma(inline, true)
 pure
 void prefetch_w(size_t M, size_t N, size_t rem = 1)(void* ptr, sizediff_t ld)
 {
-    version(PREFETCH)
+    version(GLAS_PREFETCH)
     {
         foreach (n; Iota!N)
         {
@@ -478,7 +489,7 @@ pragma(inline, true)
 pure
 void prefetch_r(size_t M, size_t N, size_t rem, size_t shift)(void* ptr, sizediff_t ld)
 {
-    version(PREFETCH)
+    version(GLAS_PREFETCH)
     {
         foreach (n; Iota!N)
         {

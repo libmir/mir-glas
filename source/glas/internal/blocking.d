@@ -1,23 +1,16 @@
+/++
+Copyright: Ilya Yaroshenko 2016-.
+License: $(HTTP boost.org/LICENSE_1_0.txt, Boost License 1.0).
+Authors: Ilya Yaroshenko
++/
 module glas.internal.blocking;
+pragma(LDC_no_moduleinfo);
 
-version(LDC)
-{
-    version(unittest) {} else
-    {
-        pragma(LDC_no_moduleinfo);
-    }
-}
-
-import core.sync.mutex;
 import std.meta;
 import std.traits;
 import glas.common;
 import glas.internal.config;
 import glas.precompiled.context;
-static import cpuid.unified;
-
-import ldc.attributes : fastmath;
-@fastmath:
 
 enum prefetchShift = 512;
 
@@ -82,7 +75,7 @@ BlockInfo!T blocking_triangular(size_t PA, size_t PB, T)(size_t m, size_t n)
     {
         sizediff_t x = l2 / T.sizeof - (main_nr * PA + PB * main_mr * 2);
         assert(x > 1);
-        import mir.internal.math : sqrt;
+        import ldc.intrinsics: sqrt = llvm_sqrt;
         x = cast(size_t) sqrt(double(x));
         assert(x > 1);
         x.normalizeChunkSize!main_nr(m);
