@@ -24,13 +24,6 @@ import glas.internal.config;
 
 version = GLAS_PREFETCH;
 
-static if (__VERSION__ < 2072)
-pragma(inline, true)
-@property T* ptr(size_t N, T)(Slice!(N, T*) slice)
-{
-    return &(slice.front.front());
-}
-
 pragma(LDC_no_typeinfo)
 struct SL3(A, B, C)
 {

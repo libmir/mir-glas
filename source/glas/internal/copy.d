@@ -17,6 +17,13 @@ import glas.common;
 
 @fastmath:
 
+static if (__VERSION__ < 2072)
+pragma(inline, true)
+@property T* ptr(size_t N, T)(Slice!(N, T*) slice)
+{
+    return &(slice.front.front());
+}
+
 alias PackKernel(F, T) =
     pure nothrow @nogc
     T* function(
@@ -298,7 +305,7 @@ void pack_a(C, T)(Slice!(2, const(C)*) sl, T* a, PackKernel!(C, T)* kernels, siz
     {
         while (sl.length >= mr)
         {
-            a = kernels[0](sl.length!1, sl.stride!1, sl.stride!0, &sl.front.front(), a);
+            a = kernels[0](sl.length!1, sl.stride!1, sl.stride!0, sl.ptr, a);
             sl.popFrontExactly(mr);
         }
         kernels++;
