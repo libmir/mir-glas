@@ -21,8 +21,8 @@ alias glas_gemm = glas_zgemm; ///
 
 alias glas_symm = glas_ssymm; ///
 alias glas_symm = glas_dsymm; ///
-alias glas_symm = glas_csymm; /// includes hemm
-alias glas_symm = glas_zsymm; /// includes hemm
+alias glas_symm = glas_csymm; ///
+alias glas_symm = glas_zsymm; ///
 
 alias gemm_ = sgemm_; ///
 alias gemm_ = dgemm_; ///

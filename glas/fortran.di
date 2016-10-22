@@ -3,7 +3,7 @@ module glas.fortran;
 public import glas.common;
 
 /++
-CGEMM  performs one of the matrix-matrix operations
+xGEMM  performs one of the matrix-matrix operations
 `C := alpha*op( A )*op( B ) + beta*C`,
 where  `op( X )` is one of
 `op( X ) = X`   or   `op( X ) = X**T`   or   `op( X ) = X**H`,
@@ -27,7 +27,7 @@ alias gemm_ = cgemm_;
 alias gemm_ = zgemm_;
 
 /++
-SSYMM  performs one of the matrix-matrix operations
+xSYMM  performs one of the matrix-matrix operations
     `C := alpha*A*B + beta*C`,
 or
     `C := alpha*B*A + beta*C`,
@@ -51,7 +51,7 @@ alias symm_ = csymm_;
 alias symm_ = zsymm_;
 
 /++
-SSYMM  performs one of the matrix-matrix operations
+xHEMM  performs one of the matrix-matrix operations
     `C := alpha*A*B + beta*C`,
 or
     `C := alpha*B*A + beta*C`,
