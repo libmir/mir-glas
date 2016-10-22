@@ -1,24 +1,22 @@
-module glas.precompiled.memory;
-
-version(LDC)
-{
-    version(unittest) {} else
-    {
-        pragma(LDC_no_moduleinfo);
-    }
-}
+/++
+Copyright: Andrei Alexandrescu 2013-.
+License: $(HTTP boost.org/LICENSE_1_0.txt, Boost License 1.0).
+Authors: $(HTTP erdani.com, Andrei Alexandrescu) Ilya Yaroshenko
++/
+module glas.internal.memory;
+pragma(LDC_no_moduleinfo);
 
 enum uint platformAlignment = double.alignof > real.alignof ? double.alignof : real.alignof;
 
+@nogc nothrow pragma(inline, true):
 
-@safe @nogc nothrow pure
+@safe pure
 package bool isGoodDynamicAlignment(uint x)
 {
     return (x & -x) > (x - 1) && x >= (void*).sizeof;
 }
 
 version (Posix)
-@nogc nothrow
 private extern(C) int posix_memalign(void**, size_t, size_t);
 
 version (Windows)
@@ -35,14 +33,14 @@ version (Windows)
             void* basePtr;
             size_t size;
 
-            @nogc nothrow
+            @nogc nothrow pragma(inline, true)
             static AlignInfo* opCall(void* ptr)
             {
                 return cast(AlignInfo*) (ptr - AlignInfo.sizeof);
             }
         }
 
-        @nogc nothrow
+       
         private void* _aligned_malloc(size_t size, size_t alignment)
         {
             import core.stdc.stdlib : malloc;
@@ -64,7 +62,7 @@ version (Windows)
             return alignedPtr;
         }
 
-        @nogc nothrow
+       
         private void* _aligned_realloc(void* ptr, size_t size, size_t alignment)
         {
             import core.stdc.stdlib : free;
@@ -91,7 +89,7 @@ version (Windows)
             return alignedPtr;
         }
 
-        @nogc nothrow
+       
         private void _aligned_free(void *ptr)
         {
             import core.stdc.stdlib : free;
@@ -104,110 +102,107 @@ version (Windows)
     // DMD Win 64 bit, uses microsoft standard C library which implements them
     else
     {
-        @nogc nothrow private extern(C) void* _aligned_malloc(size_t, size_t);
-        @nogc nothrow private extern(C) void _aligned_free(void *memblock);
-        @nogc nothrow private extern(C) void* _aligned_realloc(void *, size_t, size_t);
+     private extern(C) void* _aligned_realloc(void *, size_t, size_t);
     }
 }
 
-    /**
-    The default alignment is $(D platformAlignment).
-    */
-    enum uint alignment = platformAlignment;
+/**
+The default alignment is $(D platformAlignment).
+*/
+enum uint alignment = platformAlignment;
 
-    /**
-    Forwards to $(D alignedAllocate(bytes, platformAlignment)).
-    */
-    @trusted @nogc nothrow
-    void[] allocate(size_t bytes)
+/**
+Forwards to $(D alignedAllocate(bytes, platformAlignment)).
+*/
+@trusted
+void[] allocate(size_t bytes)
+{
+    if (!bytes) return null;
+    return alignedAllocate(bytes, alignment);
+}
+
+/**
+Uses $(HTTP man7.org/linux/man-pages/man3/posix_memalign.3.html,
+$(D posix_memalign)) on Posix and
+$(HTTP msdn.microsoft.com/en-us/library/8z34s9c6(v=vs.80).aspx,
+$(D __aligned_malloc)) on Windows.
+*/
+version(Posix)
+@trusted
+void[] alignedAllocate(size_t bytes, uint a)
+{
+    import core.stdc.errno : ENOMEM, EINVAL;
+    assert(a.isGoodDynamicAlignment);
+    void* result;
+    auto code = posix_memalign(&result, a, bytes);
+    if (code == ENOMEM)
+        return null;
+
+    else if (code == EINVAL)
     {
-        if (!bytes) return null;
-        return alignedAllocate(bytes, alignment);
+        assert(0, "AlignedMallocator.alignment is not a power of two "
+            ~"multiple of (void*).sizeof, according to posix_memalign!");
     }
+    else if (code != 0)
+        assert (0, "posix_memalign returned an unknown code!");
 
-    /**
-    Uses $(HTTP man7.org/linux/man-pages/man3/posix_memalign.3.html,
-    $(D posix_memalign)) on Posix and
-    $(HTTP msdn.microsoft.com/en-us/library/8z34s9c6(v=vs.80).aspx,
-    $(D __aligned_malloc)) on Windows.
-    */
-    version(Posix)
-    @trusted @nogc nothrow
-    void[] alignedAllocate(size_t bytes, uint a)
+    else
+        return result[0 .. bytes];
+}
+else version(Windows)
+@trusted
+void[] alignedAllocate(size_t bytes, uint a)
+{
+    auto result = _aligned_malloc(bytes, a);
+    return result ? result[0 .. bytes] : null;
+}
+else static assert(0);
+
+/**
+Calls $(D free(b.ptr)) on Posix and
+$(HTTP msdn.microsoft.com/en-US/library/17b5h8td(v=vs.80).aspx,
+$(D __aligned_free(b.ptr))) on Windows.
+*/
+version (Posix)
+@system
+bool deallocate(void[] b)
+{
+    import core.stdc.stdlib : free;
+    free(b.ptr);
+    return true;
+}
+else version (Windows)
+@system
+bool deallocate(void[] b)
+{
+    _aligned_free(b.ptr);
+    return true;
+}
+else static assert(0);
+
+/**
+On Posix, uses $(D alignedAllocate) and copies data around because there is
+no realloc for aligned memory. On Windows, calls
+$(HTTP msdn.microsoft.com/en-US/library/y69db7sx(v=vs.80).aspx,
+$(D __aligned_realloc(b.ptr, newSize, a))).
+*/
+version (Windows)
+@system
+bool alignedReallocate(ref void[] b, size_t s, uint a)
+{
+    if (!s)
     {
-        import core.stdc.errno : ENOMEM, EINVAL;
-        assert(a.isGoodDynamicAlignment);
-        void* result;
-        auto code = posix_memalign(&result, a, bytes);
-        if (code == ENOMEM)
-            return null;
-
-        else if (code == EINVAL)
-        {
-            assert(0, "AlignedMallocator.alignment is not a power of two "
-                ~"multiple of (void*).sizeof, according to posix_memalign!");
-        }
-        else if (code != 0)
-            assert (0, "posix_memalign returned an unknown code!");
-
-        else
-            return result[0 .. bytes];
-    }
-    else version(Windows)
-    @trusted @nogc nothrow
-    void[] alignedAllocate(size_t bytes, uint a)
-    {
-        auto result = _aligned_malloc(bytes, a);
-        return result ? result[0 .. bytes] : null;
-    }
-    else static assert(0);
-
-    /**
-    Calls $(D free(b.ptr)) on Posix and
-    $(HTTP msdn.microsoft.com/en-US/library/17b5h8td(v=vs.80).aspx,
-    $(D __aligned_free(b.ptr))) on Windows.
-    */
-    version (Posix)
-    @system @nogc nothrow
-    bool deallocate(void[] b)
-    {
-        import core.stdc.stdlib : free;
-        free(b.ptr);
+        deallocate(b);
+        b = null;
         return true;
     }
-    else version (Windows)
-    @system @nogc nothrow
-    bool deallocate(void[] b)
-    {
-        _aligned_free(b.ptr);
-        return true;
-    }
-    else static assert(0);
-
-    /**
-    On Posix, uses $(D alignedAllocate) and copies data around because there is
-    no realloc for aligned memory. On Windows, calls
-    $(HTTP msdn.microsoft.com/en-US/library/y69db7sx(v=vs.80).aspx,
-    $(D __aligned_realloc(b.ptr, newSize, a))).
-    */
-    version (Windows)
-    @system @nogc nothrow
-    bool alignedReallocate(ref void[] b, size_t s, uint a)
-    {
-        if (!s)
-        {
-            deallocate(b);
-            b = null;
-            return true;
-        }
-        auto p = cast(ubyte*) _aligned_realloc(b.ptr, s, a);
-        if (!p) return false;
-        b = p[0 .. s];
-        return true;
-    }
+    auto p = cast(ubyte*) _aligned_realloc(b.ptr, s, a);
+    if (!p) return false;
+    b = p[0 .. s];
+    return true;
+}
 
 ///
-@nogc nothrow
 unittest
 {
     auto buffer = alignedAllocate(1024 * 1024 * 4, 128);
@@ -216,11 +211,9 @@ unittest
 }
 
 version(unittest) version(CRuntime_DigitalMars)
-@nogc nothrow
 size_t addr(ref void* ptr) { return cast(size_t) ptr; }
 
 version(CRuntime_DigitalMars)
-@nogc nothrow
 unittest
 {
     void* m;

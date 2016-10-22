@@ -3,11 +3,12 @@ $(SCRIPT inhibitQuickIndex = 1;)
 
 This is a submodule of $(MREF mir,glas).
 
-License: $(LINK2 http://boost.org/LICENSE_1_0.txt, Boost License 1.0).
-
+Copyright: Ilya Yaroshenko 2016-.
+License: $(HTTP boost.org/LICENSE_1_0.txt, Boost License 1.0).
 Authors: Ilya Yaroshenko
 +/
 module glas.common;
+pragma(LDC_no_moduleinfo);
 
 import ldc.attributes: fastmath;
 
@@ -70,7 +71,6 @@ Side swap()(Side type)
     return cast(Side) (type ^ 1);
 }
 
-
 ///
 enum Conjugated : bool
 {
@@ -79,19 +79,3 @@ enum Conjugated : bool
     ///
     yes,
 }
-
-package mixin template prefix3()
-{
-    enum CA = isComplex!A && (isComplex!C || isComplex!B);
-    enum CB = isComplex!B && (isComplex!C || isComplex!A);
-    enum CC = isComplex!C;
-
-    enum PA = CA ? 2 : 1;
-    enum PB = CB ? 2 : 1;
-    enum PC = CC ? 2 : 1;
-
-    alias T = realType!C;
-    static assert(!isComplex!T);
-}
-
-package enum msgWrongType = "result slice must be not qualified (const/immutable/shared)";

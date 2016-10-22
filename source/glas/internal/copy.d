@@ -1,22 +1,20 @@
+/++
+Copyright: Ilya Yaroshenko 2016-.
+License: $(HTTP boost.org/LICENSE_1_0.txt, Boost License 1.0).
+Authors: Ilya Yaroshenko
++/
 module glas.internal.copy;
-
-version(LDC)
-{
-    version(unittest) {} else
-    {
-        pragma(LDC_no_moduleinfo);
-    }
-}
+pragma(LDC_no_moduleinfo);
 
 import std.traits;
 import std.meta;
-import mir.ndslice.slice : Slice;
-import mir.internal.utility;
+import std.experimental.ndslice.slice : Slice;
+import ldc.attributes : fastmath, optStrategy;
+import ldc.intrinsics : llvm_expect;
+import glas.internal.utility;
 import glas.internal.config;
 import glas.common;
 
-import ldc.attributes : fastmath, optStrategy;
-import ldc.intrinsics : llvm_expect;
 @fastmath:
 
 alias PackKernel(F, T) =
@@ -300,7 +298,7 @@ void pack_a(C, T)(Slice!(2, const(C)*) sl, T* a, PackKernel!(C, T)* kernels, siz
     {
         while (sl.length >= mr)
         {
-            a = kernels[0](sl.length!1, sl.stride!1, sl.stride!0, sl.ptr, a);
+            a = kernels[0](sl.length!1, sl.stride!1, sl.stride!0, &sl.front.front(), a);
             sl.popFrontExactly(mr);
         }
         kernels++;

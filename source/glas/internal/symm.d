@@ -1,26 +1,26 @@
+/++
+Copyright: Ilya Yaroshenko 2016-.
+License: $(HTTP boost.org/LICENSE_1_0.txt, Boost License 1.0).
+Authors: Ilya Yaroshenko
++/
 module glas.internal.symm;
-
-version(LDC)
-{
-    version(unittest) {} else
-    {
-        pragma(LDC_no_moduleinfo);
-    }
-}
+pragma(LDC_no_moduleinfo);
 
 import std.traits;
 import std.meta;
-
-public import glas.common;
-import mir.ndslice.slice : Slice;
-import mir.internal.utility;
-import glas.internal.config;
-import glas.internal.blocking;
-import glas.internal.copy;
-import glas.internal.gemm;
+import std.experimental.ndslice.slice : Slice;
 
 import ldc.attributes;
 import ldc.intrinsics;
+
+import glas.common;
+import glas.internal.utility;
+import glas.internal.blocking;
+import glas.internal.copy;
+import glas.internal.config;
+import glas.internal.gemm;
+
+
 @fastmath:
 
 pragma(inline, false)
@@ -45,10 +45,10 @@ void symm_impl(A, B, C)
         || csl.stride!1 == -1, "constraint: csl.stride!0 or csl.stride!1 must be equal to +/-1");
 
     mixin prefix3;
-    import mir.ndslice.iteration: reversed, transposed;
+    import std.experimental.ndslice.iteration: reversed, transposed;
     mixin RegisterConfig!(PA, PB, PC, T);
     //#########################################################
-    if (llvm_expect(csl.anyEmpty, false))
+    if (llvm_expect(csl.empty!0 || csl.empty!1, false))
         return;
     if (llvm_expect(csl.stride!0 < 0, false))
     {

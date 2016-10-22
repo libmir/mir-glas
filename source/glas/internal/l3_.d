@@ -1,49 +1,101 @@
-module glas.precompiled.l3_;
+/++
+Copyright: Ilya Yaroshenko 2016-.
+License: $(HTTP boost.org/LICENSE_1_0.txt, Boost License 1.0).
+Authors: Ilya Yaroshenko
++/
+module glas.internal.l3_;
 
-version(LDC)
-{
-    version(unittest) {} else
-    {
-        pragma(LDC_no_moduleinfo);
-    }
-}
+pragma(LDC_no_moduleinfo);
 
-import glas.precompiled.utility;
-import mir.ndslice.slice: Slice;
-import glas.common;
-import ldc.attributes: fastmath;
+import std.experimental.ndslice.slice: Slice;
 import ldc.intrinsics: llvm_expect;
-import glas.precompiled.utility : integer;
+import glas.common;
+import glas.internal.utility;
+import glas.precompiled.utility;
 
-package enum L3(string p, string T) =
+/++
+Performs general matrix-matrix multiplication.
+
+Pseudo_code: `C := alpha A × B + beta C`.
+
+Params:
+    alpha = scalar
+    asl = `m ⨉ k` matrix
+    bsl = `k ⨉ n` matrix
+    beta = scalar. When  `beta`  is supplied as zero then the matrix `csl` need not be set on input.
+    csl = `m ⨉ n` matrix with one stride equal to `±1`.
+    conja = specifies if the matrix `asl` stores conjugated elements.
+    conjb = specifies if the matrix `bsl` stores conjugated elements.
+
+Note:
+    GLAS does not require transposition parameters.
+    Use $(NDSLICEREF iteration, transposed)
+    to perform zero cost `Slice` transposition.
+
+BLAS: SGEMM, DGEMM, CGEMM, ZGEMM
+
+See_also: $(SUBREF common, Conjugated).
++/
+
+/++
+Performs symmetric or hermitian matrix-matrix multiplication.
+
+Pseudo_code: `C := alpha A × B + beta C` or `C := alpha B × A + beta C`,
+    where  `alpha` and `beta` are scalars, `A` is a symmetric or hermitian matrix and `B` and
+    `C` are `m × n` matrices.
+
+Params:
+    side = specifies whether the symmetric matrix A
+           appears on the  left or right  in the  operation.
+    uplo = specifies  whether  the  upper  or  lower triangular
+           part of the symmetric matrix A is to be referenced.
+           When `uplo` equals to `Uplo.upper`, the upper triangular
+           part of the matrix `asl`  must contain the upper triangular part
+           of the symmetric / hermitian matrix A and the strictly lower triangular
+           part of `asl` is not referenced, and when `uplo` equals to `Uplo.lower`,
+           the lower triangular part of the matrix `asl`
+           must contain the lower triangular part of the symmetric / hermitian
+           matrix A and the strictly upper triangular part of `asl` is not
+           referenced.
+    alpha = scalar
+    asl = `k ⨉ k` matrix, where `k` is `m`  when  `side` equals to 'Side.left'
+           and is `n` otherwise.
+    bsl = `m ⨉ n` matrix
+    beta = scalar. When  `beta`  is supplied as zero then the matrix `csl` need not be set on input.
+    csl = `m ⨉ n` matrix with one stride equals to `±1`.
+    conja = specifies whether the matrix A is symmetric (`Conjugated.no`) or hermitian (`Conjugated.yes`).
+    conjb = specifies if the matrix `bsl` stores conjugated elements.
+
+Note:
+    GLAS does not require transposition parameters.
+    Use $(NDSLICEREF iteration, transposed)
+    to perform zero cost `Slice` transposition.
+
+BLAS: SSYMM, DSYMM, CSYMM, ZSYMM, SHEMM, DHEMM, CHEMM, ZHEMM
+
+See_also: $(SUBREF common, Conjugated), $(SUBREF common, Side), $(SUBREF common, Uplo).
++/
+package(glas) enum L3(Type) =
 q{
-    version(LDC)
-    {
-        version(unittest) {} else
-        {
-            pragma(LDC_no_moduleinfo);
-        }
-    }
+    pragma(LDC_no_moduleinfo);
 
-    import glas.common;
-    import mir.internal.utility: isComplex;
-    import mir.ndslice.slice: Slice;
-    import mir.ndslice.iteration: transposed;
-    import ldc.attributes: fastmath;
+    import std.experimental.ndslice.slice: Slice;
     import ldc.intrinsics: llvm_expect;
+    import glas.common;
+    import glas.internal.utility;
     import glas.precompiled.utility;
 
-    private alias T = } ~ T ~ q{;
+    private alias T = } ~ Type.stringof ~ q{;
 
-    export extern(C) @system nothrow @nogc @fastmath pragma(inline, false):
+    export extern(C) @system nothrow @nogc pragma(inline, false):
 
-    void glas_} ~ p ~ q{gemm
+    void glas_} ~ prefix!Type ~ q{gemm
         (
             T alpha,
-                Slice!(2, const(T)*) asl,
-                Slice!(2, const(T)*) bsl,
+                ref Slice!(2, const(T)*) asl,
+                ref Slice!(2, const(T)*) bsl,
             T beta,
-                Slice!(2,        T*) csl,
+                ref Slice!(2,        T*) csl,
             Conjugated conja = Conjugated.no,
             Conjugated conjb = Conjugated.no,
         )
@@ -58,15 +110,15 @@ q{
         gemm_impl(arg, conja, conjb);
     }
 
-    void glas_} ~ p ~ q{symm
+    void glas_} ~ prefix!Type ~ q{symm
         (
             Side side,
             Uplo uplo,
             T alpha,
-                Slice!(2, const(T)*) asl,
-                Slice!(2, const(T)*) bsl,
+                ref Slice!(2, const(T)*) asl,
+                ref Slice!(2, const(T)*) bsl,
             T beta,
-                Slice!(2,        T*) csl,
+                ref Slice!(2,        T*) csl,
             Conjugated conja = Conjugated.no,
             Conjugated conjb = Conjugated.no,
         )
@@ -82,7 +134,7 @@ q{
         symm_impl(arg, side, uplo, conja, conjb);
     }
 
-    int } ~ p ~ q{gemm_(
+    int } ~ prefix!Type ~ q{gemm_(
         ref const char transa,
         ref const char transb,
         ref const integer m,
@@ -137,20 +189,29 @@ q{
                 conja = conjb = Conjugated.no;
             import glas.internal.gemm: gemm_impl, SL3;
             SL3!(T, T, T) arg = void;
-            arg.asl = Slice!(2, const(T)*)([m, k], nota ? [1, lda] : [lda, 1], a);
-            arg.bsl = Slice!(2, const(T)*)([k, n], notb ? [1, ldb] : [ldb, 1], b);
-            arg.csl = Slice!(2,       T *)([m, n],        [1, ldc],            c);
+            static if (__VERSION__ < 2072 || true)
+            {
+                arg.asl = _toSlice!(2, const(T)*)([m, k], nota ? [1, lda] : [lda, 1], a);
+                arg.bsl = _toSlice!(2, const(T)*)([k, n], notb ? [1, ldb] : [ldb, 1], b);
+                arg.csl = _toSlice!(2,       T *)([m, n],        [1, ldc],            c);
+            }
+            else
+            {
+                arg.asl = Slice!(2, const(T)*)([m, k], nota ? [1, lda] : [lda, 1], a);
+                arg.bsl = Slice!(2, const(T)*)([k, n], notb ? [1, ldb] : [ldb, 1], b);
+                arg.csl = Slice!(2,       T *)([m, n],        [1, ldc],            c);
+            }
             arg.alpha_beta[0] = alpha;
             arg.alpha_beta[1] = beta;
             gemm_impl(arg, conja, conjb);
             return 0;
         }
         enum name = prefix!T ~ "GEMM";
-        xerbla_(name.ptr, &info);
+        xerbla_(name.ptr, info);
         return 0;
     }
 
-    int } ~ p ~ q{symm_(
+    int } ~ prefix!Type ~ q{symm_(
         ref const char side,
         ref const char uplo,
         ref const integer m,
@@ -169,7 +230,7 @@ q{
     }
 
     static if (isComplex!T)
-    int } ~ p ~ q{hemm_(
+    int } ~ prefix!Type ~ q{hemm_(
         ref const char side,
         ref const char uplo,
         ref const integer m,
@@ -190,19 +251,19 @@ q{
 
 
 pragma(inline, true)
-package auto toUpper()(dchar c)
+package(glas) auto toUpper()(dchar c)
 {
     return dchar(c & 0b1101_1111);
 }
 
 pragma(inline, true)
-package auto max()(integer a, integer b)
+package(glas) auto max()(integer a, integer b)
 {
     return a > b ? a : b;
 }
 
 @system nothrow @nogc pragma(inline, true)
-package int symm_impl_(T)(
+package(glas) int symm_impl_(T)(
     ref const char side,
     ref const char uplo,
     ref const integer m,
@@ -252,9 +313,18 @@ package int symm_impl_(T)(
         import glas.internal.gemm: SL3;
         import glas.internal.symm: symm_impl;
         SL3!(T, T, T) arg = void;
-        arg.asl = Slice!(2, const(T)*)([k, k], [1, lda], a);
-        arg.bsl = Slice!(2, const(T)*)([m, n], [1, ldb], b);
-        arg.csl = Slice!(2,       T *)([m, n], [1, ldc], c);
+        static if (__VERSION__ < 2072 || true)
+        {
+            arg.asl = _toSlice!(2, const(T)*)([k, k], [1, lda], a);
+            arg.bsl = _toSlice!(2, const(T)*)([m, n], [1, ldb], b);
+            arg.csl = _toSlice!(2,       T *)([m, n], [1, ldc], c);
+        }
+        else
+        {
+            arg.asl = Slice!(2, const(T)*)([k, k], [1, lda], a);
+            arg.bsl = Slice!(2, const(T)*)([m, n], [1, ldb], b);
+            arg.csl = Slice!(2,       T *)([m, n], [1, ldc], c);
+        }
         arg.alpha_beta[0] = alpha;
         arg.alpha_beta[1] = beta;
         symm_impl(arg, s, u, conj, Conjugated.no);
@@ -262,9 +332,29 @@ package int symm_impl_(T)(
     }
     enum nameSYMM = prefix!T ~ "SYMM";
     enum nameHEMM = prefix!T ~ "HEMM";
-    //printf("info = %i\n", info);
-    xerbla_(conj ? nameHEMM.ptr : nameSYMM.ptr, &info);
+    xerbla_(conj ? nameHEMM.ptr : nameSYMM.ptr, info);
     return 0;
+}
+
+static if (__VERSION__ < 2072 || true)
+pragma(inline, true)
+auto _toSlice(size_t N, T)(size_t[N] lengths, sizediff_t[N] strides, T ptr)
+{
+    static union U
+    {
+        Slice!(N, T) slice;
+        static struct
+        {
+            size_t[N] lengths;
+            sizediff_t[N] strides;
+            T ptr;
+        }
+    }
+    U ret = void;
+    ret.lengths = lengths;
+    ret.strides = strides;
+    ret.ptr = ptr;
+    return ret.slice;
 }
 
 template prefix(T)

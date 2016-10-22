@@ -1,18 +1,16 @@
+/++
+Copyright: Ilya Yaroshenko 2016-.
+License: $(HTTP boost.org/LICENSE_1_0.txt, Boost License 1.0).
+Authors: Ilya Yaroshenko
++/
 module glas.internal.config;
-
-version(LDC)
-{
-    version(unittest) {} else
-    {
-        pragma(LDC_no_moduleinfo);
-    }
-}
+pragma(LDC_no_moduleinfo);
 
 import std.traits;
 import std.meta;
-import mir.internal.utility;
+import glas.internal.utility: isComplex;
 
-template RegisterConfig(size_t PS, size_t PB, size_t PR, T)
+mixin template RegisterConfig(size_t PS, size_t PB, size_t PR, T)
     if (is(Unqual!T == T) && !isComplex!T)
 {
     static if (isFloatingPoint!T)

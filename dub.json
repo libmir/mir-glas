@@ -1,15 +1,24 @@
 {
     "name": "mir-glas",
-    "authors": [
-        "Iaroshenko Ilia"
-    ],
-    "dependencies": {
-        "mir": "~>0.20.2",
-        "mir-cpuid": "~>0.4.1"
+    "buildTypes": {
+        "release-native": {
+            "buildOptions": ["noBoundsCheck", "releaseMode", "optimize", "inline"],
+            "dflags-ldc": ["-mcpu=native", "-linkonce-templates"]
+        },
+        "release": {
+            "buildOptions": ["noBoundsCheck", "releaseMode", "optimize", "inline"],
+            "dflags-ldc": ["-linkonce-templates"]
+        },
     },
-    "description": "Generic Linear Algebra Subroutines",
-    "copyright": "Copyright © 2016, Ilya Yaroshenko",
-    "license": "BSL-1.0",
-    "importPaths": ["source", "precompiled"],
-    "sourcePaths": ["source", "precompiled"]
+    "configurations": [
+        {
+            "name": "static",
+            "targetType": "staticLibrary",
+        },
+        {
+            "name": "dynamic",
+            "targetType": "dynamicLibrary",
+        }
+    ],
+    "sourcePaths": ["source/glas/precompiled"]
 }
