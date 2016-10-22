@@ -3,6 +3,7 @@ pragma(LDC_no_moduleinfo);
 
 import std.traits: Unqual;
 import std.meta: AliasSeq;
+import glas.common;
 
 template isComplex(C)
 {

@@ -1,7 +1,7 @@
 /++
 $(SCRIPT inhibitQuickIndex = 1;)
 
-This is a submodule of $(MREF mir,glas).
+This is a submodule of $(MREF glas).
 
 Copyright: Ilya Yaroshenko 2016-.
 License: $(HTTP boost.org/LICENSE_1_0.txt, Boost License 1.0).
@@ -12,6 +12,8 @@ pragma(LDC_no_moduleinfo);
 
 import ldc.attributes: fastmath;
 
+///
+alias FortranInt = int;
 ///
 enum ulong ConjA = 0x1;
 ///

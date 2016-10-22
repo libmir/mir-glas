@@ -1,4 +1,3 @@
-
 /++
 Copyright: Ilya Yaroshenko 2016-.
 License: $(HTTP boost.org/LICENSE_1_0.txt, Boost License 1.0).
@@ -7,9 +6,8 @@ Authors: Ilya Yaroshenko
 module glas.precompiled.utility;
 pragma(LDC_no_moduleinfo);
 
+import glas.common;
 import ldc.attributes: weak;
-
-alias integer = int;
 
 export extern(C) @system nothrow @nogc pragma(inline, false):
 
@@ -33,7 +31,7 @@ export extern(C) @system nothrow @nogc pragma(inline, false):
 /* INFO (input) INTEGER */
 /* The position of the invalid parameter in the parameter list */
 /* of the calling routine. */
-@weak int xerbla_(in char* srname, ref integer info)
+@weak int xerbla_(in char* srname, ref FortranInt info)
 {
     import core.stdc.stdio;
     printf("** On entry to %6s, parameter number %2i had an illegal value\n", srname, info);

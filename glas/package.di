@@ -3,7 +3,9 @@ Copyright: Ilya Yaroshenko 2016-.
 License: $(HTTP boost.org/LICENSE_1_0.txt, Boost License 1.0).
 Authors: Ilya Yaroshenko
 +/
-module glas.precompiled.l3;
+module glas;
+
+public module glas.common;
 
 pragma(LDC_no_moduleinfo);
 

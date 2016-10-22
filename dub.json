@@ -1,5 +1,7 @@
 {
     "name": "mir-glas",
+    "authors": ["Ilya Yaroshenko"],
+    "copyright": "Copyright © 2016-, Ilya Yaroshenko",
     "buildTypes": {
         "release-native": {
             "buildOptions": ["noBoundsCheck", "releaseMode", "optimize", "inline"],
@@ -12,13 +14,19 @@
     },
     "configurations": [
         {
+            "name": "header",
+            "targetType": "sourceLibrary",
+            "importFiles": ["glas/common.di", "glas/package.di", "glas/fortran.di"],
+        },
+        {
             "name": "static",
             "targetType": "staticLibrary",
+            "sourcePaths": ["glas/precompiled"]
         },
         {
             "name": "dynamic",
             "targetType": "dynamicLibrary",
+            "sourcePaths": ["glas/precompiled"]
         }
     ],
-    "sourcePaths": ["source/glas/precompiled"]
 }

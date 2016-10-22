@@ -135,17 +135,17 @@ q{
     int } ~ prefix!Type ~ q{gemm_(
         ref const char transa,
         ref const char transb,
-        ref const integer m,
-        ref const integer  n,
-        ref const integer k,
+        ref const FortranInt m,
+        ref const FortranInt  n,
+        ref const FortranInt k,
         ref const T alpha,
             const(T)* a,
-            ref const integer lda,
+            ref const FortranInt lda,
             const(T)* b,
-            ref const integer ldb,
+            ref const FortranInt ldb,
         ref const T beta,
             T* c,
-            ref const integer ldc,
+            ref const FortranInt ldc,
         )
     {
         auto  tra = toUpper(transa);
@@ -156,7 +156,7 @@ q{
         auto conja = tra == 'C';
         auto conjb = trb == 'C';
 
-        integer info = void;
+        FortranInt info = void;
         
         if (llvm_expect(!nota && !conja && tra != 'T', false))
             info = 1;
@@ -218,16 +218,16 @@ q{
     int } ~ prefix!Type ~ q{symm_(
         ref const char side,
         ref const char uplo,
-        ref const integer m,
-        ref const integer  n,
+        ref const FortranInt m,
+        ref const FortranInt  n,
         ref const T alpha,
             const(T)* a,
-            ref const integer lda,
+            ref const FortranInt lda,
             const(T)* b,
-            ref const integer ldb,
+            ref const FortranInt ldb,
         ref const T beta,
             T* c,
-            ref const integer ldc,
+            ref const FortranInt ldc,
         )
     {
         return symm_impl_(side, uplo, m, n, alpha, a, lda, b, ldb, beta, c, ldc, false);
@@ -237,16 +237,16 @@ q{
     int } ~ prefix!Type ~ q{hemm_(
         ref const char side,
         ref const char uplo,
-        ref const integer m,
-        ref const integer  n,
+        ref const FortranInt m,
+        ref const FortranInt  n,
         ref const T alpha,
             const(T)* a,
-            ref const integer lda,
+            ref const FortranInt lda,
             const(T)* b,
-            ref const integer ldb,
+            ref const FortranInt ldb,
         ref const T beta,
             T* c,
-            ref const integer ldc,
+            ref const FortranInt ldc,
         )
     {
         return symm_impl_(side, uplo, m, n, alpha, a, lda, b, ldb, beta, c, ldc, true);
@@ -261,7 +261,7 @@ package(glas) auto toUpper()(dchar c)
 }
 
 pragma(inline, true)
-package(glas) auto max()(integer a, integer b)
+package(glas) auto max()(FortranInt a, FortranInt b)
 {
     return a > b ? a : b;
 }
@@ -270,16 +270,16 @@ package(glas) auto max()(integer a, integer b)
 package(glas) int symm_impl_(T)(
     ref const char side,
     ref const char uplo,
-    ref const integer m,
-    ref const integer  n,
+    ref const FortranInt m,
+    ref const FortranInt  n,
     ref const T alpha,
         const(T)* a,
-        ref const integer lda,
+        ref const FortranInt lda,
         const(T)* b,
-        ref const integer ldb,
+        ref const FortranInt ldb,
     ref const T beta,
         T* c,
-        ref const integer ldc,
+        ref const FortranInt ldc,
     bool conj,
     )
 {
@@ -290,7 +290,7 @@ package(glas) int symm_impl_(T)(
 
     auto k = s ? n : m;
 
-    integer info = 0;
+    FortranInt info = 0;
 
     if (llvm_expect(s && _side != 'R', false))
         info = 1;
