@@ -185,7 +185,7 @@ q{
         {
             import glas.internal.gemm: gemm_impl, SL3;
             SL3!(T, T, T) arg = void;
-            static if (__VERSION__ < 2072 || true)
+            static if (__VERSION__ < 2072)
             {
                 arg.asl = _toSlice!(2, const(T)*)([m, k], nota ? [1, lda] : [lda, 1], a);
                 arg.bsl = _toSlice!(2, const(T)*)([k, n], notb ? [1, ldb] : [ldb, 1], b);
@@ -317,7 +317,7 @@ package(glas) int symm_impl_(T)(
         import glas.internal.gemm: SL3;
         import glas.internal.symm: symm_impl;
         SL3!(T, T, T) arg = void;
-        static if (__VERSION__ < 2072 || true)
+        static if (__VERSION__ < 2072)
         {
             arg.asl = _toSlice!(2, const(T)*)([k, k], [1, lda], a);
             arg.bsl = _toSlice!(2, const(T)*)([m, n], [1, ldb], b);
@@ -350,7 +350,7 @@ package(glas) int symm_impl_(T)(
     return 0;
 }
 
-static if (__VERSION__ < 2072 || true)
+static if (__VERSION__ < 2072)
 pragma(inline, true)
 auto _toSlice(size_t N, T)(size_t[N] lengths, sizediff_t[N] strides, T ptr)
 {
