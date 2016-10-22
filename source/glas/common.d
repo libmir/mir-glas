@@ -12,70 +12,15 @@ pragma(LDC_no_moduleinfo);
 
 import ldc.attributes: fastmath;
 
-@fastmath:
-
-/++
-Uplo specifies whether a matrix is an upper or lower triangular matrix.
-+/
-enum Uplo : bool
-{
-    /// upper triangular matrix.
-    lower,
-    /// lower triangular matrix
-    upper,
-}
-
-/++
-Convenient function to invert $(LREF Uplo) flag.
-+/
-Uplo swap()(Uplo type)
-{
-    return cast(Uplo) (type ^ 1);
-}
-
 ///
-unittest
-{
-    assert(swap(Uplo.upper) == Uplo.lower);
-    assert(swap(Uplo.lower) == Uplo.upper);
-}
-
-/++
-Diag specifies whether or not a matrix is unitriangular.
-+/
-enum Diag : bool
-{
-    /// a matrix assumed to be unit triangular
-    unit,
-    /// a matrix not assumed to be unit triangular
-    nounit,
-}
-
-/++
-On entry, `Side`  specifies whether  the  symmetric matrix  A
-appears on the  left or right.
-+/
-enum Side : bool
-{
-    ///
-    left,
-    ///
-    right,
-}
-
-/++
-Convenient function to invert $(LREF Side) flag.
-+/
-Side swap()(Side type)
-{
-    return cast(Side) (type ^ 1);
-}
-
+enum ulong ConjA = 0x1;
 ///
-enum Conjugated : bool
-{
-    ///
-    no,
-    ///
-    yes,
-}
+enum ulong ConjB = 0x2;
+///
+enum ulong Lower = 0x0;
+///
+enum ulong Left = 0x0;
+///
+enum ulong Upper = 0x0100;
+///
+enum ulong Right = 0x0200;

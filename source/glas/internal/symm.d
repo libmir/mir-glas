@@ -29,10 +29,6 @@ nothrow @nogc
 void symm_impl(A, B, C)
 (
     ref SL3!(A, B, C) abc,
-    Side side,
-    Uplo uplo,
-    Conjugated conja,
-    Conjugated conjb,
 )
 {with(abc){
     assert(asl.length!0 == asl.length!1, "constraint: asl.length!0 == asl.length!1");
@@ -65,14 +61,13 @@ void symm_impl(A, B, C)
         asl = asl.transposed;
         bsl = bsl.transposed;
         csl = csl.transposed;
-        uplo = swap(uplo);
-        side = swap(side);
+        settings ^= Upper | Right;
     }
     static if (PA == 2)
     {
-        int hem = conja;
+        int hem = settings & ConjA;
     }
-    if (uplo ^ side)
+    if (!(settings & Upper) != !(settings & Right))
     {
         asl = asl.transposed;
         static if (PA == 2)
@@ -112,7 +107,7 @@ void symm_impl(A, B, C)
         }
     }
     //#########################################################
-    if (!side)
+    if (!(settings & Right))
     {
         //#########################################################
         PackKernel!(B, T)[PA][mr_chain.length] pack_a_kernels = void;
@@ -121,7 +116,7 @@ void symm_impl(A, B, C)
 
         static if (PB == 2)
         {
-            if (conjb)
+            if (settings & ConjB)
             foreach (nri, nr; nr_chain)
                 pack_b_kernels[nri] = &pack_b_nano!(nr, PB, 1, B, T);
             else
@@ -252,7 +247,7 @@ void symm_impl(A, B, C)
         PackKernelTri!(A, T) pack_b_tri_kernel = void;
         static if (PB == 2)
         {
-            if (conjb)
+            if (settings & ConjB)
             foreach (mri, mr; mr_chain)
                 pack_a_kernels[mri] = &pack_a_nano!(mr, PB, 1, B, T);
             else

@@ -19,9 +19,15 @@ import glas.common;
 
 static if (__VERSION__ < 2072)
 pragma(inline, true)
-@property T* ptr(size_t N, T)(Slice!(N, T*) slice)
+@property T* ptr(T)(Slice!(2, T*) slice)
 {
     return &(slice.front.front());
+}
+
+pragma(inline, true)
+@property T[] toDense(T)(Slice!(1, T*) slice)
+{
+    return (&(slice.front()))[0 .. slice.length];
 }
 
 alias PackKernel(F, T) =
@@ -372,17 +378,17 @@ void pack_a_sym(size_t PA, F, T)(scope const(F)* ptr, sizediff_t str0, sizediff_
 }
 
 pragma(inline, false)
-void pack_b_triangular(Uplo uplo, bool inverseDiagonal, size_t PA, size_t PB, size_t PC, T, C)(Slice!(2, const(C)*) sl, T* b)
+void pack_b_triangular(bool upper, bool inverseDiagonal, size_t PA, size_t PB, size_t PC, T, C)(Slice!(2, const(C)*) sl, T* b)
 {
     assert(sl.length!0 == sl.length!1);
 
     mixin RegisterConfig!(PC, PA, PB, T);
-    static if (uplo == Uplo.lower)
+    static if (!upper)
         size_t length;
     foreach (nri, nr; nr_chain)
     if (sl.length >= nr) do
     {
-        static if (uplo == Uplo.lower)
+        static if (!upper)
             length += nr;
         else
             size_t length = sl.length;

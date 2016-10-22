@@ -31,6 +31,7 @@ struct SL3(A, B, C)
     Slice!(2, const(B)*) bsl = void;
     Slice!(2, C*) csl = void;
     C[2] alpha_beta = void;
+    ulong settings = void;
 }
 
 pragma(inline, false)
@@ -39,8 +40,6 @@ nothrow @nogc
 void gemm_impl(A, B, C)
 (
     ref SL3!(A, B, C) abc,
-    Conjugated conja,
-    Conjugated conjb,
 )
 {with(abc){
     assert(asl.length!1 == bsl.length!0, "constraint: asl.length!1 == bsl.length!0");
@@ -76,9 +75,7 @@ void gemm_impl(A, B, C)
             asl = bsl.transposed;
             bsl = tsl.transposed;
             csl = csl.transposed;
-            auto conjt = conja;
-            conja = conjb;
-            conjb = conjt;
+            settings ^= ConjA | ConjB;
         }
         else
         {
@@ -88,7 +85,8 @@ void gemm_impl(A, B, C)
             tr.csl = csl;
             tr.alpha_beta[0] = alpha_beta[0];
             tr.alpha_beta[1] = alpha_beta[1];
-            gemm_impl!(B, A, C)(tr, conjb, conja);
+            tr.settings = settings ^ (ConjA | ConjB);
+            gemm_impl!(B, A, C)(tr);
             return;
         }
     }
@@ -107,7 +105,7 @@ void gemm_impl(A, B, C)
 
     static if (PA == 2)
     {
-        if (conja)
+        if (settings & ConjA)
         foreach (mri, mr; mr_chain)
             pack_a_kernels[mri] = &pack_a_nano!(mr, PA, 1, A, T);
         else
@@ -121,7 +119,7 @@ void gemm_impl(A, B, C)
     }
     static if (PB == 2)
     {
-        if (conjb)
+        if (settings & ConjB)
         foreach (nri, nr; nr_chain)
             pack_b_kernels[nri] = &pack_b_nano!(nr, PB, 1, B, T);
         else
@@ -271,7 +269,7 @@ void gemm_fast_path(A, B, C)(ref SL3!(A, B, C) abc)
     if (alpha_beta[1] == 0)
     {
         do {
-            setZero(cast(T[])(csl.ptr[0..csl.length!1])); // memset
+            setZero(cast(T[])(csl.front!1.toDense)); // memset
             csl.popFront!1;
         }
         while (csl.length!1);
@@ -280,7 +278,7 @@ void gemm_fast_path(A, B, C)(ref SL3!(A, B, C) abc)
     if (alpha_beta[1] == 1)
         return;
     do {
-        scale(csl.ptr[0..csl.length!1], alpha_beta[1]);
+        scale(csl.front!1.toDense, alpha_beta[1]);
         csl.popFront!1;
     } 
     while (csl.length!1);

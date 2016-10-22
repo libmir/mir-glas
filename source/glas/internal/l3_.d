@@ -96,8 +96,7 @@ q{
                 ref Slice!(2, const(T)*) bsl,
             T beta,
                 ref Slice!(2,        T*) csl,
-            Conjugated conja = Conjugated.no,
-            Conjugated conjb = Conjugated.no,
+            ulong settings,
         )
     {
         import glas.internal.gemm: gemm_impl, SL3;
@@ -107,20 +106,18 @@ q{
         arg.csl = csl;
         arg.alpha_beta[0] = alpha;
         arg.alpha_beta[1] = beta;
-        gemm_impl(arg, conja, conjb);
+        arg.settings = settings;
+        gemm_impl(arg);
     }
 
     void glas_} ~ prefix!Type ~ q{symm
         (
-            Side side,
-            Uplo uplo,
             T alpha,
                 ref Slice!(2, const(T)*) asl,
                 ref Slice!(2, const(T)*) bsl,
             T beta,
                 ref Slice!(2,        T*) csl,
-            Conjugated conja = Conjugated.no,
-            Conjugated conjb = Conjugated.no,
+            ulong settings,
         )
     {
         import glas.internal.gemm: SL3;
@@ -131,7 +128,8 @@ q{
         arg.csl = csl;
         arg.alpha_beta[0] = alpha;
         arg.alpha_beta[1] = beta;
-        symm_impl(arg, side, uplo, conja, conjb);
+        arg.settings = settings;
+        symm_impl(arg);
     }
 
     int } ~ prefix!Type ~ q{gemm_(
@@ -155,8 +153,8 @@ q{
 
         auto nota = tra == 'N';
         auto notb = trb == 'N';
-        auto conja = cast(Conjugated) (tra == 'C');
-        auto conjb = cast(Conjugated) (trb == 'C');
+        auto conja = tra == 'C';
+        auto conjb = trb == 'C';
 
         integer info = void;
         
@@ -185,8 +183,6 @@ q{
             info = 13;
         else
         {
-            static if (!isComplex!T)
-                conja = conjb = Conjugated.no;
             import glas.internal.gemm: gemm_impl, SL3;
             SL3!(T, T, T) arg = void;
             static if (__VERSION__ < 2072 || true)
@@ -203,7 +199,15 @@ q{
             }
             arg.alpha_beta[0] = alpha;
             arg.alpha_beta[1] = beta;
-            gemm_impl(arg, conja, conjb);
+            arg.settings = 0;
+            static if (isComplex!T)
+            {
+                if (conja)
+                    arg.settings ^= ConjA;
+                if (conjb)
+                    arg.settings ^= ConjB;
+            }
+            gemm_impl(arg);
             return 0;
         }
         enum name = prefix!T ~ "GEMM";
@@ -226,7 +230,7 @@ q{
             ref const integer ldc,
         )
     {
-        return symm_impl_(side, uplo, m, n, alpha, a, lda, b, ldb, beta, c, ldc, Conjugated.no);
+        return symm_impl_(side, uplo, m, n, alpha, a, lda, b, ldb, beta, c, ldc, false);
     }
 
     static if (isComplex!T)
@@ -245,7 +249,7 @@ q{
             ref const integer ldc,
         )
     {
-        return symm_impl_(side, uplo, m, n, alpha, a, lda, b, ldb, beta, c, ldc, Conjugated.yes);
+        return symm_impl_(side, uplo, m, n, alpha, a, lda, b, ldb, beta, c, ldc, true);
     }
 };
 
@@ -276,22 +280,22 @@ package(glas) int symm_impl_(T)(
     ref const T beta,
         T* c,
         ref const integer ldc,
-    Conjugated conj,
+    bool conj,
     )
 {
     auto  _side = toUpper(side);
     auto  _uplo = toUpper(uplo);
-    auto s = _side == 'L' ? Side.left : Side.right;
-    auto u = _uplo == 'L' ? Uplo.lower : Uplo.upper;
+    auto s = _side != 'L';
+    auto u = _uplo != 'L';
 
-    auto k = s == Side.left ? m : n;
+    auto k = s ? n : m;
 
     integer info = 0;
 
-    if (llvm_expect(s != Side.left && _side != 'R', false))
+    if (llvm_expect(s && _side != 'R', false))
         info = 1;
     else
-    if (llvm_expect(u != Uplo.lower && _uplo != 'U', false))
+    if (llvm_expect(u && _uplo != 'U', false))
         info = 2;
     else
     if (llvm_expect(m < 0, false))
@@ -327,7 +331,17 @@ package(glas) int symm_impl_(T)(
         }
         arg.alpha_beta[0] = alpha;
         arg.alpha_beta[1] = beta;
-        symm_impl(arg, s, u, conj, Conjugated.no);
+        arg.settings = 0;
+        static if (isComplex!T)
+        {
+            if (conj)
+                arg.settings ^= ConjA;
+        }
+        if (u)
+            arg.settings ^= Upper;
+        if (s)
+            arg.settings ^= Right;
+        symm_impl(arg);
         return 0;
     }
     enum nameSYMM = prefix!T ~ "SYMM";
@@ -343,7 +357,7 @@ auto _toSlice(size_t N, T)(size_t[N] lengths, sizediff_t[N] strides, T ptr)
     static union U
     {
         Slice!(N, T) slice;
-        static struct
+        struct
         {
             size_t[N] lengths;
             sizediff_t[N] strides;

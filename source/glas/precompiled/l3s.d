@@ -5,4 +5,4 @@ Authors: Ilya Yaroshenko
 +/
 module glas.precompiled.l3s;
 import glas.internal.l3_;
-mixin(L3!(float));
+mixin(L3!float);
