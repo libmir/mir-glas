@@ -15,9 +15,7 @@ branches:
     - master
 script:
  - echo "$ARCH"
- - dub fetch mir-cpuid && dub build --arch "$ARCH" mir-cpuid
- - dub test --arch "$ARCH" --build=unittest-cov
- - dub test --arch "$ARCH" --build=unittest-release
+ - dub build --arch "$ARCH" -build-mode=singleFile --force --config=static --parallel --build=target-native
 after_success:
  - bash <(curl -s https://codecov.io/bash)
 

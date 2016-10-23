@@ -3,11 +3,11 @@
     "authors": ["Ilya Yaroshenko"],
     "copyright": "Copyright © 2016-, Ilya Yaroshenko",
     "buildTypes": {
-        "release-native": {
+        "target-native": {
             "buildOptions": ["noBoundsCheck", "releaseMode", "optimize", "inline"],
             "dflags-ldc": ["-mcpu=native", "-linkonce-templates"]
         },
-        "release": {
+        "target-default": {
             "buildOptions": ["noBoundsCheck", "releaseMode", "optimize", "inline"],
             "dflags-ldc": ["-linkonce-templates"]
         },
