@@ -17,13 +17,6 @@ import glas.common;
 
 @fastmath:
 
-static if (__VERSION__ < 2072)
-pragma(inline, true)
-@property T* ptr(T)(Slice!(2, T*) slice)
-{
-    return &(slice.front.front());
-}
-
 pragma(inline, true)
 @property T[] toDense(T)(Slice!(1, T*) slice)
 {
@@ -240,7 +233,7 @@ pragma(inline, true)
 void _storeUnaligned(V : __vector(T[N]), T, size_t N)(V value, T* to)
 {
     import ldc.simd;
-    return _storeUnaligned!V(value, to);
+    return storeUnaligned!V(value, to);
 }
 
 pragma(inline, false)
@@ -321,19 +314,16 @@ T* pack_a_nano(size_t n, size_t P, bool conj = false, F, T)(size_t length, sized
 
 
 pragma(inline, true)
-void pack_a(C, T)(Slice!(2, const(C)*) sl, T* a, PackKernel!(C, T)* kernels, size_t mr)
+void pack_a(size_t PA, size_t PB, size_t PC, C, T)(Slice!(2, const(C)*) sl, T* a, PackKernel!(C, T)* kernels)
 {
-    do
+    mixin RegisterConfig!(PA, PB, PC, T);
+    foreach (mri, mr; mr_chain)
+    if (sl.length >= mr) do
     {
-        while (sl.length >= mr)
-        {
-            a = kernels[0](sl.length!1, sl.stride!1, sl.stride!0, sl.ptr, a);
-            sl.popFrontExactly(mr);
-        }
-        kernels++;
-        mr /= 2;
+        a = kernels[mri](sl.length!1, sl.stride!1, sl.stride!0, sl.ptr, a);
+        sl.popFrontExactly(mr);
     }
-    while(mr);
+    while (!mri && sl.length >= mr);
     return;
 }
 

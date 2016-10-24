@@ -24,24 +24,19 @@ import glas.internal.config;
 
 version = GLAS_PREFETCH;
 
-pragma(LDC_no_typeinfo)
-struct SL3(A, B, C)
-{
-    Slice!(2, const(A)*) asl = void;
-    Slice!(2, const(B)*) bsl = void;
-    Slice!(2, C*) csl = void;
-    C[2] alpha_beta = void;
-    ulong settings = void;
-}
-
-pragma(inline, false)
-@optStrategy("optsize")
+pragma(inline, true)
+//@optStrategy("optsize")
 nothrow @nogc
 void gemm_impl(A, B, C)
 (
-    ref SL3!(A, B, C) abc,
+    C alpha,
+    Slice!(2, const(A)*) asl,
+    Slice!(2, const(B)*) bsl,
+    C beta,
+    Slice!(2, C*) csl,
+    ulong settings,
 )
-{with(abc){
+{
     assert(asl.length!1 == bsl.length!0, "constraint: asl.length!1 == bsl.length!0");
     assert(csl.length!0 == asl.length!0, "constraint: csl.length!0 == asl.length!0");
     assert(csl.length!1 == bsl.length!1, "constraint: csl.length!1 == bsl.length!1");
@@ -79,21 +74,14 @@ void gemm_impl(A, B, C)
         }
         else
         {
-            SL3!(B, A, C) tr = void;
-            tr.asl = bsl;
-            tr.bsl = asl;
-            tr.csl = csl;
-            tr.alpha_beta[0] = alpha_beta[0];
-            tr.alpha_beta[1] = alpha_beta[1];
-            tr.settings = settings ^ (ConjA | ConjB);
-            gemm_impl!(B, A, C)(tr);
+            gemm_impl!(B, A, C)(alpha, bsl, asl, beta, csl, settings ^ (ConjA | ConjB));
             return;
         }
     }
     assert(csl.stride!0 == 1);
-    if (llvm_expect(asl.empty!1 || alpha_beta[0] == 0, false))
+    if (llvm_expect(asl.empty!1 || alpha == 0, false))
     {
-        gemm_fast_path(abc);
+        gemm_fast_path(beta, csl.length!1, csl.stride!1, csl.length!0, csl.ptr);
         return;
     }
     //#########################################################
@@ -136,19 +124,20 @@ void gemm_impl(A, B, C)
         one_kernels[nri] = &gemv_reg!(BetaType.one, PA, PB, PC, nr, T);
     }
     kernels = one_kernels.ptr;
-    if (alpha_beta[1] == 0)
+    if (beta == 0)
     {
         foreach (nri, nr; nr_chain)
             beta_kernels[nri] = &gemv_reg!(BetaType.zero, PA, PB, PC, nr, T);
         kernels = beta_kernels.ptr;
     }
     else
-    if (alpha_beta[1] != 1)
+    if (beta != 1)
     {
         foreach (nri, nr; nr_chain)
             beta_kernels[nri] = &gemv_reg!(BetaType.beta, PA, PB, PC, nr, T);
         kernels = beta_kernels.ptr;
     }
+    C[2] alpha_beta = [alpha, beta];
     //#########################################################
     with(blocking!(PA, PB, PC, T)(asl.length!0, bsl.length!1, asl.length!1))
     {
@@ -170,7 +159,7 @@ void gemm_impl(A, B, C)
                 if (aslp.length!0 < mc)
                     mc = aslp.length!0;
                 ////////////////////////
-                pack_a!(A, T)(aslp[0 .. mc], a, pack_a_kernels.ptr, main_mr);
+                pack_a!(PA, PB, PC, A, T)(aslp[0 .. mc], a, pack_a_kernels.ptr);
                 //======================
                 gebp!(PA, PB, PC, T, B)(
                     mc,
@@ -187,7 +176,6 @@ void gemm_impl(A, B, C)
                     *cast(T[PC][2]*)&alpha_beta,
                     pack_b_kernels.ptr,
                     kernels,
-                    main_nr,
                     );
                 ////////////////////////
                 bsl_ptr = null;
@@ -202,7 +190,7 @@ void gemm_impl(A, B, C)
         }
         while (asl.length!1);
     }
-}}
+}
 
 pragma(inline, true)
 void gebp(size_t PA, size_t PB, size_t PC, T, B)(
@@ -220,33 +208,23 @@ void gebp(size_t PA, size_t PB, size_t PC, T, B)(
     ref const T[PC][2] alpha_beta,
     PackKernel!(B, T)* pack_b_kernels,
     Kernel!(PC, T)* kernels,
-    size_t nr,
     )
 {
     mixin RegisterConfig!(PA, PB, PC, T);
-    do
+    foreach (nri, nr; nr_chain)
+    if (nc >= nr) do
     {
-        if (nc >= nr) do
+        if (ptrb)
         {
-            if (ptrb)
-            {
-                pack_b_kernels[0](kc, ldb, ldbe, ptrb, b);
-                ptrb += nr * ldbe;
-            }
-            kernels[0](mc, kc, a, b, c, ldc, alpha_beta);
-            b +=  nr * PB * incb;
-            nc -= nr;
-            c += nr * PC * ldc;
+            pack_b_kernels[nri](kc, ldb, ldbe, ptrb, b);
+            ptrb += nr * ldbe;
         }
-        while (nc >= nr);
-        //import core.bitop: bsr;
-        pack_b_kernels++;
-        kernels++;
-        import ldc.intrinsics: llvm_ctlz;
-        auto newNr = size_t(1) << (size_t.sizeof * 8 - 1 - llvm_ctlz(nr, true));
-        nr = nr == newNr ? newNr / 2 : newNr;
+        kernels[nri](mc, kc, a, b, c, ldc, alpha_beta);
+        b +=  nr * PB * incb;
+        nc -= nr;
+        c += nr * PC * ldc;
     }
-    while (nr);
+    while (!nri && nc >= nr);
 }
 
 alias Kernel(size_t P, T) =
@@ -262,50 +240,31 @@ alias Kernel(size_t P, T) =
     );
 
 pragma(inline, false)
-void gemm_fast_path(A, B, C)(ref SL3!(A, B, C) abc)
-{with(abc){
-    mixin prefix3;
-    mixin RegisterConfig!(PA, PB, PC, T);
-    if (alpha_beta[1] == 0)
-    {
-        do {
-            setZero(cast(T[])(csl.front!1.toDense)); // memset
-            csl.popFront!1;
-        }
-        while (csl.length!1);
-        return;
-    }
-    if (alpha_beta[1] == 1)
-        return;
+@optStrategy("minsize")
+void gemm_fast_path(C)(C beta, size_t length, sizediff_t stride, size_t n,  C* ptr)
+{
+    if (llvm_expect(beta == 0, true))
     do {
-        scale(csl.front!1.toDense, alpha_beta[1]);
-        csl.popFront!1;
-    } 
-    while (csl.length!1);
-}}
-
-pragma(inline, false)
-void setZero(T)(T[] a)
-{
-    assert(a.length);
-    do
-    {
-        a[0] = 0;
-        a = a[1 .. $];
+        import core.stdc.string: memset;
+        memset(
+            ptr, 0, n * C.sizeof);
+        ptr += stride;
+        length--;
     }
-    while(a.length);
-}
-
-pragma(inline, false)
-void scale(T)(T[] a, T c)
-{
-    assert(a.length);
-    do
+    while (length);
+    else
+    if (llvm_expect(beta == 1, true))
+    {}
+    else
     {
-        a[0] *= c;
-        a = a[1 .. $];
+        do{
+            import glas: scal;
+            scal(beta, n, 1, ptr);
+            ptr += stride;
+            length--;
+        }
+        while (length);
     }
-    while(a.length);
 }
 
 pragma(inline, false)
@@ -441,27 +400,32 @@ dot_reg_basic (
         enum CA = PC + PA == 4;
         enum CB = PC + PB == 4;
 
-        foreach (u; Iota!(N/2 + N%2))
-        //foreach (u; Iota!(N))
+        static if (PB == 1)
+            alias s = Iota!(N/2 + N%2);
+        else
+            alias s = Iota!N;
+        foreach (u; s)
         {
-            alias um = Iota!(2*u, 2*u + 2 > N ? 2*u + 1 : 2*u + 2);
-            //alias um = AliasSeq!(u);
+            static if (PB == 1)
+                alias um = Iota!(2*u, 2*u + 2 > N ? 2*u + 1 : 2*u + 2);
+            else
+                alias um = Iota!(u, u + 1);
             foreach (n; um)
             foreach (p; Iota!PB)
                 bi[n][p] = b[0][n][p];
             foreach (n; um)
             foreach (m; Iota!M)
             {
+ static if (CA) reg[n][1][m] += ai[1][m] * bi[n][0];
                 reg[n][0][m] += ai[0][m] * bi[n][0];
  static if (CB) reg[n][1][m] += ai[0][m] * bi[n][1];
  static if (AB) reg[n][0][m] -= ai[1][m] * bi[n][1];
- static if (CA) reg[n][1][m] += ai[1][m] * bi[n][0];
             }
         }
         a++;
         b++;
     }
-    while (--length);
+    while (llvm_expect(--length, true));
     load_nano(c, reg);
     return a;
 }

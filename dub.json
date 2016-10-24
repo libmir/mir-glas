@@ -16,7 +16,7 @@
         {
             "name": "header",
             "targetType": "sourceLibrary",
-            "importFiles": ["glas/common.di", "glas/package.di", "glas/fortran.di"],
+            "sourceFiles": ["glas/common.d", "glas/package.d", "glas/fortran.d"],
         },
         {
             "name": "static",

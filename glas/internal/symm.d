@@ -23,14 +23,19 @@ import glas.internal.gemm;
 
 @fastmath:
 
-pragma(inline, false)
+pragma(inline, true)
 @optStrategy("optsize")
 nothrow @nogc
 void symm_impl(A, B, C)
 (
-    ref SL3!(A, B, C) abc,
+    C alpha,
+    Slice!(2, const(A)*) asl,
+    Slice!(2, const(B)*) bsl,
+    C beta,
+    Slice!(2, C*) csl,
+    ulong settings,
 )
-{with(abc){
+{
     assert(asl.length!0 == asl.length!1, "constraint: asl.length!0 == asl.length!1");
     assert(asl.length!1 == bsl.length!0, "constraint: asl.length!1 == bsl.length!0");
     assert(csl.length!0 == asl.length!0, "constraint: csl.length!0 == asl.length!0");
@@ -76,9 +81,9 @@ void symm_impl(A, B, C)
         }
     }
     assert(csl.stride!0 == 1);
-    if (llvm_expect(asl.empty!1 || alpha_beta[0] == 0, false))
+    if (llvm_expect(asl.empty!1 || alpha == 0, false))
     {
-        gemm_fast_path(abc);
+        gemm_fast_path(beta, csl.length!1, csl.stride!1, csl.length!0, csl.ptr);
         return;
     }
     //#########################################################
@@ -92,20 +97,21 @@ void symm_impl(A, B, C)
             one_kernels [nri] = &gemv_reg!(BetaType.one, PA, PB, PC, nr, T);
 
         kernels = one_kernels.ptr;
-        if (alpha_beta[1] == 0)
+        if (beta == 0)
         {
             foreach (nri, nr; nr_chain)
                 beta_kernels[nri] = &gemv_reg!(BetaType.zero, PA, PB, PC, nr, T);
             kernels = beta_kernels.ptr;
         }
         else
-        if (alpha_beta[1] != 1)
+        if (beta != 1)
         {
             foreach (nri, nr; nr_chain)
                 beta_kernels[nri] = &gemv_reg!(BetaType.beta, PA, PB, PC, nr, T);
             kernels = beta_kernels.ptr;
         }
     }
+    C[2] alpha_beta = [alpha, beta];
     //#########################################################
     if (!(settings & Right))
     {
@@ -134,14 +140,14 @@ void symm_impl(A, B, C)
                 one_kernels [nri] = &gemv_reg!(BetaType.one, PA, PB, PC, nr, T);
 
             kernels = one_kernels.ptr;
-            if (alpha_beta[1] == 0)
+            if (beta == 0)
             {
                 foreach (nri, nr; nr_chain)
                     beta_kernels[nri] = &gemv_reg!(BetaType.zero, PA, PB, PC, nr, T);
                 kernels = beta_kernels.ptr;
             }
             else
-            if (alpha_beta[1] != 1)
+            if (beta != 1)
             {
                 foreach (nri, nr; nr_chain)
                     beta_kernels[nri] = &gemv_reg!(BetaType.beta, PA, PB, PC, nr, T);
@@ -223,7 +229,6 @@ void symm_impl(A, B, C)
                         *cast(T[PC][2]*)&alpha_beta,
                         pack_b_kernels.ptr,
                         kernels,
-                        main_nr,
                         );
                     ////////////////////////
                     bsl_ptr = null;
@@ -338,7 +343,7 @@ void symm_impl(A, B, C)
                     if (bslp.length!0 < mc)
                         mc = bslp.length!0;
                     ////////////////////////
-                    pack_a!(B, T)(bslp[0 .. mc], a, pack_a_kernels.ptr, main_mr);
+                    pack_a!(PA, PB, PC, B, T)(bslp[0 .. mc], a, pack_a_kernels.ptr);
                     //======================
                     sybp!(PB, PA, PC, T, A)(
                         mc,
@@ -373,7 +378,7 @@ void symm_impl(A, B, C)
             while (bsl.length!1);
         }
     }
-}}
+}
 
 pragma(inline, true)
 void sybp(size_t PA, size_t PB, size_t PC, T, B)(

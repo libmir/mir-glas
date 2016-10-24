@@ -79,7 +79,9 @@ package(glas) enum L3(Type) =
 q{
     pragma(LDC_no_moduleinfo);
 
+    static import glas;
     import std.experimental.ndslice.slice: Slice;
+    import ldc.attributes;
     import ldc.intrinsics: llvm_expect;
     import glas.common;
     import glas.internal.utility;
@@ -92,51 +94,36 @@ q{
     void glas_} ~ prefix!Type ~ q{gemm
         (
             T alpha,
-                ref Slice!(2, const(T)*) asl,
-                ref Slice!(2, const(T)*) bsl,
+                Slice!(2, const(T)*) asl,
+                Slice!(2, const(T)*) bsl,
             T beta,
-                ref Slice!(2,        T*) csl,
+                Slice!(2,        T*) csl,
             ulong settings,
         )
     {
-        import glas.internal.gemm: gemm_impl, SL3;
-        SL3!(T, T, T) arg = void;
-        arg.asl = asl;
-        arg.bsl = bsl;
-        arg.csl = csl;
-        arg.alpha_beta[0] = alpha;
-        arg.alpha_beta[1] = beta;
-        arg.settings = settings;
-        gemm_impl(arg);
+        import glas.internal.gemm: gemm_impl;
+        gemm_impl(alpha, asl, bsl, beta, csl, settings);
     }
 
     void glas_} ~ prefix!Type ~ q{symm
         (
             T alpha,
-                ref Slice!(2, const(T)*) asl,
-                ref Slice!(2, const(T)*) bsl,
+                Slice!(2, const(T)*) asl,
+                Slice!(2, const(T)*) bsl,
             T beta,
-                ref Slice!(2,        T*) csl,
+                Slice!(2,        T*) csl,
             ulong settings,
         )
     {
-        import glas.internal.gemm: SL3;
         import glas.internal.symm: symm_impl;
-        SL3!(T, T, T) arg = void;
-        arg.asl = asl;
-        arg.bsl = bsl;
-        arg.csl = csl;
-        arg.alpha_beta[0] = alpha;
-        arg.alpha_beta[1] = beta;
-        arg.settings = settings;
-        symm_impl(arg);
+        symm_impl(alpha, asl, bsl, beta, csl, settings);
     }
 
     int } ~ prefix!Type ~ q{gemm_(
         ref const char transa,
         ref const char transb,
         ref const FortranInt m,
-        ref const FortranInt  n,
+        ref const FortranInt n,
         ref const FortranInt k,
         ref const T alpha,
             const(T)* a,
@@ -183,31 +170,27 @@ q{
             info = 13;
         else
         {
-            import glas.internal.gemm: gemm_impl, SL3;
-            SL3!(T, T, T) arg = void;
             static if (__VERSION__ < 2072)
             {
-                arg.asl = _toSlice!(2, const(T)*)([m, k], nota ? [1, lda] : [lda, 1], a);
-                arg.bsl = _toSlice!(2, const(T)*)([k, n], notb ? [1, ldb] : [ldb, 1], b);
-                arg.csl = _toSlice!(2,       T *)([m, n],        [1, ldc],            c);
+                auto asl = _toSlice!(2, const(T)*)([m, k], nota ? [1, lda] : [lda, 1], a);
+                auto bsl = _toSlice!(2, const(T)*)([k, n], notb ? [1, ldb] : [ldb, 1], b);
+                auto csl = _toSlice!(2,       T *)([m, n],        [1, ldc],            c);
             }
             else
             {
-                arg.asl = Slice!(2, const(T)*)([m, k], nota ? [1, lda] : [lda, 1], a);
-                arg.bsl = Slice!(2, const(T)*)([k, n], notb ? [1, ldb] : [ldb, 1], b);
-                arg.csl = Slice!(2,       T *)([m, n],        [1, ldc],            c);
+                auto asl = Slice!(2, const(T)*)([m, k], nota ? [1, lda] : [lda, 1], a);
+                auto bsl = Slice!(2, const(T)*)([k, n], notb ? [1, ldb] : [ldb, 1], b);
+                auto csl = Slice!(2,       T *)([m, n],        [1, ldc],            c);
             }
-            arg.alpha_beta[0] = alpha;
-            arg.alpha_beta[1] = beta;
-            arg.settings = 0;
+            ulong settings;
             static if (isComplex!T)
             {
                 if (conja)
-                    arg.settings ^= ConjA;
+                    settings ^= ConjA;
                 if (conjb)
-                    arg.settings ^= ConjB;
+                    settings ^= ConjB;
             }
-            gemm_impl(arg);
+            glas.gemm(alpha, asl, bsl, beta, csl, settings);
             return 0;
         }
         enum name = prefix!T ~ "GEMM";
@@ -219,7 +202,7 @@ q{
         ref const char side,
         ref const char uplo,
         ref const FortranInt m,
-        ref const FortranInt  n,
+        ref const FortranInt n,
         ref const T alpha,
             const(T)* a,
             ref const FortranInt lda,
@@ -238,7 +221,7 @@ q{
         ref const char side,
         ref const char uplo,
         ref const FortranInt m,
-        ref const FortranInt  n,
+        ref const FortranInt n,
         ref const T alpha,
             const(T)* a,
             ref const FortranInt lda,
@@ -271,7 +254,7 @@ package(glas) int symm_impl_(T)(
     ref const char side,
     ref const char uplo,
     ref const FortranInt m,
-    ref const FortranInt  n,
+    ref const FortranInt n,
     ref const T alpha,
         const(T)* a,
         ref const FortranInt lda,
@@ -314,75 +297,33 @@ package(glas) int symm_impl_(T)(
         info = 12;
     else
     {
-        import glas.internal.gemm: SL3;
-        import glas.internal.symm: symm_impl;
-        SL3!(T, T, T) arg = void;
         static if (__VERSION__ < 2072)
         {
-            arg.asl = _toSlice!(2, const(T)*)([k, k], [1, lda], a);
-            arg.bsl = _toSlice!(2, const(T)*)([m, n], [1, ldb], b);
-            arg.csl = _toSlice!(2,       T *)([m, n], [1, ldc], c);
+            auto asl = _toSlice!(2, const(T)*)([k, k], [1, lda], a);
+            auto bsl = _toSlice!(2, const(T)*)([m, n], [1, ldb], b);
+            auto csl = _toSlice!(2,       T *)([m, n], [1, ldc], c);
         }
         else
         {
-            arg.asl = Slice!(2, const(T)*)([k, k], [1, lda], a);
-            arg.bsl = Slice!(2, const(T)*)([m, n], [1, ldb], b);
-            arg.csl = Slice!(2,       T *)([m, n], [1, ldc], c);
+            auto asl = Slice!(2, const(T)*)([k, k], [1, lda], a);
+            auto bsl = Slice!(2, const(T)*)([m, n], [1, ldb], b);
+            auto csl = Slice!(2,       T *)([m, n], [1, ldc], c);
         }
-        arg.alpha_beta[0] = alpha;
-        arg.alpha_beta[1] = beta;
-        arg.settings = 0;
+        ulong settings;
         static if (isComplex!T)
         {
             if (conj)
-                arg.settings ^= ConjA;
+                settings ^= ConjA;
         }
         if (u)
-            arg.settings ^= Upper;
+            settings ^= Upper;
         if (s)
-            arg.settings ^= Right;
-        symm_impl(arg);
+            settings ^= Right;
+        glas.symm(alpha, asl, bsl, beta, csl, settings);
         return 0;
     }
     enum nameSYMM = prefix!T ~ "SYMM";
     enum nameHEMM = prefix!T ~ "HEMM";
     xerbla_(conj ? nameHEMM.ptr : nameSYMM.ptr, info);
     return 0;
-}
-
-static if (__VERSION__ < 2072)
-pragma(inline, true)
-auto _toSlice(size_t N, T)(size_t[N] lengths, sizediff_t[N] strides, T ptr)
-{
-    static union U
-    {
-        Slice!(N, T) slice;
-        struct
-        {
-            size_t[N] lengths;
-            sizediff_t[N] strides;
-            T ptr;
-        }
-    }
-    U ret = void;
-    ret.lengths = lengths;
-    ret.strides = strides;
-    ret.ptr = ptr;
-    return ret.slice;
-}
-
-template prefix(T)
-{
-    static if (is(T == float))
-        enum prefix = "s";
-    else
-    static if (is(T == double))
-        enum prefix = "d";
-    else
-    static if (is(T == cfloat))
-        enum prefix = "c";
-    else
-    static if (is(T == cdouble))
-        enum prefix = "z";
-    else static assert(0);
 }
