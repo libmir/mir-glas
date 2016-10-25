@@ -44,3 +44,5 @@ CBLAS
 __.SYMDEF SORTED
 
 examples/gemm_example
+
+examples/symm_example

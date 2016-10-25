@@ -37,8 +37,8 @@ realpath() {
 }
 BL=`eval realpath ../BLAS-"$BLAS"/libblas_mix.a`
 echo $BL
-make BLLIB=$BL
-make runtst
+make -j BLLIB=$BL
+make -j runtst
 cat testing/*.out
 cd ..
 rm *.tgz
@@ -48,8 +48,8 @@ rm -rf mir-cpuid-$CPUID
 rm -f *.o
 cd examples
 echo "D examples ..."
-./gemm_example.d
-./hemm_example.d
+dub --single ./gemm_example.d -v
+dub --single ./hemm_example.d -v
 echo "C examples ..."
 rm -rf .dub
 gcc -I../include -L../ -lmir-glas -lmir-cpuid gemm_example.c && ./a.out

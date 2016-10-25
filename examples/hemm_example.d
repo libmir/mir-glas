@@ -1,7 +1,7 @@
 #!/usr/bin/env dub
 /+ dub.json:
 {
-    "name": "symm_example",
+    "name": "hemm_example",
     "targetType":"executable",
     "systemDependencies": "Example requires libmir-cpuid and libmir-glas",
     "libs": ["mir-cpuid", "mir-glas"],
