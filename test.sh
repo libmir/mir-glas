@@ -47,11 +47,13 @@ rm -rf CBLAS
 rm -rf mir-cpuid-$CPUID
 rm -f *.o
 cd examples
+echo "D examples ..."
 ./gemm_example.d
 ./hemm_example.d
+echo "C examples ..."
+rm -rf .dub
 gcc -I../include -L../ -lmir-glas -lmir-cpuid gemm_example.c && ./a.out
 rm -f a.out
 gcc -I../include -L../ -lmir-glas -lmir-cpuid hemm_example.c && ./a.out
 rm -f a.out
-rm -rf .dub
 cd ..
