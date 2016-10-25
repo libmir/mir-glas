@@ -14,68 +14,8 @@ import glas.ndslice;
 import glas.fortran;
 
 import glas.internal.utility;
-/+
-Performs general matrix-matrix multiplication.
 
-Pseudo_code: `C := alpha A × B + beta C`.
 
-Params:
-    alpha = scalar
-    asl = `m ⨉ k` matrix
-    bsl = `k ⨉ n` matrix
-    beta = scalar. When  `beta`  is supplied as zero then the matrix `csl` need not be set on input.
-    csl = `m ⨉ n` matrix with one stride equal to `±1`.
-    conja = specifies if the matrix `asl` stores conjugated elements.
-    conjb = specifies if the matrix `bsl` stores conjugated elements.
-
-Note:
-    GLAS does not require transposition parameters.
-    Use $(NDSLICEREF iteration, transposed)
-    to perform zero cost `Slice` transposition.
-
-BLAS: SGEMM, DGEMM, CGEMM, ZGEMM
-
-See_also: $(SUBREF common, Conjugated).
-+/
-
-/+
-Performs symmetric or hermitian matrix-matrix multiplication.
-
-Pseudo_code: `C := alpha A × B + beta C` or `C := alpha B × A + beta C`,
-    where  `alpha` and `beta` are scalars, `A` is a symmetric or hermitian matrix and `B` and
-    `C` are `m × n` matrices.
-
-Params:
-    side = specifies whether the symmetric matrix A
-           appears on the  left or right  in the  operation.
-    uplo = specifies  whether  the  upper  or  lower triangular
-           part of the symmetric matrix A is to be referenced.
-           When `uplo` equals to `Uplo.upper`, the upper triangular
-           part of the matrix `asl`  must contain the upper triangular part
-           of the symmetric / hermitian matrix A and the strictly lower triangular
-           part of `asl` is not referenced, and when `uplo` equals to `Uplo.lower`,
-           the lower triangular part of the matrix `asl`
-           must contain the lower triangular part of the symmetric / hermitian
-           matrix A and the strictly upper triangular part of `asl` is not
-           referenced.
-    alpha = scalar
-    asl = `k ⨉ k` matrix, where `k` is `m`  when  `side` equals to 'Side.left'
-           and is `n` otherwise.
-    bsl = `m ⨉ n` matrix
-    beta = scalar. When  `beta`  is supplied as zero then the matrix `csl` need not be set on input.
-    csl = `m ⨉ n` matrix with one stride equals to `±1`.
-    conja = specifies whether the matrix A is symmetric (`Conjugated.no`) or hermitian (`Conjugated.yes`).
-    conjb = specifies if the matrix `bsl` stores conjugated elements.
-
-Note:
-    GLAS does not require transposition parameters.
-    Use $(NDSLICEREF iteration, transposed)
-    to perform zero cost `Slice` transposition.
-
-BLAS: SSYMM, DSYMM, CSYMM, ZSYMM, SHEMM, DHEMM, CHEMM, ZHEMM
-
-See_also: $(SUBREF common, Conjugated), $(SUBREF common, Side), $(SUBREF common, Uplo).
-+/
 package(glas) enum L3(Type) =
 q{
     pragma(LDC_no_moduleinfo);
