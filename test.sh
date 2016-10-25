@@ -49,8 +49,10 @@ rm -rf mir-cpuid-$CPUID
 rm -f *.o
 cd examples
 echo "D examples ..."
-dub --single ./gemm_example.d -v
-dub --single ./hemm_example.d -v
+# dub --single ./gemm_example.d -v
+# dub --single ./hemm_example.d -v
+dmd -I../source -L-L../ -L-lmir-cpuid -L-lmir-glas -run gemm_example.d
+dmd -I../source -L-L../ -L-lmir-cpuid -L-lmir-glas -run hemm_example.d
 echo "C examples ..."
 rm -rf .dub
 gcc -I../include -L../ -lmir-glas -lmir-cpuid gemm_example.c && ./a.out
