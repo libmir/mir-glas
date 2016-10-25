@@ -4,7 +4,9 @@ License: $(HTTP boost.org/LICENSE_1_0.txt, Boost License 1.0).
 Authors: Ilya Yaroshenko
 +/
 module glas.ndslice;
-pragma(LDC_no_moduleinfo);
+
+version(LDC)
+	pragma(LDC_no_moduleinfo);
 
 version(Have_mir)
 	import mir.ndslice: Slice;
