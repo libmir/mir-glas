@@ -9,11 +9,13 @@ pragma(LDC_no_moduleinfo);
 
 import std.experimental.ndslice.slice: Slice;
 import ldc.intrinsics: llvm_expect;
-import glas.common;
-import glas.internal.utility;
-import glas.precompiled.utility;
 
-/++
+import glas;
+import glas.b
+;
+
+import glas.internal.utility;
+/+
 Performs general matrix-matrix multiplication.
 
 Pseudo_code: `C := alpha A × B + beta C`.
@@ -37,7 +39,7 @@ BLAS: SGEMM, DGEMM, CGEMM, ZGEMM
 See_also: $(SUBREF common, Conjugated).
 +/
 
-/++
+/+
 Performs symmetric or hermitian matrix-matrix multiplication.
 
 Pseudo_code: `C := alpha A × B + beta C` or `C := alpha B × A + beta C`,
@@ -79,13 +81,14 @@ package(glas) enum L3(Type) =
 q{
     pragma(LDC_no_moduleinfo);
 
-    static import glas;
+
     import std.experimental.ndslice.slice: Slice;
     import ldc.attributes;
     import ldc.intrinsics: llvm_expect;
-    import glas.common;
+    import glas;
+    import glas.b;
     import glas.internal.utility;
-    import glas.precompiled.utility;
+
 
     private alias T = } ~ Type.stringof ~ q{;
 
@@ -122,9 +125,15 @@ q{
     int } ~ prefix!Type ~ q{gemm_(
         ref const char transa,
         ref const char transb,
-        ref const FortranInt m,
-        ref const FortranInt n,
-        ref const FortranInt k,
+        ref const 
+
+        FortranInt m,
+        ref const 
+
+        FortranInt n,
+        ref const 
+
+        FortranInt k,
         ref const T alpha,
             const(T)* a,
             ref const FortranInt lda,
@@ -143,6 +152,7 @@ q{
         auto conja = tra == 'C';
         auto conjb = trb == 'C';
 
+        
         FortranInt info = void;
         
         if (llvm_expect(!nota && !conja && tra != 'T', false))
@@ -201,8 +211,12 @@ q{
     int } ~ prefix!Type ~ q{symm_(
         ref const char side,
         ref const char uplo,
-        ref const FortranInt m,
-        ref const FortranInt n,
+        ref const 
+
+        FortranInt m,
+        ref const 
+
+        FortranInt n,
         ref const T alpha,
             const(T)* a,
             ref const FortranInt lda,
@@ -220,8 +234,12 @@ q{
     int } ~ prefix!Type ~ q{hemm_(
         ref const char side,
         ref const char uplo,
-        ref const FortranInt m,
-        ref const FortranInt n,
+        ref const 
+
+        FortranInt m,
+        ref const 
+
+        FortranInt n,
         ref const T alpha,
             const(T)* a,
             ref const FortranInt lda,
@@ -229,6 +247,7 @@ q{
             ref const FortranInt ldb,
         ref const T beta,
             T* c,
+
             ref const FortranInt ldc,
         )
     {
@@ -273,6 +292,7 @@ package(glas) int symm_impl_(T)(
 
     auto k = s ? n : m;
 
+    
     FortranInt info = 0;
 
     if (llvm_expect(s && _side != 'R', false))

@@ -13,13 +13,12 @@ import std.experimental.ndslice.slice : Slice;
 import ldc.attributes;
 import ldc.intrinsics;
 
-import glas.common;
-import glas.internal.utility;
+import glas;
 import glas.internal.blocking;
 import glas.internal.copy;
 import glas.internal.config;
 import glas.internal.gemm;
-
+import glas.internal.utility;
 
 @fastmath:
 

@@ -9,19 +9,19 @@ pragma(LDC_no_moduleinfo);
 
 import std.experimental.ndslice.slice: Slice;
 import ldc.intrinsics: llvm_expect;
-import glas.common;
+import glas;
+import glas.b;
 import glas.internal.utility;
-import glas.precompiled.utility;
 
 package(glas) enum L1(Type) =
 q{
     pragma(LDC_no_moduleinfo);
 
-    static import glas;
+    import glas;
+    import glas.b;
     import std.experimental.ndslice.slice: Slice;
     import ldc.intrinsics: llvm_expect;
     import ldc.attributes: fastmath;
-    import glas.common;
     import glas.internal.utility;
     import glas.precompiled.utility;
     import glas.internal.l1;
@@ -37,7 +37,7 @@ q{
         T* ptr,
         )
     {
-        scal(a, length, stride, ptr);
+        glas.internal.l1.scal(a, length, stride, ptr);
     }
 
     void glas_} ~ prefix!Type ~ q{scal(
@@ -73,7 +73,7 @@ q{
         T* ptr,
         )
     {
-        scal(a, length, stride, ptr);
+        glas.internal.l1.scal(a, length, stride, ptr);
     }
 
     static if (isComplex!T)
@@ -105,7 +105,7 @@ q{
         T* ptr,
         )
     {
-        scal(a, length, stride, ptr);
+        glas.internal.l1.scal(a, length, stride, ptr);
     }
 
     static if (isComplex!T)

@@ -6,11 +6,19 @@ Authors: Ilya Yaroshenko
 module glas;
 pragma(LDC_no_moduleinfo);
 
-public import glas.common;
-
-import std.experimental.ndslice: Slice;
+version(Have_mir)
+	import mir.ndslice: Slice;
+else
+	import std.experimental.ndslice: Slice;
 
 export extern(C) nothrow @nogc @system:
+
+enum ulong ConjA = 0x1;
+enum ulong ConjB = 0x2;
+enum ulong Lower = 0x0;
+enum ulong Left = 0x0;
+enum ulong Upper = 0x0100;
+enum ulong Right = 0x0200;
 
 void glas_sscal(float a, Slice!(1, float*) xsl);
 void glas_dscal(double a, Slice!(1, double*) xsl);

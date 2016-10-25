@@ -6,7 +6,7 @@ Authors: Ilya Yaroshenko
 module glas.precompiled.utility;
 pragma(LDC_no_moduleinfo);
 
-import glas.common;
+import glas.b;
 import ldc.attributes: weak;
 
 export extern(C) @system nothrow @nogc pragma(inline, false):

@@ -13,12 +13,11 @@ import std.experimental.ndslice.slice : Slice;
 import ldc.attributes;
 import ldc.intrinsics;
 
-import glas.common;
-import glas.internal.utility;
+import glas;
 import glas.internal.blocking;
 import glas.internal.copy;
 import glas.internal.config;
-
+import glas.internal.utility;
 
 @fastmath:
 
@@ -303,6 +302,7 @@ void gemv_reg (
 
 mixin template prefix3()
 {
+    import glas.internal.utility: isComplex, realType;
     enum CA = isComplex!A && (isComplex!C || isComplex!B);
     enum CB = isComplex!B && (isComplex!C || isComplex!A);
     enum CC = isComplex!C;

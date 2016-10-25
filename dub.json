@@ -17,6 +17,7 @@
             "name": "header",
             "targetType": "sourceLibrary",
             "sourceFiles": ["glas/common.d", "glas/package.d", "glas/fortran.d"],
+            "sourcePaths": []
         },
         {
             "name": "static",

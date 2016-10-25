@@ -3,7 +3,7 @@ pragma(LDC_no_moduleinfo);
 
 import std.traits: Unqual;
 import std.meta: AliasSeq;
-import glas.common;
+import glas;
 
 enum bool isComplex(C)
      = is(Unqual!C == creal)

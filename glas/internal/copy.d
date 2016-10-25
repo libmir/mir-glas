@@ -13,7 +13,6 @@ import ldc.attributes : fastmath, optStrategy;
 import ldc.intrinsics : llvm_expect;
 import glas.internal.utility;
 import glas.internal.config;
-import glas.common;
 
 @fastmath:
 
