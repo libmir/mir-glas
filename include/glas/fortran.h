@@ -1,75 +1,35 @@
-#ifndef Have_GLAS
-#define Have_GLAS
+#ifndef Have_GLASB
+#define Have_GLASB
 #include <stddef.h>
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-enum
-{
-	glas_ConjA = 0x1,
-	glas_ConjB = 0x2,
-	glas_Lower = 0x0,
-	glas_Left = 0x0,
-	glas_Upper = 0x0100,
-	glas_Right = 0x0200,
-};
+typedef int FortranInt;
 
-struct glas_MutVector
-{
-	size_t lengths[1];
-	ptrdiff_t strides[1];
-	void* ptr;
-};
+int xerbla_(const char *srname, FortranInt *info);
 
-struct glas_ConstVector
-{
-	size_t lengths[1];
-	ptrdiff_t strides[1];
-	const void *ptr;
-};
+int sscal_(const FortranInt *n, const float *a, float *x, const FortranInt *incx);
+int dscal_(const FortranInt *n, const double *a, double *x, const FortranInt *incx);
+int csscal_(const FortranInt *n, const float *a, float _Complex *x, const FortranInt *incx);
+int cscal_(const FortranInt *n, const float _Complex *a, float _Complex *x, const FortranInt *incx);
+int csIscal_(const FortranInt *n, const float *a, float _Complex *x, const FortranInt *incx);
+int zdscal_(const FortranInt *n, const double *a, double _Complex *x, const FortranInt *incx);
+int zscal_(const FortranInt *n, const double _Complex *a, double _Complex *x, const FortranInt *incx);
+int zdIscal_(const FortranInt *n, const double *a, double _Complex *x, const FortranInt *incx);
 
-struct glas_MutMatrix
-{
-	size_t lengths[2];
-	ptrdiff_t strides[2];
-	void* ptr;
-};
+int sgemm_(const char *transa, const char *transb, const FortranInt *m, const FortranInt *n, const FortranInt *k, const float *alpha, const float *a, const FortranInt *lda, const float *b, const FortranInt *ldb, const float *beta, float *c, const FortranInt *ldc);
+int dgemm_(const char *transa, const char *transb, const FortranInt *m, const FortranInt *n, const FortranInt *k, const double *alpha, const double *a, const FortranInt *lda, const double *b, const FortranInt *ldb, const double *beta, double *c, const FortranInt *ldc);
+int cgemm_(const char *transa, const char *transb, const FortranInt *m, const FortranInt *n, const FortranInt *k, const float _Complex *alpha, const float _Complex *a, const FortranInt *lda, const float _Complex *b, const FortranInt *ldb, const float _Complex *beta, float _Complex *c, const FortranInt *ldc);
+int zgemm_(const char *transa, const char *transb, const FortranInt *m, const FortranInt *n, const FortranInt *k, const double _Complex *alpha, const double _Complex *a, const FortranInt *lda, const double _Complex *b, const FortranInt *ldb, const double _Complex *beta, double _Complex *c, const FortranInt *ldc);
 
-struct glas_ConstMatrix
-{
-	size_t lengths[2];
-	ptrdiff_t strides[2];
-	const void *ptr;
-};
+int ssymm_(const char *side, const char *uplo, const FortranInt *m, const FortranInt *n, const float *alpha, const float *a, const FortranInt *lda, const float *b, const FortranInt *ldb, const float *beta, float *c, const FortranInt *ldc);
+int dsymm_(const char *side, const char *uplo, const FortranInt *m, const FortranInt *n, const double *alpha, const double *a, const FortranInt *lda, const double *b, const FortranInt *ldb, const double *beta, double *c, const FortranInt *ldc);
+int csymm_(const char *side, const char *uplo, const FortranInt *m, const FortranInt *n, const float _Complex *alpha, const float _Complex *a, const FortranInt *lda, const float _Complex *b, const FortranInt *ldb, const float _Complex *beta, float _Complex *c, const FortranInt *ldc);
+int zsymm_(const char *side, const char *uplo, const FortranInt *m, const FortranInt *n, const double _Complex *alpha, const double _Complex *a, const FortranInt *lda, const double _Complex *b, const FortranInt *ldb, const double _Complex *beta, double _Complex *c, const FortranInt *ldc);
 
-void glas_sscal(float a, struct glas_MutVector xsl);
-void glas_dscal(double a, struct glas_MutVector xsl);
-void glas_csscal(float a, struct glas_MutVector xsl);
-void glas_cscal(float _Complex a, struct glas_MutVector xsl);
-void glas_csIscal(float a, struct glas_MutVector xsl);
-void glas_zdscal(double a, struct glas_MutVector xsl);
-void glas_zscal(double _Complex a, struct glas_MutVector xsl);
-void glas_zdIscal(double a, struct glas_MutVector xsl);
-
-void _glas_sscal(float a, size_t n, size_t incx, float* x);
-void _glas_dscal(double a, size_t n, size_t incx, double* x);
-void _glas_csscal(float a, size_t n, size_t incx, float _Complex* x);
-void _glas_cscal(float _Complex a, size_t n, size_t incx, float _Complex* x);
-void _glas_csIscal(float a, size_t n, size_t incx, float _Complex* x);
-void _glas_zdscal(double a, size_t n, size_t incx, double _Complex* x);
-void _glas_zscal(double _Complex a, size_t n, size_t incx, double _Complex* x);
-void _glas_zdIscal(double a, size_t n, size_t incx, double _Complex* x);
-
-void glas_sgemm(float alpha, struct glas_ConstMatrix asl, struct glas_ConstMatrix bsl, float beta, struct glas_MutMatrix csl, unsigned long settings);
-void glas_dgemm(double alpha, struct glas_ConstMatrix asl, struct glas_ConstMatrix bsl, double beta, struct glas_MutMatrix csl, unsigned long settings);
-void glas_cgemm(float _Complex alpha, struct glas_ConstMatrix asl, struct glas_ConstMatrix bsl, float _Complex beta, struct glas_MutMatrix csl, unsigned long settings);
-void glas_zgemm(double _Complex alpha, struct glas_ConstMatrix asl, struct glas_ConstMatrix bsl, double _Complex beta, struct glas_MutMatrix csl, unsigned long settings);
-
-void glas_ssymm(float alpha, struct glas_ConstMatrix asl, struct glas_ConstMatrix bsl, float beta, struct glas_MutMatrix csl, unsigned long settings);
-void glas_dsymm(double alpha, struct glas_ConstMatrix asl, struct glas_ConstMatrix bsl, double beta, struct glas_MutMatrix csl, unsigned long settings);
-void glas_csymm(float _Complex alpha, struct glas_ConstMatrix asl, struct glas_ConstMatrix bsl, float _Complex beta, struct glas_MutMatrix csl, unsigned long settings);
-void glas_zsymm(double _Complex alpha, struct glas_ConstMatrix asl, struct glas_ConstMatrix bsl, double _Complex beta, struct glas_MutMatrix csl, unsigned long settings);
+int chemm_(const char *side, const char *uplo, const FortranInt *m, const FortranInt *n, const float _Complex *alpha, const float _Complex *a, const FortranInt *lda, const float _Complex *b, const FortranInt *ldb, const float _Complex *beta, float _Complex *c, const FortranInt *ldc);
+int zhemm_(const char *side, const char *uplo, const FortranInt *m, const FortranInt *n, const double _Complex *alpha, const double _Complex *a, const FortranInt *lda, const double _Complex *b, const FortranInt *ldb, const double _Complex *beta, double _Complex *c, const FortranInt *ldc);
 
 #ifdef __cplusplus
 }
