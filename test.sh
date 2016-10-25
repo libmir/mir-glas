@@ -40,7 +40,6 @@ make -j BLLIB=$BL
 make -j runtst
 cat testing/*.out
 cd ..
-echo "Finish"
 rm *.tgz
 rm -rf BLAS-$BLAS
 rm -rf CBLAS
@@ -49,5 +48,9 @@ rm -f *.o
 cd examples
 ./gemm_example.d
 ./hemm_example.d
+gcc -I../include -L../ -lmir-glas -lmir-cpuid gemm_example.c && ./a.out
+rm -f a.out
+gcc -I../include -L../ -lmir-glas -lmir-cpuid hemm_example.c && ./a.out
+rm -f a.out
 rm -rf .dub
 cd ..
