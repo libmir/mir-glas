@@ -17,7 +17,7 @@ version(LDC)
 /// Alias for Fortran77 integer.
 alias FortranInt = int;
 
-export extern(C) nothrow @nogc @system:
+extern(C) nothrow @nogc @system:
 
 /++
  `gemm_`  performs one of the matrix-matrix operations

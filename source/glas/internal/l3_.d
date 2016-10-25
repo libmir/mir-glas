@@ -15,7 +15,6 @@ import glas.fortran;
 
 import glas.internal.utility;
 
-
 package(glas) enum L3(Type) =
 q{
     pragma(LDC_no_moduleinfo);

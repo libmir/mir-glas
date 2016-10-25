@@ -32,7 +32,7 @@ __test__library__
 *.s
 
 *.SYMDEF
-
+mir-cpuid
 help
 web
 *.zip
@@ -42,3 +42,5 @@ CBLAS
 
 
 __.SYMDEF SORTED
+
+examples/gemm_example

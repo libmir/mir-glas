@@ -63,17 +63,23 @@ void gemm_impl(A, B, C)
     // change row based to column based
     if (csl.stride!0 != 1)
     {
+        auto ca = settings & ConjA;
+        auto cb = settings & ConjB;
+        settings &= ~(ConjA | ConjB);
+        if(ca)
+            settings ^= ConjB;
+        if(cb)
+            settings ^= ConjA;
         static if (is(A == B))
         {
             auto tsl = asl;
             asl = bsl.transposed;
             bsl = tsl.transposed;
             csl = csl.transposed;
-            settings ^= ConjA | ConjB;
         }
         else
         {
-            gemm_impl!(B, A, C)(alpha, bsl, asl, beta, csl, settings ^ (ConjA | ConjB));
+            gemm_impl!(B, A, C)(alpha, bsl, asl, beta, csl, settings);
             return;
         }
     }

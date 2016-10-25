@@ -17,8 +17,8 @@
         {
             "name": "header",
             "targetType": "sourceLibrary",
-            "sourceFiles": ["source/glas/package.d", "source/glas/b.d"],
-            "sourcePaths": []
+            "sourceFiles": ["source/glas/ndslice.d", "source/glas/fortran.d"],
+            "excludedSourceFiles": ["source/*"]
         },
         {
             "name": "static",

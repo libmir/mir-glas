@@ -36,8 +36,8 @@ realpath() {
 }
 BL=`eval realpath ../BLAS-"$BLAS"/libblas_mix.a`
 echo $BL
-make BLLIB=$BL
-make runtst -j
+make -j BLLIB=$BL
+make -j runtst
 cat testing/*.out
 cd ..
 echo "Finish"
@@ -46,3 +46,8 @@ rm -rf BLAS-$BLAS
 rm -rf CBLAS
 rm -rf mir-cpuid-$CPUID
 rm -f *.o
+cd examples
+./gemm_example.d
+./hemm_example.d
+rm -rf .dub
+cd ..

@@ -11,19 +11,23 @@ Use $(LINK2 http://dlang.org/phobos/std_experimental_ndslice_iteration.html#tran
 to perform zero cost ndslice transposition.
 
 Note: $(LINK2 , ndslice) uses is row major representation.
-	$(BR)
+    $(BR)
 +/
 module glas.ndslice;
 
 version(LDC)
-	pragma(LDC_no_moduleinfo);
+    pragma(LDC_no_moduleinfo);
 
 version(Have_mir)
-	import mir.ndslice: Slice;
+{
+    import mir.ndslice.slice: Slice;
+}
 else
-	import std.experimental.ndslice: Slice;
+{
+    import std.experimental.ndslice.slice: Slice;
+}
 
-export extern(C) nothrow @nogc @system:
+extern(C) nothrow @nogc @system:
 
 /++
 Specifies if the matrix `asl` stores conjugated elements.
