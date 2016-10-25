@@ -1,6 +1,8 @@
 machine:
   environment:
     DMD: 2.071.2
+    PATH: "${HOME}/dmd2/linux/bin64:${PATH}"
+    LD_LIBRARY_PATH: "${HOME}/dmd2/linux/lib64:${LD_LIBRARY_PATH}"
 checkout:
   post:
     - git submodule sync . && git submodule update --recursive --init || true
