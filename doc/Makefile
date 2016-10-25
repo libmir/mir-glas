@@ -6,7 +6,7 @@
 LATEST:=$(git describe --abbrev=0 --tags | tr -d v)
 
 # binaries
-DMD=ldmd2
+DMD=dmd
 RDMD=rdmd
 DDOC=$(DMD) -w -c -o- -version=StdDdoc
 
