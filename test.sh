@@ -8,6 +8,7 @@ cd mir-cpuid-$CPUID/mir-cpuid
 dub build --arch=$ARCH --build-mode=singleFile --build=release-nobounds --force --parallel --compiler=ldmd2
 ar -x libmir-cpuid.a
 cd ../../
+cp mir-cpuid-$CPUID/mir-cpuid/libmir-cpuid.a libmir-cpuid.a
 curl -Os http://www.netlib.org/blas/blas-"$BLAS".tgz
 tar zxf blas-"$BLAS".tgz
 cd BLAS-$BLAS
@@ -36,8 +37,8 @@ realpath() {
 }
 BL=`eval realpath ../BLAS-"$BLAS"/libblas_mix.a`
 echo $BL
-make BLLIB=$BL
-make runtst
+make -j BLLIB=$BL
+make -j runtst
 cat testing/*.out
 cd ..
 rm *.tgz
