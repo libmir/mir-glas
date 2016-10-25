@@ -31,6 +31,9 @@ tar zxf cblas.tgz
 cd CBLAS
 rm -f Makefile.in
 ln -s Makefile.LINUX Makefile.in
+realpath() {
+    [[ $1 = /* ]] && echo "$1" || echo "$PWD/${1#./}"
+}
 BL=`eval realpath ../BLAS-"$BLAS"/libblas_mix.a`
 echo $BL
 make BLLIB=$BL
