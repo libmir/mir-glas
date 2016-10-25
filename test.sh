@@ -1,7 +1,7 @@
 ARCH=x86_64
 BLAS=3.6.0
 CPUID=0.4.2
-dub build --arch=$ARCH --build-mode=singleFile --force --config=static --parallel --build=target-default --compiler=ldmd2
+dub build --arch=$ARCH --build-mode=singleFile --force --config=static --parallel --build=target-native --compiler=ldmd2
 ar -x libmir-glas.a
 dub fetch mir-cpuid --version=$CPUID --cache=local
 cd mir-cpuid-$CPUID/mir-cpuid
