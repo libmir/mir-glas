@@ -28,17 +28,16 @@ dub.selections.json
 *.sublime-project
 
 __test__library__
-
+.generated
 *.s
 
 *.SYMDEF
 
 help
-
+web
 *.zip
 BLAS*
 CBLAS
-mir-*
 *.tgz
 
 

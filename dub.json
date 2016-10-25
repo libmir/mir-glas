@@ -1,5 +1,6 @@
 {
     "name": "mir-glas",
+    "description": "Generic Linear Algebra Subprograms",
     "authors": ["Ilya Yaroshenko"],
     "copyright": "Copyright © 2016-, Ilya Yaroshenko",
     "buildTypes": {
@@ -16,18 +17,18 @@
         {
             "name": "header",
             "targetType": "sourceLibrary",
-            "sourceFiles": ["glas/package.d", "glas/b.d"],
+            "sourceFiles": ["source/glas/package.d", "source/glas/b.d"],
             "sourcePaths": []
         },
         {
             "name": "static",
             "targetType": "staticLibrary",
-            "sourcePaths": ["glas/precompiled"]
+            "excludedSourceFiles": ["source/glas/internal/*", "source/glas/ndslice.d", "source/glas/fortran.d"]
         },
         {
             "name": "dynamic",
             "targetType": "dynamicLibrary",
-            "sourcePaths": ["glas/precompiled"]
+            "excludedSourceFiles": ["source/glas/internal/*", "source/glas/ndslice.d", "source/glas/fortran.d"]
         }
     ],
 }
