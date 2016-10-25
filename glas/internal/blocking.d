@@ -8,7 +8,6 @@ pragma(LDC_no_moduleinfo);
 
 import std.meta;
 import std.traits;
-//import glas;
 import glas.internal.config;
 import glas.precompiled.context;
 
