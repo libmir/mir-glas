@@ -26,7 +26,8 @@ ar cr libblas_mix.a \
 	../*.o ../mir-cpuid-$CPUID/mir-cpuid/*.o 
 ranlib libblas_mix.a
 cd ..
-curl -Os http://www.netlib.org/blas/blast-forum/cblas.tgz
+curl -O http://www.netlib.org/blas/blast-forum/cblas.tgz
+ls
 tar zxf CBLAS.tgz
 cd CBLAS
 rm -f Makefile.in
