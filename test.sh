@@ -36,8 +36,8 @@ realpath() {
 }
 BL=`eval realpath ../BLAS-"$BLAS"/libblas_mix.a`
 echo $BL
-make -j BLLIB=$BL
-make -j runtst
+make BLLIB=$BL
+make runtst
 cat testing/*.out
 cd ..
 rm *.tgz
