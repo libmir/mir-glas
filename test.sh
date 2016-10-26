@@ -55,8 +55,12 @@ echo "D examples ..."
 # ldmd2 -L-L../ -L-lmir-glas -L-lmir-cpuid -I../source -v -run hemm_example.d
 echo "C examples ..."
 rm -rf .dub
-gcc -std=c99 -I../include gemm_example.c -L../ -lmir-glas -lmir-cpuid && ./a.out
-rm -f a.out
-gcc -std=c99 -I../include hemm_example.c -L../ -lmir-glas -lmir-cpuid && ./a.out
-rm -f a.out
+gcc -std=c99 -I../include -c gemm_example.c -o gemm_example.o
+gcc -std=c99 -I../include -c hemm_example.c -o hemm_example.o
+gcc gemm_example.o -L../ -lmir-glas -lmir-cpuid -o gemm_example
+gcc hemm_example.o -L../ -lmir-glas -lmir-cpuid -o hemm_example
+./gemm_example
+./hemm_example
+rm -f gemm_example
+rm -f hemm_example
 cd ..
