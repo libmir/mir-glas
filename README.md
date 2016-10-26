@@ -68,9 +68,9 @@ D headers can be included automatically in a project using [dub](http://code.dla
 You may want to build LDC from source or use [LDC 1.1.0 beta 2](https://github.com/ldc-developers/ldc/releases/tag/v1.1.0-beta2).
 Beta 2 generates a lot of warnings that can be ignored. Beta 3 is not supported.
 
-LDC binaries contains two compilers: ldc2 and ldmd2. The last one should be used.
+LDC binaries contains two compilers: ldc2 and ldmd2. It is recommended to use ldmd2 with mir-glas.
 
-Recent LDC packages come with [dub package manager](http://code.dlang.org/docs/commandline).
+Recent LDC packages come with the [dub package manager](http://code.dlang.org/docs/commandline).
 dub is used to build the project.
 
 #### Mir CPUID
@@ -184,7 +184,7 @@ Five steps
 
 #### Why GLAS is called "Generic ..."?
 
- 1. GLAS has generic internal implementation, which can be easily portable to any other architecture with minimal efforts (5 minutes).
+ 1. GLAS has a generic internal implementation, which can be easily portable to any other architecture with minimal efforts (5 minutes).
  2. GLAS API provides more functionality comparing with BLAS.
  3. It is written in Dlang using generic programming.
 
@@ -194,10 +194,10 @@ Five steps
  2. GLAS API is more user-friendly and does not require additional data coping.
  3. GLAS does not require C++ runtime comparing with Eigen.
  4. GLAS does not require platform specific optimizations like Eigen intrinsics micro kernels and OpenBLAS assembler macro kernels.
- 5. GLAS has simple implementation, which can be easily ported and extended.
+ 5. GLAS has a simple implementation, which can be easily ported and extended.
 
 #### Why GLAS does not have Lazy Evaluation and Aliasing like Eigen?
 
-GLAS is more low-level library comparing with Eigen. For example, GLAS can be Eigen BLAS back-end in the future.
+GLAS is a lower level library than Eigen. For example, GLAS can be an Eigen BLAS back-end in the future
 Lazy Evaluation and Aliasing can be easily implemented in D.
 Explicit composition of operations can be done using [mir.ndslice.algorithm](http://docs.mir.dlang.io/latest/mir_ndslice_algorithm.html#mapSlice) and `std.experimental.ndslice` (>=2.072). [`mapSlice`](http://dlang.org/phobos-prerelease/std_experimental_ndslice_selection.html#.mapSlice), which is a generic way to perform any lazy operations you want.
