@@ -32,8 +32,8 @@ A compiler, for example GCC, may require `mir-cpuid` be passed after `mir-glas`:
 
 ### Headers
 
-C/C++ headers are located in [`include/`](https://github.com/libmir/mir-glas/tree/master/include/).
-D headers are located in [`source/`](https://github.com/libmir/mir-glas/tree/master/source/).
+C/C++ headers are located in [`include/`](include/).
+D headers are located in [`source/`](source/).
 
 There are two files:
 
@@ -54,6 +54,11 @@ D headers can be included automatically in a project using [dub](http://code.dla
 ### GLAS API and Documentation
 
 Documentation can be found at http://docs.glas.dlang.io/.
+
+GLAS API is based on [`ndslice`](http://dlang.org/phobos/std_experimental_ndslice.html).
+Both `mir.ndslice` and `std.experimental.ndslice` are supported.
+Other languages can use simple structure definition.
+[Examples](examples/) available for C and for Dlang.
 
 ## Installation
 
@@ -177,4 +182,4 @@ We are open for contributing!
 
 GLAS is more low-level library comparing with Eigen. For example, GLAS can be Eigen BLAS back-end in the future.
 Lazy Evaluation and Aliasing can be easily implemented in D.
-Explicit composition operations can be found at [mir.ndslice.algorithm](http://docs.mir.dlang.io/latest/mir_ndslice_algorithm.html#mapSlice).
+Explicit composition of operations and can be done using [mir.ndslice.algorithm](http://docs.mir.dlang.io/latest/mir_ndslice_algorithm.html#mapSlice)and `std.experimental.ndslice` (>=2.072). [`mapSlice`](http://dlang.org/phobos-prerelease/std_experimental_ndslice_selection.html#.mapSlice), which is a generic way to perform any lazy operations you may want.
