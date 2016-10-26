@@ -36,14 +36,6 @@ void gemm_impl(A, B, C)
     ulong settings,
 )
 {
-    assert(asl.length!1 == bsl.length!0, "constraint: asl.length!1 == bsl.length!0");
-    assert(csl.length!0 == asl.length!0, "constraint: csl.length!0 == asl.length!0");
-    assert(csl.length!1 == bsl.length!1, "constraint: csl.length!1 == bsl.length!1");
-    assert(csl.stride!0 == +1
-        || csl.stride!0 == -1
-        || csl.stride!1 == +1
-        || csl.stride!1 == -1, "constraint: csl.stride!0 or csl.stride!1 must be equal to +/-1");
-
     mixin prefix3;
     mixin RegisterConfig!(PA, PB, PC, T);
     import std.experimental.ndslice.iteration: reversed, transposed;

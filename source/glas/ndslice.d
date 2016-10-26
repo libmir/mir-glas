@@ -24,7 +24,7 @@ version(Have_mir)
 }
 else
 {
-    import std.experimental.ndslice.slice: Slice;
+    import std.experimental.ndslice.slice: Slice, Structure;
 }
 
 extern(C) nothrow @nogc @system:
@@ -71,6 +71,45 @@ Specifies if the symmetric/hermitian matrix A
     appears on the left in the  operation.
 +/
 enum ulong Right = 0x0200;
+
+/++
+Params:
+    error_code = Error code
+Returns:
+    error message
++/
+string glas_error(int error_code);
+
+/++
+Validates input data for GEMM operations.
+Params:
+    as = structure for matrix A
+    bs = structure for matrix B
+    cs = structure for matrix C
+    settings = Operation settings. Allowed flags are
+            $(LREF ConjA), $(LREF ConjB).
+Returns: 0 on success and error code otherwise.
++/
+int glas_validate_gemm(Structure!2 as, Structure!2 bs, Structure!2 cs, ulong settings = 0);
+/// ditto
+alias validate_gemm = glas_validate_gemm;
+
+/++
+Validates input data for SYMM operations.
+Params:
+    as = structure for matrix A
+    bs = structure for matrix B
+    cs = structure for matrix C
+    settings = Operation settings. Allowed flags are
+            $(LREF Left), $(LREF Right),
+            $(LREF Lower), $(LREF Upper),
+            $(LREF ConjA), $(LREF ConjB).
+            $(LREF ConjA) flag specifies if the matrix A is hermitian.
+Returns: 0 on success and error code otherwise.
++/
+int glas_validate_symm(Structure!2 as, Structure!2 bs, Structure!2 cs, ulong settings = 0);
+/// ditto
+alias validate_symm = glas_validate_symm;
 
 /++
 Performs general matrix-matrix multiplication.

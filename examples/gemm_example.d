@@ -72,6 +72,13 @@ int main()
     auto alpha = 1.0;
     auto beta  = 0.0;
 
+    if(auto error_code = validate_gemm(a.structure, b.structure, c.structure))
+    {
+        import core.stdc.stdio;
+        puts(glas_error(error_code).ptr);
+        return 1;
+    }
+
     version (HaveImplicitConstCast)
         gemm(alpha, a, b, beta, c);
     else

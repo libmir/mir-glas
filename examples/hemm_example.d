@@ -70,6 +70,13 @@ int main()
     auto alpha = 1 + 0i;
     auto beta  = 0 + 0i;
 
+    if(auto error_code = validate_symm(a.structure, b.structure, c.structure))
+    {
+        import core.stdc.stdio;
+        puts(glas_error(error_code).ptr);
+        return 1;
+    }
+
     version(OldAPI)
         symm(alpha, cast(ConstMatrix)a, cast(ConstMatrix)b, beta, c, ConjA | Left | Lower);
     else
