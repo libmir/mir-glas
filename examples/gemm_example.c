@@ -1,4 +1,6 @@
-//gcc -I../include -L../ -lmir-glas -lmir-cpuid gemm_example.c && ./a.out
+// gcc -std=c99 -I../include -c gemm_example.c -o gemm_example.o
+// gcc gemm_example.o -L../ -lmir-glas -lmir-cpuid -o gemm_example
+// ./gemm_example
 #include <stdio.h>
 #include <string.h>
 #include "glas/ndslice.h"
