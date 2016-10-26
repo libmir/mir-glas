@@ -56,11 +56,21 @@ int main()
     for(size_t i = 0; i < 3; i++)
     {
         for(size_t j = i + 1; j < 3; j++)
-            {
-                double _Complex *u = (double _Complex *)a.ptr + i * a.strides[0] + j * a.strides[1];
-                double _Complex *v = (double _Complex *)a.ptr + i * a.strides[1] + j * a.strides[0];
-                *u = creal(*v) - cimag(*v) * 1i;
-            }
+        {
+            double _Complex *u = (double _Complex *)a.ptr + i * a.strides[0] + j * a.strides[1];
+            double _Complex *v = (double _Complex *)a.ptr + i * a.strides[1] + j * a.strides[0];
+            *u = creal(*v) - cimag(*v) * 1i;
+        }
+    }
+
+    for(size_t i = 0; i < 3; i++)
+    {
+        for(size_t j = 0; j < 3; j++)
+        {
+            double _Complex u = *((double _Complex *)a.ptr + i * a.strides[0] + j * a.strides[1]);
+            printf("%+.1f%+.1fi, ", creal(u), cimag(u));
+        }
+        puts("");
     }
 
     glas_zgemm(alpha, a, b, beta, d, 0);
