@@ -162,6 +162,24 @@ The hardest part (GEMM) is already implemented.
    - [ ] ASUM - sum of absolute values
    - [ ] IAMAX - index of max abs value
 
+## Porting to a new target
+
+Five steps
+
+1. Implement `cpuid_init` function for `mir-cpuid`. This function should be implemented per platform or OS. Already implemented targets are
+   - x86, any OS
+   - x86_64, any OS
+2. Verify that [source/glas/internal/memory.d](source/glas/internal/memory.d) contains an implementation for the OS. Already implemented targets are
+   - Posix (Linux, macOS, and others)
+   - Windows
+3. Add new configuration for register blocking to [source/glas/internal/config.d](source/glas/internal/config.d). Already implemented configuration available for
+   - x87
+   - SSE2
+   - AVX / AVX2
+   - AVX512 (requires LLVM bug fixes).
+4. Create a Pool Request.
+5. Coordinate with LDC team in case of compiler bugs.
+
 ## Questions & Answers
 
 #### Why GLAS is called "Generic ..."?
