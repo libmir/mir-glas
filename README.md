@@ -29,6 +29,14 @@ CBLAS API can be provided by linking with [Natlib's CBLAS](http://netlib.org/bla
 `mir-glas` can be used like a common C library. It should be linked with `mir-cpuid`.
 A compiler, for example GCC, may require `mir-cpuid` be passed after `mir-glas`: `-lmir-glas -lmir-cpuid`.
 
+### GLAS API and Documentation
+
+Documentation can be found at http://docs.glas.dlang.io/.
+
+GLAS API is based on [`ndslice`](http://dlang.org/phobos/std_experimental_ndslice.html).
+Both `mir.ndslice` and `std.experimental.ndslice` are supported.
+Other languages can use simple structure definition.
+[Examples](examples/) are available for C and for Dlang.
 
 ### Headers
 
@@ -50,15 +58,6 @@ D headers can be included automatically in a project using [dub](http://code.dla
    }
 }
 ```
-
-### GLAS API and Documentation
-
-Documentation can be found at http://docs.glas.dlang.io/.
-
-GLAS API is based on [`ndslice`](http://dlang.org/phobos/std_experimental_ndslice.html).
-Both `mir.ndslice` and `std.experimental.ndslice` are supported.
-Other languages can use simple structure definition.
-[Examples](examples/) are available for C and for Dlang.
 
 ## Installation
 
