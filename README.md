@@ -16,7 +16,7 @@ LLVM-accelerated Generic Linear Algebra Subprograms (GLAS)
 ## Description
 GLAS is a C library written in Dlang. No C++/D runtime is required, but libc that is available everywhere.
 
-It provides
+The library provides
 
  1. [BLAS](http://netlib.org/blas/) (Basic Linear Algebra Subprograms) API.
  2. GLAS (Generic Linear Algebra Subprograms) API.
