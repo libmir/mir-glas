@@ -4,7 +4,7 @@
     "name": "hemm_example",
     "targetType":"executable",
     "systemDependencies": "Example requires libmir-cpuid and libmir-glas",
-    "libs": ["mir-cpuid", "mir-glas"],
+    "libs": ["mir-glas", "mir-cpuid"],
     "lflags": ["-L../"],
     "dependencies": {
         "mir-glas":{
@@ -21,7 +21,7 @@
                 "mir": "~>0.20.2"
             }
         }
-    ],
+    ]
 }
 +/
 import glas.ndslice;
