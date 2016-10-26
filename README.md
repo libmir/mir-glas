@@ -23,14 +23,14 @@ It provides
 
 CBLAS API can be provided by linking with [Natlib's CBLAS](http://netlib.org/blas/#_cblas) library.
 
-## GLAS API and Documentation.
 
-#### Usage
+## Usage
 
 `mir-glas` can be used like common C libraries. It should be linked with `mir-cpuid`.
 A compiler, for example GCC, may require `mir-cpuid` be passed after `mir-glas`: `-lmir-glas -lmir-cpuid`.
 
-#### Headers
+
+### Headers
 
 C/C++ headers are located in [`include/`](https://github.com/libmir/mir-glas/tree/master/include/).
 D headers are located in [`source/`](https://github.com/libmir/mir-glas/tree/master/source/).
@@ -39,6 +39,10 @@ There are two files:
 
  1. `glas/fortran.h` / `glas/fortran.d` - for Netilb's BLAS API
  2. `glas/ndslice.h` / `glas/ndslice.d` - for GLAS API
+
+### GLAS API and Documentation
+
+Documentation can be found at http://docs.glas.dlang.io/.
 
 ## Installation
 
