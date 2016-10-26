@@ -58,7 +58,7 @@ Documentation can be found at http://docs.glas.dlang.io/.
 GLAS API is based on [`ndslice`](http://dlang.org/phobos/std_experimental_ndslice.html).
 Both `mir.ndslice` and `std.experimental.ndslice` are supported.
 Other languages can use simple structure definition.
-[Examples](examples/) available for C and for Dlang.
+[Examples](examples/) are available for C and for Dlang.
 
 ## Installation
 
