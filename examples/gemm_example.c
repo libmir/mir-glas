@@ -5,7 +5,6 @@
 #include <string.h>
 #include "glas/ndslice.h"
 
-
 struct glas_MutMatrix create_matrix(size_t m, size_t n, void *data)
 {
 	struct glas_MutMatrix matrix;

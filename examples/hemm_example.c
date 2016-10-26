@@ -75,10 +75,39 @@ int main()
 
     glas_zgemm(alpha, a, b, beta, d, 0);
 
-    if(memcmp(c.ptr, d.ptr, sizeof(double) * 2 * 3 * 4))
+    for(size_t i = 0; i < 3; i++)
     {
-        puts("hemm_example: Error");
-        return -1;
+        for(size_t j = 0; j < 4; j++)
+        {
+            double _Complex u = *((double _Complex *)c.ptr + i * c.strides[0] + j * c.strides[1]);
+            printf("%+.1f%+.1fi, ", creal(u), cimag(u));
+        }
+        puts("");
     }
+
+    for(size_t i = 0; i < 3; i++)
+    {
+        for(size_t j = 0; j < 4; j++)
+        {
+            double _Complex u = *((double _Complex *)d.ptr + i * d.strides[0] + j * d.strides[1]);
+            printf("%+.1f%+.1fi, ", creal(u), cimag(u));
+        }
+        puts("");
+    }
+
+    for(size_t i = 0; i < 3; i++)
+    {
+        for(size_t j = 0; j < 4; j++)
+        {
+            double _Complex u = *((double _Complex *)c.ptr + i * c.strides[0] + j * c.strides[1]);
+            double _Complex v = *((double _Complex *)d.ptr + i * d.strides[0] + j * d.strides[1]);
+            if (u != v)
+            {
+                puts("hemm_example: Error");
+                return -1;
+            }
+        }
+    }
+
     return 0;
 }
