@@ -5,7 +5,7 @@ Please read $(LINK2 http://www.netlib.org/blas/ , Netlib BLAS) for more details.
 
 Note: Standard (fortran) BLAS API is column major.
 
-Copyright: Ilya Yaroshenko 2016-.
+Copyright: Copyright © 2016-, Ilya Yaroshenko.
 License: $(HTTP boost.org/LICENSE_1_0.txt, Boost License 1.0).
 Authors: Ilya Yaroshenko
 +/

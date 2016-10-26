@@ -20,6 +20,8 @@ $(BOOKTABLE ,
     )
 )
 
+Copyright: Copyright © 2016-, Ilya Yaroshenko.
+
 Macros:
         TITLE=GLAS
         WIKI=GLAS

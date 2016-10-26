@@ -1,7 +1,7 @@
 /++
 $(H2 GLAS API)
 
-Copyright: Ilya Yaroshenko 2016-.
+Copyright: Copyright © 2016-, Ilya Yaroshenko.
 License: $(HTTP boost.org/LICENSE_1_0.txt, Boost License 1.0).
 Authors: Ilya Yaroshenko
 

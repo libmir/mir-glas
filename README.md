@@ -40,6 +40,17 @@ There are two files:
  1. `glas/fortran.h` / `glas/fortran.d` - for Netilb's BLAS API
  2. `glas/ndslice.h` / `glas/ndslice.d` - for GLAS API
 
+#### dub
+D headers can be included automatically in a project using [dub](http://code.dlang.org/) (the D package manager).
+```json
+{
+   ...
+   "dependencies": {
+      "mir-glas": "~><current-mir-glas-version>"
+   }
+}
+```
+
 ### GLAS API and Documentation
 
 Documentation can be found at http://docs.glas.dlang.io/.
@@ -68,11 +79,11 @@ dub fetch mir-cpuid --cache=local
 
 Change the directory
 ```shell
-cd mir-cpuid-<CURRENT-CPUID-VERSION>/mir-cpuid
+cd mir-cpuid-<current-mir-cpuid-version>/mir-cpuid
 ```
 
 Build `mir-cpuid`
-```
+```shell
 dub build --build=release-nobounds --compiler=ldmd2 --build-mode=singleFile --parallel --force
 ```
 You may need to add `--arch=x86_64`, if you use windows.
@@ -88,11 +99,11 @@ dub fetch mir-glas --cache=local
 
 Change the directory
 ```shell
-cd mir-glas-<CURRENT-GLAS-VERSION>/mir-glas
+cd mir-glas-<current-mir-glas-version>/mir-glas
 ```
 
 Build `mir-glas`
-```
+```shell
 dub build --config=static --build=target-native --compiler=ldmd2 --build-mode=singleFile --parallel --force
 ```
 You may need to add `--arch=x86_64` if you use windows.
@@ -100,6 +111,8 @@ You may need to add `--arch=x86_64` if you use windows.
 Copy `libmir-glas.a` to your project or add its directory to the library path.
 
 ## Status
+
+We are open for contributing!
 
  - [x] CI testing with Netlib's CBLAS test suite.
  - [ ] CI testing with Netlib's LAPACKE test suite.
