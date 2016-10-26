@@ -14,7 +14,7 @@
 LLVM-accelerated Generic Linear Algebra Subprograms (GLAS)
 
 ## Description
-GLAS is a C library written in Dlang. No C++/D runtime is required, but libc that is available everywhere.
+GLAS is a C library written in Dlang. No C++/D runtime is required but libc, which is available everywhere.
 
 The library provides
 
@@ -27,7 +27,7 @@ CBLAS API can be provided by linking with [Natlib's CBLAS](http://netlib.org/bla
 ## Usage
 
 `mir-glas` can be used like a common C library. It should be linked with `mir-cpuid`.
-A compiler, for example GCC, may require `mir-cpuid` be passed after `mir-glas`: `-lmir-glas -lmir-cpuid`.
+A compiler, for example GCC, may require `mir-cpuid` to be passed after `mir-glas`: `-lmir-glas -lmir-cpuid`.
 
 ### GLAS API and Documentation
 
@@ -164,11 +164,11 @@ The hardest part (GEMM) is already implemented.
 
 ## Questions & Answers
 
-#### Why GLAS calls "Generic ..."?
+#### Why GLAS is called "Generic ..."?
 
  1. GLAS has generic internal implementation, which can be easily portable to any other architecture with minimal efforts (5 minutes).
  2. GLAS API provides more functionality comparing with BLAS.
- 3. It is written is in Dlang using generic programming.
+ 3. It is written in Dlang using generic programming.
 
 #### Why it is better then other BLAS Open Source Libraries like OpenBLAS and Eigen?
 
@@ -176,10 +176,10 @@ The hardest part (GEMM) is already implemented.
  2. GLAS API is more user-friendly and does not require additional data coping.
  3. GLAS does not require C++ runtime comparing with Eigen.
  4. GLAS does not require platform specific optimizations like Eigen intrinsics micro kernels and OpenBLAS assembler macro kernels.
- 5. GLAS has simple implementation, which can easily ported and extended.
+ 5. GLAS has simple implementation, which can be easily ported and extended.
 
 #### Why GLAS does not have Lazy Evaluation and Aliasing like Eigen?
 
 GLAS is more low-level library comparing with Eigen. For example, GLAS can be Eigen BLAS back-end in the future.
 Lazy Evaluation and Aliasing can be easily implemented in D.
-Explicit composition of operations and can be done using [mir.ndslice.algorithm](http://docs.mir.dlang.io/latest/mir_ndslice_algorithm.html#mapSlice)and `std.experimental.ndslice` (>=2.072). [`mapSlice`](http://dlang.org/phobos-prerelease/std_experimental_ndslice_selection.html#.mapSlice), which is a generic way to perform any lazy operations you may want.
+Explicit composition of operations can be done using [mir.ndslice.algorithm](http://docs.mir.dlang.io/latest/mir_ndslice_algorithm.html#mapSlice) and `std.experimental.ndslice` (>=2.072). [`mapSlice`](http://dlang.org/phobos-prerelease/std_experimental_ndslice_selection.html#.mapSlice), which is a generic way to perform any lazy operations you want.
