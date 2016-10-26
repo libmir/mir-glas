@@ -21,7 +21,7 @@
                 "mir": "~>0.20.2"
             }
         }
-    ],
+    ]
 }
 +/
 import glas.ndslice;
