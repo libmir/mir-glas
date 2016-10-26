@@ -15,6 +15,12 @@ enum
 	glas_Right = 0x0200,
 };
 
+struct glas_MatrixStructure
+{
+	size_t lengths[2];
+	ptrdiff_t strides[2];
+};
+
 struct glas_MutVector
 {
 	size_t lengths[1];
@@ -42,6 +48,16 @@ struct glas_ConstMatrix
 	ptrdiff_t strides[2];
 	const void *ptr;
 };
+
+struct ErrorString
+{
+	size_t length;
+	const char *ptr; // zero terminated
+};
+
+struct ErrorString glas_error(int error_code);
+int glas_validate_gemm(struct glas_MatrixStructure as, struct glas_MatrixStructure bs, struct glas_MatrixStructure cs, unsigned long settings);
+int glas_validate_symm(struct glas_MatrixStructure as, struct glas_MatrixStructure bs, struct glas_MatrixStructure cs, unsigned long settings);
 
 void glas_sscal(float a, struct glas_MutVector xsl);
 void glas_dscal(double a, struct glas_MutVector xsl);
