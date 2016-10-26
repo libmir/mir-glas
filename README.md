@@ -118,6 +118,7 @@ Copy `libmir-glas.a` to your project or add its directory to the library path.
 ## Status
 
 We are open for contributing!
+The hardest part (GEMM) is already implemented.
 
  - [x] CI testing with Netlib's CBLAS test suite.
  - [ ] CI testing with Netlib's LAPACKE test suite.
