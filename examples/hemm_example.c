@@ -29,8 +29,8 @@ struct glas_ConstMatrix toConstMatrix(struct glas_MutMatrix mut)
 int main()
 {
     double _Complex a_payload[] =
-        {-2 + 0i,   0.0/0,  0.0/0,
-         +3 + 2i, -5 + 0i,  0.0/0,
+        {-2 + 0i,   0/0.0,  0/0.0,
+         +3 + 2i, -5 + 0i,  0/0.0,
          -4 + 7i, -2 + 3i, -3 + 0i};
 
     double _Complex b_payload[] =
