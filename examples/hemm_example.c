@@ -49,10 +49,12 @@ int main()
     struct glas_MutMatrix d = create_matrix(3, 4, d_payload);
 
     double _Complex alpha = 5 + 3i;
-    double _Complex beta  = 7 + 4i;
+    double _Complex beta  = 0;
 
     glas_zsymm(alpha, a, b, beta, c, glas_ConjA | glas_Left | glas_Lower);
 
+    // Check using general matrix-matrix multiplicaiton (GEMM)
+    // .. initilize Upper part of A
     for(size_t i = 0; i < 3; i++)
     {
         for(size_t j = i + 1; j < 3; j++)
@@ -62,39 +64,10 @@ int main()
             *u = creal(*v) - cimag(*v) * 1i;
         }
     }
-
-    for(size_t i = 0; i < 3; i++)
-    {
-        for(size_t j = 0; j < 3; j++)
-        {
-            double _Complex u = *((double _Complex *)a.ptr + i * a.strides[0] + j * a.strides[1]);
-            printf("%+.1f%+.1fi, ", creal(u), cimag(u));
-        }
-        puts("");
-    }
-
+    // Perform GEMM
     glas_zgemm(alpha, a, b, beta, d, 0);
 
-    for(size_t i = 0; i < 3; i++)
-    {
-        for(size_t j = 0; j < 4; j++)
-        {
-            double _Complex u = *((double _Complex *)c.ptr + i * c.strides[0] + j * c.strides[1]);
-            printf("%+.1f%+.1fi, ", creal(u), cimag(u));
-        }
-        puts("");
-    }
-
-    for(size_t i = 0; i < 3; i++)
-    {
-        for(size_t j = 0; j < 4; j++)
-        {
-            double _Complex u = *((double _Complex *)d.ptr + i * d.strides[0] + j * d.strides[1]);
-            printf("%+.1f%+.1fi, ", creal(u), cimag(u));
-        }
-        puts("");
-    }
-
+    // Results should be identical
     for(size_t i = 0; i < 3; i++)
     {
         for(size_t j = 0; j < 4; j++)
