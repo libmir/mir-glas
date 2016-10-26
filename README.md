@@ -26,7 +26,7 @@ CBLAS API can be provided by linking with [Natlib's CBLAS](http://netlib.org/bla
 
 ## Usage
 
-`mir-glas` can be used like common C libraries. It should be linked with `mir-cpuid`.
+`mir-glas` can be used like a common C library. It should be linked with `mir-cpuid`.
 A compiler, for example GCC, may require `mir-cpuid` be passed after `mir-glas`: `-lmir-glas -lmir-cpuid`.
 
 
