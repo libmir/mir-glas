@@ -191,7 +191,7 @@ Five steps
 #### Why it is better then other BLAS Open Source Libraries like OpenBLAS and Eigen?
 
  1. GLAS is [faster](http://blog.mir.dlang.io/glas/benchmark/openblas/2016/09/23/glas-gemm-benchmark.html).
- 2. GLAS API is more user-friendly and does not require additional data coping.
+ 2. GLAS API is more user-friendly and does not require additional data copying.
  3. GLAS does not require C++ runtime comparing with Eigen.
  4. GLAS does not require platform specific optimizations like Eigen intrinsics micro kernels and OpenBLAS assembler macro kernels.
  5. GLAS has a simple implementation, which can be easily ported and extended.
