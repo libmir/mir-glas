@@ -56,7 +56,7 @@ T* pack_b_nano(size_t n, size_t P, bool conj = false, F, T)(size_t length, sized
             {
                 import ldc.simd;
                 alias V = __vector(T[s]);
-                _storeUnaligned!V(_loadUnaligned!V(cast(T*)from), to);
+                storeUnaligned!V(loadUnaligned!V(cast(T*)from), to);
             }
             else
             {
@@ -109,7 +109,7 @@ T* pack_b_nano(size_t n, size_t P, bool conj = false, F, T)(size_t length, sized
     }
 }
 
-//pragma(inline, false)
+pragma(inline, false)
 T* pack_a_tri(size_t P, F, T, int hem)(const(F)* from, sizediff_t str0, sizediff_t str1, T* to, size_t u, size_t length, size_t n)
 {
     static if (P == 1)
@@ -164,7 +164,7 @@ T* pack_a_tri(size_t P, F, T, int hem)(const(F)* from, sizediff_t str0, sizediff
     }
 }
 
-//pragma(inline, false)
+pragma(inline, false)
 T* pack_b_tri(size_t P, F, T, int hem)(const(F)* from, sizediff_t str0, sizediff_t str1, T* to, size_t u, size_t length, size_t n)
 {
     do
@@ -216,22 +216,6 @@ T* pack_b_tri(size_t P, F, T, int hem)(const(F)* from, sizediff_t str0, sizediff
     return to;
 }
 
-/// LDC bug @@@workaround@@@
-pragma(inline, true)
-V _loadUnaligned(V : __vector(T[N]), T, size_t N)(T* from)
-{
-    import ldc.simd;
-    return loadUnaligned!V(from);
-}
-
-/// LDC bug @@@workaround@@@
-pragma(inline, true)
-void _storeUnaligned(V : __vector(T[N]), T, size_t N)(V value, T* to)
-{
-    import ldc.simd;
-    return storeUnaligned!V(value, to);
-}
-
 pragma(inline, false)
 T* pack_a_nano(size_t n, size_t P, bool conj = false, F, T)(size_t length, sizediff_t stride, sizediff_t elemStride, const(F)* from, T* to)
 {
@@ -246,13 +230,13 @@ T* pack_a_nano(size_t n, size_t P, bool conj = false, F, T)(size_t length, sized
                 alias V = __vector(T[n]);
                 static if (P == 1)
                 {
-                    auto rv = _loadUnaligned!V(cast(T*)from);
+                    auto rv = loadUnaligned!V(cast(T*)from);
                     *cast(V*)to = rv;
                 }
                 else
                 {
-                    auto r0 = _loadUnaligned!V(cast(T*)from);
-                    auto r1 = _loadUnaligned!V(cast(T*)((cast(V*)from) + 1));
+                    auto r0 = loadUnaligned!V(cast(T*)from);
+                    auto r1 = loadUnaligned!V(cast(T*)((cast(V*)from) + 1));
                     auto re = _re!V(r0, r1);
                     auto im = _im!V(r0, r1);
                     *cast(V*)to = re;
@@ -379,7 +363,7 @@ void pack_a_sym(size_t P, F, T)(scope const(F)* ptr, sizediff_t str0, sizediff_t
 }
 
 version(none)
-//pragma(inline, false)
+pragma(inline, false)
 void pack_b_triangular(bool upper, bool inverseDiagonal, size_t P, T, C)(Slice!(2, const(C)*) sl, T* b)
 {
     assert(sl.length!0 == sl.length!1);
@@ -486,7 +470,7 @@ void save_nano_impl(size_t P, size_t N, V, T)(ref V[N][P] reg, T[P]* c)
         {
             static if (isSIMDVector!V)
             {
-                _storeUnaligned!V(reg[0][j], cast(T*)(c + j * V.length));
+                storeUnaligned!V(reg[0][j], cast(T*)(c + j * V.length));
             }
             else
             {
@@ -501,8 +485,8 @@ void save_nano_impl(size_t P, size_t N, V, T)(ref V[N][P] reg, T[P]* c)
                 auto im = reg[1][j];
                 auto r0 = _mix0!V(re, im);
                 auto r1 = _mix1!V(re, im);
-                _storeUnaligned!V(r0, cast(T*)(c + j * V.length));
-                _storeUnaligned!V(r1, cast(T*)((cast(V*)(c + j * V.length)) + 1));
+                storeUnaligned!V(r0, cast(T*)(c + j * V.length));
+                storeUnaligned!V(r1, cast(T*)((cast(V*)(c + j * V.length)) + 1));
             }
             else
             {
@@ -545,7 +529,7 @@ void save_add_nano_impl(size_t P, size_t N, V, T)(ref V[N][P] reg, T[P]* c)
             {
                 auto cj = loadUnaligned!V(cast(T*)(c + j * V.length));
                 cj += reg[0][j];
-                _storeUnaligned!V(cj, cast(T*)(c + j * V.length));
+                storeUnaligned!V(cj, cast(T*)(c + j * V.length));
             }
             else
             {
@@ -564,8 +548,8 @@ void save_add_nano_impl(size_t P, size_t N, V, T)(ref V[N][P] reg, T[P]* c)
                 auto r1 = _mix1!V(re, im);
                 cj0 += r0;
                 cj1 += r1;
-                _storeUnaligned!V(cj0, cast(T*)(c + j * V.length));
-                _storeUnaligned!V(cj1, cast(T*)((cast(V*)(c + j * V.length)) + 1));
+                storeUnaligned!V(cj0, cast(T*)(c + j * V.length));
+                storeUnaligned!V(cj1, cast(T*)((cast(V*)(c + j * V.length)) + 1));
             }
             else
             {
@@ -593,7 +577,7 @@ void save_madd_nano(size_t P, size_t N, size_t M, V, T)(ref V[N][P][M] reg, ref 
                 {
                     auto cj = loadUnaligned!V(cast(T*)(c + j * V.length));
                     cj = reg[m][0][j] + s[0] * cj;
-                    _storeUnaligned!V(cj, cast(T*)(c + j * V.length));
+                    storeUnaligned!V(cj, cast(T*)(c + j * V.length));
                 }
                 else
                 {
@@ -619,8 +603,8 @@ void save_madd_nano(size_t P, size_t N, size_t M, V, T)(ref V[N][P][M] reg, ref 
                     auto r0 = _mix0!V(re, im);
                     auto r1 = _mix1!V(re, im);
 
-                    _storeUnaligned!V(r0, cast(T*)(c + j * V.length));
-                    _storeUnaligned!V(r1, cast(T*)((cast(V*)(c + j * V.length)) + 1));
+                    storeUnaligned!V(r0, cast(T*)(c + j * V.length));
+                    storeUnaligned!V(r1, cast(T*)((cast(V*)(c + j * V.length)) + 1));
                 }
                 else
                 {
