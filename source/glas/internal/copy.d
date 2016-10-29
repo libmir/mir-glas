@@ -52,7 +52,7 @@ T* pack_b_nano(size_t n, size_t P, bool conj = false, F, T)(size_t length, sized
     {
         do
         {
-            static if (conj == false && n * P > 1 && !is(T == real))
+            static if (conj == false && s > 1 && !is(T == real))
             {
                 import ldc.simd;
                 alias V = __vector(T[s]);
@@ -232,7 +232,7 @@ void _storeUnaligned(V : __vector(T[N]), T, size_t N)(V value, T* to)
     return storeUnaligned!V(value, to);
 }
 
-pragma(inline, false)
+//pragma(inline, false)
 T* pack_a_nano(size_t n, size_t P, bool conj = false, F, T)(size_t length, sizediff_t stride, sizediff_t elemStride, const(F)* from, T* to)
 {
     enum s = n * P;
