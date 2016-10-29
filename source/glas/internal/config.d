@@ -10,8 +10,8 @@ import std.traits;
 import std.meta;
 import glas.internal.utility: isComplex;
 
-mixin template RegisterConfig(size_t PS, size_t PB, size_t PR, T)
-    if (is(Unqual!T == T) && !isComplex!T)
+mixin template RegisterConfig(size_t P, T)
+    if (is(Unqual!T == T))
 {
     static if (isFloatingPoint!T)
         version(X86)
@@ -77,13 +77,13 @@ mixin template AVX512F()
         mixin M8;
     else
     static if (is(T == float))
-        static if (PR == 1)
+        static if (P == 1)
             mixin AVX512_S;
         else
             mixin AVX512_C;
     else
     static if (is(T == double))
-        static if (PR == 1)
+        static if (P == 1)
             mixin AVX512_D;
         else
             mixin AVX512_Z;
@@ -97,13 +97,13 @@ mixin template AVX()
         mixin M8;
     else
     static if (is(T == float))
-        static if (PR == 1)
+        static if (P == 1)
             mixin AVX_S;
         else
             mixin AVX_C;
     else
     static if (is(T == double))
-        static if (PR == 1)
+        static if (P == 1)
             mixin AVX_D;
         else
             mixin AVX_Z;
@@ -116,13 +116,13 @@ mixin template SSE2()
         mixin M8;
     else
     static if (is(T == float))
-        static if (PR == 1)
+        static if (P == 1)
             mixin SSE2_S;
         else
             mixin SSE2_C;
     else
     static if (is(T == double))
-        static if (PR == 1)
+        static if (P == 1)
             mixin SSE2_D;
         else
             mixin SSE2_Z;
@@ -205,7 +205,7 @@ mixin template SSE2_Z()
 
 mixin template M16()
 {
-    static if (PR == 1)
+    static if (P == 1)
     {
         enum size_t _broadcast = 6;
         alias _simd_type_chain = AliasSeq!(T[2], T[1]);
@@ -220,7 +220,7 @@ mixin template M16()
 mixin template M8()
 {
     enum size_t _broadcast = 2;
-    static if (PR == 1)
+    static if (P == 1)
         alias _simd_type_chain = AliasSeq!(T[2], T[1]);
     else
         alias _simd_type_chain = AliasSeq!(T[1]);
@@ -229,7 +229,7 @@ mixin template M8()
 mixin template M4()
 {
     enum size_t _broadcast = 1;
-    static if (PR == 1)
+    static if (P == 1)
         alias _simd_type_chain = AliasSeq!(T[2], T[1]);
     else
         alias _simd_type_chain = AliasSeq!(T[1]);
