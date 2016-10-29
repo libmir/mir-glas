@@ -44,7 +44,7 @@ alias PackKernelTri(F, T) =
         size_t n,
     );
 
-pragma(inline, false)
+//pragma(inline, false)
 T* pack_b_nano(size_t n, size_t P, bool conj = false, F, T)(size_t length, sizediff_t stride, sizediff_t elemStride, const(F)* from, T* to)
 {
     enum s = n * P;
@@ -109,7 +109,7 @@ T* pack_b_nano(size_t n, size_t P, bool conj = false, F, T)(size_t length, sized
     }
 }
 
-pragma(inline, false)
+//pragma(inline, false)
 T* pack_a_tri(size_t P, F, T, int hem)(const(F)* from, sizediff_t str0, sizediff_t str1, T* to, size_t u, size_t length, size_t n)
 {
     static if (P == 1)
@@ -164,7 +164,7 @@ T* pack_a_tri(size_t P, F, T, int hem)(const(F)* from, sizediff_t str0, sizediff
     }
 }
 
-pragma(inline, false)
+//pragma(inline, false)
 T* pack_b_tri(size_t P, F, T, int hem)(const(F)* from, sizediff_t str0, sizediff_t str1, T* to, size_t u, size_t length, size_t n)
 {
     do
@@ -232,7 +232,7 @@ void _storeUnaligned(V : __vector(T[N]), T, size_t N)(V value, T* to)
     return storeUnaligned!V(value, to);
 }
 
-pragma(inline, false)
+//pragma(inline, false)
 T* pack_a_nano(size_t n, size_t P, bool conj = false, F, T)(size_t length, sizediff_t stride, sizediff_t elemStride, const(F)* from, T* to)
 {
     enum s = n * P;
@@ -379,12 +379,12 @@ void pack_a_sym(size_t P, F, T)(scope const(F)* ptr, sizediff_t str0, sizediff_t
 }
 
 version(none)
-pragma(inline, false)
-void pack_b_triangular(bool upper, bool inverseDiagonal, size_t P, size_t P, size_t P, T, C)(Slice!(2, const(C)*) sl, T* b)
+//pragma(inline, false)
+void pack_b_triangular(bool upper, bool inverseDiagonal, size_t P, T, C)(Slice!(2, const(C)*) sl, T* b)
 {
     assert(sl.length!0 == sl.length!1);
 
-    mixin RegisterConfig!(P, P, P, T);
+    mixin RegisterConfig!(P, T);
     static if (!upper)
         size_t length;
     foreach (nri, nr; nr_chain)
