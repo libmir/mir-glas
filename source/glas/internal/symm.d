@@ -25,11 +25,11 @@ import glas.internal.utility;
 pragma(inline, true)
 @optStrategy("optsize")
 nothrow @nogc
-void symm_impl(A, B, C)
+void symm_impl(C)
 (
     C alpha,
-    Slice!(2, const(A)*) asl,
-    Slice!(2, const(B)*) bsl,
+    Slice!(2, const(C)*) asl,
+    Slice!(2, const(C)*) bsl,
     C beta,
     Slice!(2, C*) csl,
     ulong settings,
@@ -46,7 +46,7 @@ void symm_impl(A, B, C)
 
     mixin prefix3;
     import std.experimental.ndslice.iteration: reversed, transposed;
-    mixin RegisterConfig!(PA, PB, PC, T);
+    mixin RegisterConfig!(P, T);
     //#########################################################
     if (llvm_expect(csl.empty!0 || csl.empty!1, false))
         return;
@@ -67,14 +67,14 @@ void symm_impl(A, B, C)
         csl = csl.transposed;
         settings ^= Upper | Right;
     }
-    static if (PA == 2)
+    static if (P == 2)
     {
         int hem = settings & ConjA;
     }
     if (!(settings & Upper) != !(settings & Right))
     {
         asl = asl.transposed;
-        static if (PA == 2)
+        static if (P == 2)
         {
             hem = -hem;
         }
@@ -86,112 +86,89 @@ void symm_impl(A, B, C)
         return;
     }
     //#########################################################
-    Kernel!(PC, T)[nr_chain.length] beta_kernels = void;
-    Kernel!(PC, T)[nr_chain.length] one_kernels  = void;
-    Kernel!(PC, T)* kernels                      = void;
+    Kernel!(P, T)[nr_chain.length] beta_kernels = void;
+    Kernel!(P, T)[nr_chain.length] one_kernels  = void;
+    Kernel!(P, T)* kernels                      = void;
 
-    static if (PA == PB)
+    foreach (nri, nr; nr_chain)
+        one_kernels [nri] = &gemv_reg!(BetaType.one, P, nr, T);
+
+    kernels = one_kernels.ptr;
+    if (beta == 0)
     {
         foreach (nri, nr; nr_chain)
-            one_kernels [nri] = &gemv_reg!(BetaType.one, PA, PB, PC, nr, T);
-
-        kernels = one_kernels.ptr;
-        if (beta == 0)
-        {
-            foreach (nri, nr; nr_chain)
-                beta_kernels[nri] = &gemv_reg!(BetaType.zero, PA, PB, PC, nr, T);
-            kernels = beta_kernels.ptr;
-        }
-        else
-        if (beta != 1)
-        {
-            foreach (nri, nr; nr_chain)
-                beta_kernels[nri] = &gemv_reg!(BetaType.beta, PA, PB, PC, nr, T);
-            kernels = beta_kernels.ptr;
-        }
+            beta_kernels[nri] = &gemv_reg!(BetaType.zero, P, nr, T);
+        kernels = beta_kernels.ptr;
+    }
+    else
+    if (beta != 1)
+    {
+        foreach (nri, nr; nr_chain)
+            beta_kernels[nri] = &gemv_reg!(BetaType.beta, P, nr, T);
+        kernels = beta_kernels.ptr;
     }
     C[2] alpha_beta = [alpha, beta];
     //#########################################################
     if (!(settings & Right))
     {
         //#########################################################
-        PackKernel!(B, T)[PA][mr_chain.length] pack_a_kernels = void;
-        PackKernel!(B, T)    [nr_chain.length] pack_b_kernels = void;
-        PackKernelTri!(A, T) pack_a_tri_kernel = void;
+        PackKernel!(C, T)[P][mr_chain.length] pack_a_kernels = void;
+        PackKernel!(C, T)    [nr_chain.length] pack_b_kernels = void;
+        PackKernelTri!(C, T) pack_a_tri_kernel = void;
 
-        static if (PB == 2)
+        static if (P == 2)
         {
             if (settings & ConjB)
             foreach (nri, nr; nr_chain)
-                pack_b_kernels[nri] = &pack_b_nano!(nr, PB, 1, B, T);
+                pack_b_kernels[nri] = &pack_b_nano!(nr, P, 1, C, T);
             else
             foreach (nri, nr; nr_chain)
-                pack_b_kernels[nri] = &pack_b_nano!(nr, PB, 0, B, T);
+                pack_b_kernels[nri] = &pack_b_nano!(nr, P, 0, C, T);
         }
         else
         {
             foreach (nri, nr; nr_chain)
-                pack_b_kernels[nri] = &pack_b_nano!(nr, PB, 0, B, T);
+                pack_b_kernels[nri] = &pack_b_nano!(nr, P, 0, C, T);
         }
-        static if (PA != PB)
-        {
-            foreach (nri, nr; nr_chain)
-                one_kernels [nri] = &gemv_reg!(BetaType.one, PA, PB, PC, nr, T);
-
-            kernels = one_kernels.ptr;
-            if (beta == 0)
-            {
-                foreach (nri, nr; nr_chain)
-                    beta_kernels[nri] = &gemv_reg!(BetaType.zero, PA, PB, PC, nr, T);
-                kernels = beta_kernels.ptr;
-            }
-            else
-            if (beta != 1)
-            {
-                foreach (nri, nr; nr_chain)
-                    beta_kernels[nri] = &gemv_reg!(BetaType.beta, PA, PB, PC, nr, T);
-                kernels = beta_kernels.ptr;
-            }
-        }
-        static if (PA == 2)
+        static if (P == 2)
         {
             if (hem == 0)
             {
                 foreach (mri, mr; mr_chain)
                 {
-                    pack_a_kernels[mri][0] = &pack_a_nano!(mr, PA, 0, A, T);
-                    pack_a_kernels[mri][1] = &pack_a_nano!(mr, PA, 0, A, T);
+                    pack_a_kernels[mri][0] = &pack_a_nano!(mr, P, 0, C, T);
+                    pack_a_kernels[mri][1] = &pack_a_nano!(mr, P, 0, C, T);
                 }
-                pack_a_tri_kernel = &pack_a_tri!(PA, A, T, 0);
+                pack_a_tri_kernel = &pack_a_tri!(P, C, T, 0);
             }
             else
             if (hem < 0)
             {
                 foreach (mri, mr; mr_chain)
                 {
-                    pack_a_kernels[mri][0] = &pack_a_nano!(mr, PA, 1, A, T);
-                    pack_a_kernels[mri][1] = &pack_a_nano!(mr, PA, 0, A, T);
+                    pack_a_kernels[mri][0] = &pack_a_nano!(mr, P, 1, C, T);
+                    pack_a_kernels[mri][1] = &pack_a_nano!(mr, P, 0, C, T);
                 }
-                pack_a_tri_kernel = &pack_a_tri!(PA, A, T, -1);
+                pack_a_tri_kernel = &pack_a_tri!(P, C, T, -1);
             }
             else
             {
                 foreach (mri, mr; mr_chain)
                 {
-                    pack_a_kernels[mri][0] = &pack_a_nano!(mr, PA, 0, A, T);
-                    pack_a_kernels[mri][1] = &pack_a_nano!(mr, PA, 1, A, T);
+                    pack_a_kernels[mri][0] = &pack_a_nano!(mr, P, 0, C, T);
+                    pack_a_kernels[mri][1] = &pack_a_nano!(mr, P, 1, C, T);
                 }
-                pack_a_tri_kernel = &pack_a_tri!(PA, A, T, +1);
+                pack_a_tri_kernel = &pack_a_tri!(P, C, T, +1);
             }
         }
         else
         {
             foreach (mri, mr; mr_chain)
-                pack_a_kernels[mri][0] = &pack_a_nano!(mr, PA, 0, A, T);
-            pack_a_tri_kernel = &pack_a_tri!(PA, A, T, 0);
+                pack_a_kernels[mri][0] = &pack_a_nano!(mr, P, 0, C, T);
+            pack_a_tri_kernel = &pack_a_tri!(P, C, T, 0);
         }
         //#########################################################
-        with(blocking!(PA, PB, PC, T)(asl.length!0, bsl.length!1, asl.length!0))
+        with(blocking!(P, T)(asl.length!0, bsl.length!1, asl.length!0))
         {
             size_t j;
             sizediff_t incb;
@@ -211,9 +188,9 @@ void symm_impl(A, B, C)
                 {
                     if (asl.length!0 - i < mc)
                         mc = asl.length!0 - i;
-                    pack_a_sym!(PA, A, T)(asl.ptr, asl.stride!0, asl.stride!1, i, j, mc, kc, a, pack_a_kernels.ptr, pack_a_tri_kernel, main_mr);
+                    pack_a_sym!(P, C, T)(asl.ptr, asl.stride!0, asl.stride!1, i, j, mc, kc, a, pack_a_kernels.ptr, pack_a_tri_kernel, main_mr);
                     //======================
-                    gebp!(PA, PB, PC, T, B)(
+                    gebp!(P, T, C)(
                         mc,
                         bsl.length!1,
                         kc,
@@ -225,7 +202,7 @@ void symm_impl(A, B, C)
                         bsl.stride!1,
                         cast(T*) cslm.ptr,
                         cslm.stride!1,
-                        *cast(T[PC][2]*)&alpha_beta,
+                        *cast(T[P][2]*)&alpha_beta,
                         pack_b_kernels.ptr,
                         kernels,
                         );
@@ -246,82 +223,62 @@ void symm_impl(A, B, C)
     else
     {
         //#########################################################
-        PackKernel!(B, T)    [mr_chain.length] pack_a_kernels = void;
-        PackKernel!(A, T)[PB][nr_chain.length] pack_b_kernels = void;
-        PackKernelTri!(A, T) pack_b_tri_kernel = void;
-        static if (PB == 2)
+        PackKernel!(C, T)    [mr_chain.length] pack_a_kernels = void;
+        PackKernel!(C, T)[P][nr_chain.length] pack_b_kernels = void;
+        PackKernelTri!(C, T) pack_b_tri_kernel = void;
+        static if (P == 2)
         {
             if (settings & ConjB)
             foreach (mri, mr; mr_chain)
-                pack_a_kernels[mri] = &pack_a_nano!(mr, PB, 1, B, T);
+                pack_a_kernels[mri] = &pack_a_nano!(mr, P, 1, C, T);
             else
             foreach (mri, mr; mr_chain)
-                pack_a_kernels[mri] = &pack_a_nano!(mr, PB, 0, B, T);
+                pack_a_kernels[mri] = &pack_a_nano!(mr, P, 0, C, T);
         }
         else
         {
             foreach (mri, mr; mr_chain)
-                pack_a_kernels[mri] = &pack_a_nano!(mr, PB, 0, B, T);
+                pack_a_kernels[mri] = &pack_a_nano!(mr, P, 0, C, T);
         }
-        static if (PA == 2)
+        static if (P == 2)
         {
             if (hem == 0)
             {
                 foreach (nri, nr; nr_chain)
                 {
-                    pack_b_kernels[nri][0] = &pack_b_nano!(nr, PA, 0, A, T);
-                    pack_b_kernels[nri][1] = &pack_b_nano!(nr, PA, 0, A, T);
+                    pack_b_kernels[nri][0] = &pack_b_nano!(nr, P, 0, C, T);
+                    pack_b_kernels[nri][1] = &pack_b_nano!(nr, P, 0, C, T);
                 }
-                pack_b_tri_kernel = &pack_b_tri!(PA, A, T, 0);
+                pack_b_tri_kernel = &pack_b_tri!(P, C, T, 0);
             }
             else
             if (hem < 0)
             {
                 foreach (nri, nr; nr_chain)
                 {
-                    pack_b_kernels[nri][0] = &pack_b_nano!(nr, PA, 1, A, T);
-                    pack_b_kernels[nri][1] = &pack_b_nano!(nr, PA, 0, A, T);
+                    pack_b_kernels[nri][0] = &pack_b_nano!(nr, P, 1, C, T);
+                    pack_b_kernels[nri][1] = &pack_b_nano!(nr, P, 0, C, T);
                 }
-                pack_b_tri_kernel = &pack_b_tri!(PA, A, T, -1);
+                pack_b_tri_kernel = &pack_b_tri!(P, C, T, -1);
             }
             else
             {
                 foreach (nri, nr; nr_chain)
                 {
-                    pack_b_kernels[nri][0] = &pack_b_nano!(nr, PA, 0, A, T);
-                    pack_b_kernels[nri][1] = &pack_b_nano!(nr, PA, 1, A, T);
+                    pack_b_kernels[nri][0] = &pack_b_nano!(nr, P, 0, C, T);
+                    pack_b_kernels[nri][1] = &pack_b_nano!(nr, P, 1, C, T);
                 }
-                pack_b_tri_kernel = &pack_b_tri!(PA, A, T, +1);
+                pack_b_tri_kernel = &pack_b_tri!(P, C, T, +1);
             }
         }
         else
         {
             foreach (nri, nr; nr_chain)
-                pack_b_kernels[nri][0] = &pack_b_nano!(nr, PA, 0, A, T);
-            pack_b_tri_kernel = &pack_b_tri!(PA, A, T, 0);
-        }
-        static if (PA != PB)
-        {
-            foreach (nri, nr; nr_chain)
-                one_kernels [nri] = &gemv_reg!(BetaType.one, PB, PA, PC, nr, T);
-
-            kernels = one_kernels.ptr;
-            if (beta == 0)
-            {
-                foreach (nri, nr; nr_chain)
-                    beta_kernels[nri] = &gemv_reg!(BetaType.zero, PB, PA, PC, nr, T);
-                kernels = beta_kernels.ptr;
-            }
-            else
-            if (beta != 1)
-            {
-                foreach (nri, nr; nr_chain)
-                    beta_kernels[nri] = &gemv_reg!(BetaType.beta, PB, PA, PC, nr, T);
-                kernels = beta_kernels.ptr;
-            }
+                pack_b_kernels[nri][0] = &pack_b_nano!(nr, P, 0, C, T);
+            pack_b_tri_kernel = &pack_b_tri!(P, C, T, 0);
         }
         //#########################################################
-        with(blocking!(PB, PA, PC, T)(bsl.length!0, asl.length!0, bsl.length!1))
+        with(blocking!(P, T)(bsl.length!0, asl.length!0, bsl.length!1))
         {
             sizediff_t incb;
             if (mc < bsl.length!0)
@@ -342,9 +299,9 @@ void symm_impl(A, B, C)
                     if (bslp.length!0 < mc)
                         mc = bslp.length!0;
                     ////////////////////////
-                    pack_a!(PA, PB, PC, B, T)(bslp[0 .. mc], a, pack_a_kernels.ptr);
+                    pack_a!(P, C, T)(bslp[0 .. mc], a, pack_a_kernels.ptr);
                     //======================
-                    sybp!(PB, PA, PC, T, A)(
+                    sybp!(P, T, C)(
                         mc,
                         asl.length!0,
                         kc,
@@ -357,7 +314,7 @@ void symm_impl(A, B, C)
                         j,
                         cast(T*) cslm.ptr,
                         cslm.stride!1,
-                        *cast(T[PC][2]*)&alpha_beta,
+                        *cast(T[P][2]*)&alpha_beta,
                         pack_b_tri_kernel,
                         pack_b_kernels.ptr,
                         kernels,
@@ -380,27 +337,27 @@ void symm_impl(A, B, C)
 }
 
 pragma(inline, true)
-void sybp(size_t PA, size_t PB, size_t PC, T, B)(
+void sybp(size_t P, T, C)(
     size_t mc,
     size_t nc,
     size_t kc,
     scope const(T)* a,
     scope T* b,
     sizediff_t incb,
-    const(B)* ptrb,
+    const(C)* ptrb,
     sizediff_t str0b,
     sizediff_t str1b,
     size_t js,
     scope T* c,
     sizediff_t ldc,
-    ref const T[PC][2] alpha_beta,
-    PackKernelTri!(B, T) pack_b_tri_kernel,
-    PackKernel!(B, T)[PB]* pack_b_kernels,
-    Kernel!(PC, T)* kernels,
+    ref const T[P][2] alpha_beta,
+    PackKernelTri!(C, T) pack_b_tri_kernel,
+    PackKernel!(C, T)[P]* pack_b_kernels,
+    Kernel!(P, T)* kernels,
     size_t nr,
     )
 {
-    mixin RegisterConfig!(PA, PB, PC, T);
+    mixin RegisterConfig!(P, T);
     size_t i;
     do
     {
@@ -413,7 +370,7 @@ void sybp(size_t PA, size_t PB, size_t PC, T, B)(
                 auto to = b;
                 {
                     sizediff_t len = i - j;
-                    static if (PB == 1)
+                    static if (P == 1)
                         len++;
                     if (len > 0)
                     {
@@ -427,7 +384,7 @@ void sybp(size_t PA, size_t PB, size_t PC, T, B)(
                 {
                     sizediff_t start = j - i;
                     sizediff_t len = nr - start;
-                    static if (PB == 1)
+                    static if (P == 1)
                         len--;
                     if (len > length)
                         len = length;
@@ -445,9 +402,9 @@ void sybp(size_t PA, size_t PB, size_t PC, T, B)(
                 i += nr;
             }
             kernels[0](mc, kc, a, b, c, ldc, alpha_beta);
-            b +=  nr * PB * incb;
+            b +=  nr * P * incb;
             nc -= nr;
-            c += nr * PC * ldc;
+            c += nr * P * ldc;
         }
         while (nc >= nr);
         pack_b_kernels++;

@@ -313,9 +313,9 @@ T* pack_a_nano(size_t n, size_t P, bool conj = false, F, T)(size_t length, sized
 
 
 pragma(inline, true)
-void pack_a(size_t PA, size_t PB, size_t PC, C, T)(Slice!(2, const(C)*) sl, T* a, PackKernel!(C, T)* kernels)
+void pack_a(size_t P, C, T)(Slice!(2, const(C)*) sl, T* a, PackKernel!(C, T)* kernels)
 {
-    mixin RegisterConfig!(PA, PB, PC, T);
+    mixin RegisterConfig!(P, T);
     foreach (mri, mr; mr_chain)
     if (sl.length >= mr) do
     {
