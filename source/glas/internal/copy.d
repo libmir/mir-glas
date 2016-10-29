@@ -44,7 +44,7 @@ alias PackKernelTri(F, T) =
         size_t n,
     );
 
-//pragma(inline, false)
+pragma(inline, false)
 T* pack_b_nano(size_t n, size_t P, bool conj = false, F, T)(size_t length, sizediff_t stride, sizediff_t elemStride, const(F)* from, T* to)
 {
     enum s = n * P;
