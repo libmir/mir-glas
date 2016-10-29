@@ -377,36 +377,37 @@ dot_reg_basic (
         foreach (m; Iota!M)
             ai[p][m] = a[0][p][m];
 
-        enum AB = P + P == 4;
-        enum CA = P + P == 4;
-        enum CB = P + P == 4;
-
         static if (P == 1)
-            alias s = Iota!(N/2 + N%2);
-        else
-            alias s = Iota!N;
-        foreach (u; s)
+        foreach (u; Iota!(N/2 + N%2))
         {
-            static if (P == 1)
-                alias um = Iota!(2*u, 2*u + 2 > N ? 2*u + 1 : 2*u + 2);
-            else
-                alias um = Iota!(u, u + 1);
+            alias um = Iota!(2*u, 2*u + 2 > N ? 2*u + 1 : 2*u + 2);
             foreach (n; um)
             foreach (p; Iota!P)
                 bi[n][p] = b[0][n][p];
             foreach (n; um)
             foreach (m; Iota!M)
             {
- static if (CA) reg[n][1][m] += ai[1][m] * bi[n][0];
                 reg[n][0][m] += ai[0][m] * bi[n][0];
- static if (CB) reg[n][1][m] += ai[0][m] * bi[n][1];
- static if (AB) reg[n][0][m] -= ai[1][m] * bi[n][1];
+            }
+        }
+        else
+        foreach (n; Iota!N)
+        {
+            foreach (p; Iota!P)
+                bi[n][p] = b[0][n][p];
+            foreach (m; Iota!M)
+            {
+                reg[n][1][m] += ai[1][m] * bi[n][0];
+                reg[n][0][m] += ai[0][m] * bi[n][0];
+                reg[n][1][m] += ai[0][m] * bi[n][1];
+                reg[n][0][m] -= ai[1][m] * bi[n][1];
             }
         }
         a++;
         b++;
+        length--;
     }
-    while (llvm_expect(--length, true));
+    while (length);
     load_nano(c, reg);
     return a;
 }
