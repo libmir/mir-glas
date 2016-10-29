@@ -65,14 +65,14 @@ BlockInfo!T blocking_triangular(P, T)(size_t m, size_t n)
     sizediff_t l2 = c2; // half matrix
     //ret.kc = (c1 - 2 * (T[P][main_nr][main_mr].sizeof + main_nr * line) - 512) / (T[P][main_nr].sizeof + T[P][main_mr].sizeof);
 
-    if (l2 >= (m * ((m + main_nr) * P + P * main_mr * 2)) * T.sizeof)
+    if (l2 >= (m * ((m + main_nr) + main_mr * 2)) * T[p].sizeof)
     {
         //ret.kc = ret.mc = ret.kc > m ? m : ret.kc;
         ret.kc = ret.mc = m;
     }
     else
     {
-        sizediff_t x = l2 / T.sizeof - (main_nr * P + P * main_mr * 2);
+        sizediff_t x = l2 / T.sizeof - P * (main_nr + main_mr * 2);
         assert(x > 1);
         import ldc.intrinsics: sqrt = llvm_sqrt;
         x = cast(size_t) sqrt(double(x));
