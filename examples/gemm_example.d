@@ -49,6 +49,7 @@ else
             return new T[len].sliced(shape);
         }
     }
+    else version = HaveImplicitConstCast;
 }
 
 int main()
