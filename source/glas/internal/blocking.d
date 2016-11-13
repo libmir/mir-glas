@@ -27,7 +27,7 @@ BlockInfo!T blocking(size_t P, T)(size_t m, size_t n, size_t k)
     glas_init();
     mixin RegisterConfig!(P, T);
     BlockInfo!T ret = void;
-    sizediff_t l2 = c2 >> 1; // half cache
+    sizediff_t l2 = c2 * 3 / 5; // half cache
     ret.kc = (l2 - m * T[P][main_nr].sizeof) / (m * T[P].sizeof + T[P][main_nr].sizeof);
     ret.mc = m;
     enum minKc = 320 / P;
