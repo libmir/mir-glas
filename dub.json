@@ -7,11 +7,11 @@
     "buildTypes": {
         "target-native": {
             "buildOptions": ["noBoundsCheck", "releaseMode", "optimize", "inline"],
-            "dflags-ldc": ["-mcpu=native", "-linkonce-templates"]
+            "dflags-ldc": ["-linkonce-templates",  "-enable-cross-module-inlining", "-mcpu=native"]
         },
         "target-default": {
             "buildOptions": ["noBoundsCheck", "releaseMode", "optimize", "inline"],
-            "dflags-ldc": ["-linkonce-templates"]
+            "dflags-ldc": ["-linkonce-templates", "-enable-cross-module-inlining"]
         },
     },
     "configurations": [
