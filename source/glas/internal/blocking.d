@@ -22,33 +22,33 @@ struct BlockInfo(T)
 }
 
 pragma(inline, false)
-BlockInfo!T blocking(size_t PA, size_t PB, size_t PC, T)(size_t m, size_t n, size_t k)
+BlockInfo!T blocking(size_t P, T)(size_t m, size_t n, size_t k)
 {
     glas_init();
-    mixin RegisterConfig!(PC, PA, PB, T);
+    mixin RegisterConfig!(P, T);
     BlockInfo!T ret = void;
-    sizediff_t l2 = c2 >> 1; // half cache
-    ret.kc = (l2 - m * T[PC][main_nr].sizeof) / (m * T[PA].sizeof + T[PB][main_nr].sizeof);
+    sizediff_t l2 = c2 * 3 / 5; // half cache
+    ret.kc = (l2 - m * T[P][main_nr].sizeof) / (m * T[P].sizeof + T[P][main_nr].sizeof);
     ret.mc = m;
-    enum minKc = 320 / PC;
-    auto a = 2 * (T[PC][main_nr][main_mr].sizeof + main_nr * line) + 512;
-    if (ret.kc < minKc || ret.kc * (T[PA][main_mr].sizeof + T[PB][main_nr].sizeof) + a  > c1)
+    enum minKc = 320 / P;
+    auto a = 2 * (T[P][main_nr][main_mr].sizeof + main_nr * line) + 512;
+    if (ret.kc < minKc || ret.kc * (T[P][main_mr].sizeof + T[P][main_nr].sizeof) + a  > c1)
     {
-        ret.kc = (c1 - a) / (T[PA][main_mr].sizeof + T[PB][main_nr].sizeof);
+        ret.kc = (c1 - a) / (T[P][main_mr].sizeof + T[P][main_nr].sizeof);
         assert(c1 > main_mr);
         assert(ret.kc > main_mr);
         ret.kc.normalizeChunkSize!main_mr(k);
         assert(ret.kc > 0);
-        auto df = T[PC][main_nr].sizeof + T[PA].sizeof * ret.kc;
-        ret.mc = (l2 - ret.kc * T[PB][main_nr].sizeof) / df;
+        auto df = T[P][main_nr].sizeof + T[P].sizeof * ret.kc;
+        ret.mc = (l2 - ret.kc * T[P][main_nr].sizeof) / df;
         ret.mc.normalizeChunkSize!main_nr(m);
     }
     else
     {
         ret.kc.normalizeChunkSize!main_mr(k);
     }
-    auto a_length = ret.kc * ret.mc * T[PA].sizeof;
-    auto b_length = ret.kc * T[PB].sizeof * (ret.mc == m && false ? main_nr : n);
+    auto a_length = ret.kc * ret.mc * T[P].sizeof;
+    auto b_length = ret.kc * T[P].sizeof * (ret.mc == m && false ? main_nr : n);
     auto buffLength = a_length + b_length;
     auto _mem = memory(a_length + b_length + prefetchShift);
     ret.a = cast(T*) _mem.ptr;
@@ -57,22 +57,22 @@ BlockInfo!T blocking(size_t PA, size_t PB, size_t PC, T)(size_t m, size_t n, siz
 }
 
 version(none)
-BlockInfo!T blocking_triangular(size_t PA, size_t PB, T)(size_t m, size_t n)
+BlockInfo!T blocking_triangular(P, T)(size_t m, size_t n)
 {
-    mixin RegisterConfig!(PB, PA, PB, T);
+    mixin RegisterConfig!(P, T);
     BlockInfo!T ret = void;
 
     sizediff_t l2 = c2; // half matrix
-    //ret.kc = (c1 - 2 * (T[PB][main_nr][main_mr].sizeof + main_nr * line) - 512) / (T[PA][main_nr].sizeof + T[PB][main_mr].sizeof);
+    //ret.kc = (c1 - 2 * (T[P][main_nr][main_mr].sizeof + main_nr * line) - 512) / (T[P][main_nr].sizeof + T[P][main_mr].sizeof);
 
-    if (l2 >= (m * ((m + main_nr) * PA + PB * main_mr * 2)) * T.sizeof)
+    if (l2 >= (m * ((m + main_nr) + main_mr * 2)) * T[p].sizeof)
     {
         //ret.kc = ret.mc = ret.kc > m ? m : ret.kc;
         ret.kc = ret.mc = m;
     }
     else
     {
-        sizediff_t x = l2 / T.sizeof - (main_nr * PA + PB * main_mr * 2);
+        sizediff_t x = l2 / T.sizeof - P * (main_nr + main_mr * 2);
         assert(x > 1);
         import ldc.intrinsics: sqrt = llvm_sqrt;
         x = cast(size_t) sqrt(double(x));
@@ -81,8 +81,8 @@ BlockInfo!T blocking_triangular(size_t PA, size_t PB, T)(size_t m, size_t n)
         ret.kc = ret.mc = x;
     }
 
-    auto a_length = ret.kc * ret.mc * T[PA].sizeof;
-    auto b_length = ret.kc * T[PB].sizeof * (ret.mc == m && false ? main_mr : n);
+    auto a_length = ret.kc * ret.mc * T[P].sizeof;
+    auto b_length = ret.kc * T[P].sizeof * (ret.mc == m && false ? main_mr : n);
     auto buffLength = a_length + b_length;
     auto _mem = memory(a_length + b_length + prefetchShift);
     ret.b = cast(T*) _mem.ptr;

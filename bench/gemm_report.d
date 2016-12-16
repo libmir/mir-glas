@@ -2,9 +2,16 @@
 /+ dub.json:
 {
 	"name": "gemm_report",
-	"dependencies": {"mir-glas": {"path": ".."}, "cblas": "~>1.0.0"},
-	"lflags": ["-L../"],
-	"libs": ["mir-glas", "mir-cpuid", "openblas"],
+	"dependencies": {"mir-glas": {"path": ".."}, },
+	"libs": ["blas"],
+    "lflags": ["-L$MIR_GLAS_PACKAGE_DIR", "-L.."],
+    "dependencies": {
+		"cblas": "~>1.0.0",
+        "mir-cpuid": "~>0.4.2",
+        "mir-glas":{
+            "path": "../"
+        }
+    },
 	"dflags-ldc": ["-mcpu=native"],
 }
 +/
@@ -24,7 +31,7 @@ import std.stdio;
 import std.exception;
 import std.getopt;
 import std.experimental.ndslice;
-import glas;
+import glas.ndslice;
 
 alias C = float;
 //alias C = double;
@@ -38,7 +45,7 @@ size_t[] reportValues = [
 
 void main(string[] args)
 {
-	size_t count = 6;
+	size_t count = 10;
 	auto helpInformation = 
 	getopt(args,
 		"count|c", "Iteration count. Default value is " ~ count.to!string, &count);
@@ -156,7 +163,8 @@ enum bool isComplex(C)
 void fillRNG(T)(Slice!(2, T*) sl)
 {
 	import std.random;
-	foreach(ref e; sl.byElement)
+	foreach(row; sl)
+	foreach(ref e; row)
 	{
 		static if(isComplex!T)
 		{
