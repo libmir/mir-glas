@@ -3,7 +3,7 @@ os:
  - linux
 language: d
 d:
- - ldc-1.1.0-beta2
+ - ldc-1.1.0-beta6
 addons:
   apt:
     packages:
