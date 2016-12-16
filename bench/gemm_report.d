@@ -4,7 +4,7 @@
 	"name": "gemm_report",
 	"dependencies": {"mir-glas": {"path": ".."}, },
 	"libs": ["blas"],
-    "lflags": ["-L$MIR_GLAS_PACKAGE_DIR", "-L.."],
+    "lflags": ["-L$MIR_GLAS_PACKAGE_DIR", "-L$MIR_CPUID_PACKAGE_DIR", "-L.."],
     "dependencies": {
 		"cblas": "~>1.0.0",
         "mir-glas":{

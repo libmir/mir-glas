@@ -23,6 +23,26 @@ The library provides
 
 CBLAS API can be provided by linking with [Natlib's CBLAS](http://netlib.org/blas/#_cblas) library.
 
+## dub
+
+GLAS can be used with DMD and LDC but 
+[LDC (LLVM D Compiler)](https://github.com/ldc-developers/ldc) >= `1.1.0 beta 6` should be installed in common path anyway.
+
+GLAS can be included automatically in a project using [dub](http://code.dlang.org/) (the D package manager).
+DUB will build GLAS and CPUID manually with LDC.
+
+```json
+{
+   ...
+   "dependencies": {
+      "mir-glas": "~><current_mir-glas_version>",
+      "mir-cpuid": "~><current_mir-cpuid_version>"
+   },
+   "lflags": ["-L$MIR_GLAS_PACKAGE_DIR", "-L$MIR_CPUID_PACKAGE_DIR"]
+}
+```
+
+`$MIR_GLAS_PACKAGE_DIR` and `$MIR_CPUID_PACKAGE_DIR` will be replaced automatically by DUB to appropriate directories.
 
 ## Usage
 
@@ -48,24 +68,14 @@ There are two files:
  1. `glas/fortran.h` / `glas/fortran.d` - for Netilb's BLAS API
  2. `glas/ndslice.h` / `glas/ndslice.d` - for GLAS API
 
-#### dub
-D headers can be included automatically in a project using [dub](http://code.dlang.org/) (the D package manager).
-```json
-{
-   ...
-   "dependencies": {
-      "mir-glas": "~><current-mir-glas-version>"
-   }
-}
-```
 
-## Installation
+## Manual Compilation
 
 #### Compiler installation
 
-[LDC (LLVM D Compiler)](https://github.com/ldc-developers/ldc) >= `1.1.0` is required to build a project.
+[LDC (LLVM D Compiler)](https://github.com/ldc-developers/ldc) >= `1.1.0 beta 6` is required to build a project.
 `1.1.0` version is not released yet.
-You may want to build LDC from source or use [LDC 1.1.0 beta 2](https://github.com/ldc-developers/ldc/releases/tag/v1.1.0-beta2).
+You may want to build LDC from source or use [LDC 1.1.0 beta 6](https://github.com/ldc-developers/ldc/releases/tag/v1.1.0-beta2).
 Beta 2 generates a lot of warnings that can be ignored. Beta 3 is not supported.
 
 LDC binaries contains two compilers: ldc2 and ldmd2. It is recommended to use ldmd2 with mir-glas.

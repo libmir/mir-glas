@@ -6,7 +6,6 @@
     "systemDependencies": "Example requires libmir-cpuid and libmir-glas",
     "lflags": ["-L$MIR_GLAS_PACKAGE_DIR", "-L$MIR_CPUID_PACKAGE_DIR", "-L.."],
     "dependencies": {
-        "cblas": "~>1.0.0",
         "mir-glas":{
             "path": "../"
         },
