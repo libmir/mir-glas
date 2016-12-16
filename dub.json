@@ -21,7 +21,7 @@
             "sourceFiles": ["source/glas/ndslice.d", "source/glas/fortran.d"],
             "excludedSourceFiles": ["source/*"],
             "preBuildCommands": ["dub build --root='$MIR_GLAS_PACKAGE_DIR' --config=static --build=target-native --compiler=ldmd2 --build-mode=singleFile --parallel --force"],
-            "libs": ["mir-cpuid", "mir-glas"]
+            "libs": ["mir-glas"]
         },
         {
             "name": "auto-default",
@@ -29,14 +29,14 @@
             "sourceFiles": ["source/glas/ndslice.d", "source/glas/fortran.d"],
             "excludedSourceFiles": ["source/*"],
             "preBuildCommands": ["dub build --root='$MIR_GLAS_PACKAGE_DIR' --config=static --build=target-default --compiler=ldmd2 --build-mode=singleFile --parallel --force"],
-            "libs": ["mir-cpuid", "mir-glas"]
+            "libs": ["mir-glas"]
         },
         {
             "name": "header",
             "targetType": "sourceLibrary",
             "sourceFiles": ["source/glas/ndslice.d", "source/glas/fortran.d"],
             "excludedSourceFiles": ["source/*"],
-            "libs": ["mir-cpuid", "mir-glas"]
+            "libs": ["mir-glas"]
         },
         {
             "name": "static",
