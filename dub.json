@@ -20,23 +20,29 @@
             "targetType": "sourceLibrary",
             "sourceFiles": ["source/glas/ndslice.d", "source/glas/fortran.d"],
             "excludedSourceFiles": ["source/*"],
-            "preBuildCommands": ["dub build --root='$MIR_GLAS_PACKAGE_DIR' --config=static --build=target-native --compiler=ldmd2 --build-mode=singleFile --parallel --force"],
-            "libs": ["mir-glas"]
+            "preBuildCommands": [
+                "dub build --root='$MIR_GLAS_PACKAGE_DIR' --config=static --build=target-native --compiler=ldmd2 --build-mode=singleFile --parallel --force",
+                "dub build --root='$MIR_CPUID_PACKAGE_DIR' --build=release-nobounds --compiler=ldmd2 --build-mode=singleFile --parallel --force"
+            ],
+            "libs": ["mir-glas", "mir-cpuid"]
         },
         {
             "name": "auto-default",
             "targetType": "sourceLibrary",
             "sourceFiles": ["source/glas/ndslice.d", "source/glas/fortran.d"],
             "excludedSourceFiles": ["source/*"],
-            "preBuildCommands": ["dub build --root='$MIR_GLAS_PACKAGE_DIR' --config=static --build=target-default --compiler=ldmd2 --build-mode=singleFile --parallel --force"],
-            "libs": ["mir-glas"]
+            "preBuildCommands": [
+                "dub build --root='$MIR_GLAS_PACKAGE_DIR' --config=static --build=target-native --compiler=ldmd2 --build-mode=singleFile --parallel --force",
+                "dub build --root='$MIR_CPUID_PACKAGE_DIR' --build=release-nobounds --compiler=ldmd2 --build-mode=singleFile --parallel --force"
+            ],
+            "libs": ["mir-glas", "mir-cpuid"]
         },
         {
             "name": "header",
             "targetType": "sourceLibrary",
             "sourceFiles": ["source/glas/ndslice.d", "source/glas/fortran.d"],
             "excludedSourceFiles": ["source/*"],
-            "libs": ["mir-glas"]
+            "libs": ["mir-glas", "mir-cpuid"]
         },
         {
             "name": "static",
