@@ -4,9 +4,9 @@
     "name": "gemm_example",
     "targetType":"executable",
     "systemDependencies": "Example requires libmir-cpuid and libmir-glas",
-    "libs": ["mir-glas", "mir-cpuid"],
-    "lflags": ["-L../"],
+    "lflags": ["-L$MIR_GLAS_PACKAGE_DIR"],
     "dependencies": {
+        "mir-cpuid": "~>0.4.2",
         "mir-glas":{
             "path": "../"
         }
@@ -18,7 +18,7 @@
         {
             "name": "mir",
             "dependencies": {
-                "mir": "~>0.20.2"
+                "mir": "~>0.22.0"
             }
         }
     ]
