@@ -136,9 +136,13 @@ void glas_cgemm(cfloat alpha, Slice!(2, const(cfloat)*) asl, Slice!(2, const(cfl
 /// ditto
 void glas_zgemm(cdouble alpha, Slice!(2, const(cdouble)*) asl, Slice!(2, const(cdouble)*) bsl, cdouble beta, Slice!(2, cdouble*) csl, ulong settings = 0);
 
+/// ditto
 alias gemm = glas_sgemm;
+/// ditto
 alias gemm = glas_dgemm;
+/// ditto
 alias gemm = glas_cgemm;
+/// ditto
 alias gemm = glas_zgemm;
 
 /++
@@ -174,9 +178,13 @@ void glas_csymm(cfloat alpha, Slice!(2, const(cfloat)*) asl, Slice!(2, const(cfl
 /// ditto
 void glas_zsymm(cdouble alpha, Slice!(2, const(cdouble)*) asl, Slice!(2, const(cdouble)*) bsl, cdouble beta, Slice!(2, cdouble*) csl, ulong settings = 0);
 
+/// ditto
 alias symm = glas_ssymm;
+/// ditto
 alias symm = glas_dsymm;
+/// ditto
 alias symm = glas_csymm;
+/// ditto
 alias symm = glas_zsymm;
 
 /++
@@ -221,20 +229,36 @@ void _glas_zscal(cdouble a, size_t n, size_t incx, cdouble* x);
 /// ditto
 void _glas_zdIscal(idouble a, size_t n, size_t incx, cdouble* x);
 
+/// ditto
 alias scal = glas_sscal;
+/// ditto
 alias scal = glas_dscal;
+/// ditto
 alias scal = glas_csscal;
+/// ditto
 alias scal = glas_cscal;
+/// ditto
 alias scal = glas_csIscal;
+/// ditto
 alias scal = glas_zdscal;
+/// ditto
 alias scal = glas_zscal;
+/// ditto
 alias scal = glas_zdIscal;
 
+/// ditto
 alias scal = _glas_sscal;
+/// ditto
 alias scal = _glas_dscal;
+/// ditto
 alias scal = _glas_csscal;
+/// ditto
 alias scal = _glas_cscal;
+/// ditto
 alias scal = _glas_csIscal;
+/// ditto
 alias scal = _glas_zdscal;
+/// ditto
 alias scal = _glas_zscal;
+/// ditto
 alias scal = _glas_zdIscal;

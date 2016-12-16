@@ -17,7 +17,7 @@ script:
 
 notifications:
   email:
-    - devteam@mir.rocks
+    - ilyayaroshenko@gmail.com
 
 notifications:
   webhooks:
