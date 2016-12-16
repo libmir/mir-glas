@@ -21,7 +21,7 @@ The library provides
  1. [BLAS](http://netlib.org/blas/) (Basic Linear Algebra Subprograms) API.
  2. GLAS (Generic Linear Algebra Subprograms) API.
 
-CBLAS API can be provided by linking with [Natlib's CBLAS](http://netlib.org/blas/#_cblas) library.
+CBLAS API can be provided by linking with [Netlib's CBLAS](http://netlib.org/blas/#_cblas) library.
 
 ## dub
 
