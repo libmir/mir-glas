@@ -194,7 +194,7 @@ Five steps
 
 #### Why GLAS is called "Generic ..."?
 
- 1. GLAS has a generic internal implementation, which can be easily portable to any other architecture with minimal efforts (5 minutes).
+ 1. GLAS has a generic internal implementation, which can be easily ported to any other architecture with minimal efforts (5 minutes).
  2. GLAS API provides more functionality comparing with BLAS.
  3. It is written in Dlang using generic programming.
 
