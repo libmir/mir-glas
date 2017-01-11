@@ -59,47 +59,6 @@ template Iota(size_t i, size_t j)
         alias Iota = AliasSeq!(i, Iota!(i + 1, j));
 }
 
-
-static if (__VERSION__ < 2072)
-{
-    import std.experimental.ndslice.slice: Slice;
-    import ldc.attributes : fastmath;
-
-    @fastmath:
-    pragma(inline, true)
-    @property T* ptr(T)(Slice!(2, T*) slice)
-    {
-        return &(slice.front.front());
-    }
-
-    static if (__VERSION__ < 2072)
-    pragma(inline, true)
-    @property T* ptr(T)(Slice!(1, T*) slice)
-    {
-        return &(slice.front());
-    }
-
-    pragma(inline, true)
-    auto _toSlice(size_t N, T)(size_t[N] lengths, sizediff_t[N] strides, T ptr)
-    {
-        static union U
-        {
-            Slice!(N, T) slice;
-            struct
-            {
-                size_t[N] lengths;
-                sizediff_t[N] strides;
-                T ptr;
-            }
-        }
-        U ret = void;
-        ret.lengths = lengths;
-        ret.strides = strides;
-        ret.ptr = ptr;
-        return ret.slice;
-    }
-}
-
 template prefix(T)
 {
     static if (is(T == float))

@@ -8,7 +8,7 @@ pragma(LDC_no_moduleinfo);
 
 import std.traits;
 import std.meta;
-import std.experimental.ndslice.slice : Slice;
+import mir.ndslice.slice : Slice, SliceKind;
 
 import ldc.attributes;
 import ldc.intrinsics;
@@ -29,31 +29,31 @@ nothrow @nogc
 void gemm_impl(C)
 (
     C alpha,
-    Slice!(2, const(C)*) asl,
-    Slice!(2, const(C)*) bsl,
+    Slice!(SliceKind.universal, [2], const(C)*) asl,
+    Slice!(SliceKind.universal, [2], const(C)*) bsl,
     C beta,
-    Slice!(2, C*) csl,
+    Slice!(SliceKind.universal, [2], C*) csl,
     ulong settings,
 )
 {
     mixin prefix3;
     mixin RegisterConfig!(P, T);
-    import std.experimental.ndslice.iteration: reversed, transposed;
+    import mir.ndslice.dynamic: reversed, transposed;
     //#########################################################
     if (llvm_expect(csl.empty!0 || csl.empty!1, false))
         return;
-    if (llvm_expect(csl.stride!0 < 0, false))
+    if (llvm_expect(csl._stride!0 < 0, false))
     {
         csl = csl.reversed!0;
         asl = asl.reversed!0;
     }
-    if (llvm_expect(csl.stride!1 < 0, false))
+    if (llvm_expect(csl._stride!1 < 0, false))
     {
         csl = csl.reversed!1;
         bsl = bsl.reversed!1;
     }
     // change row based to column based
-    if (csl.stride!0 != 1)
+    if (csl._stride!0 != 1)
     {
         auto ca = settings & ConjA;
         auto cb = settings & ConjB;
@@ -67,10 +67,10 @@ void gemm_impl(C)
         bsl = tsl.transposed;
         csl = csl.transposed;
     }
-    assert(csl.stride!0 == 1);
+    assert(csl._stride!0 == 1);
     if (llvm_expect(asl.empty!1 || alpha == 0, false))
     {
-        gemm_fast_path(beta, csl.length!1, csl.stride!1, csl.length!0, csl.ptr);
+        gemm_fast_path(beta, csl.length!1, csl._stride!1, csl.length!0, csl._iterator);
         return;
     }
     //#########################################################
@@ -139,7 +139,7 @@ void gemm_impl(C)
                 kc = asl.length!1;
             ////////////////////////
             auto aslp = asl[0 .. $, 0 .. kc];
-            auto bsl_ptr = bsl.ptr;
+            auto bsl_ptr = bsl._iterator;
             auto cslm = csl;
             auto mc = mc;
             //======================
@@ -158,10 +158,10 @@ void gemm_impl(C)
                     b,
                     incb,
                     bsl_ptr,
-                    bsl.stride!0,
-                    bsl.stride!1,
-                    cast(T*) cslm.ptr,
-                    cslm.stride!1,
+                    bsl._stride!0,
+                    bsl._stride!1,
+                    cast(T*) cslm._iterator,
+                    cslm._stride!1,
                     *cast(T[P][2]*)&alpha_beta,
                     pack_b_kernels.ptr,
                     kernels,

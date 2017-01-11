@@ -8,7 +8,7 @@ pragma(LDC_no_moduleinfo);
 
 import std.traits;
 import std.meta;
-import std.experimental.ndslice.slice : Slice;
+import mir.ndslice.slice : Slice, SliceKind;
 import ldc.attributes : fastmath, optStrategy;
 import ldc.intrinsics : llvm_expect;
 import glas.internal.utility;
@@ -17,7 +17,7 @@ import glas.internal.config;
 @fastmath:
 
 pragma(inline, true)
-@property T[] toDense(T)(Slice!(1, T*) slice)
+@property T[] toDense(T)(Slice!(SliceKind.universal, [1], T*) slice)
 {
     return (&(slice.front()))[0 .. slice.length];
 }
@@ -293,13 +293,13 @@ T* pack_a_nano(size_t n, size_t P, bool conj = false, F, T)(size_t length, sized
 
 
 pragma(inline, true)
-void pack_a(size_t P, C, T)(Slice!(2, const(C)*) sl, T* a, PackKernel!(C, T)* kernels)
+void pack_a(size_t P, C, T)(Slice!(SliceKind.universal, [2], const(C)*) sl, T* a, PackKernel!(C, T)* kernels)
 {
     mixin RegisterConfig!(P, T);
     foreach (mri, mr; mr_chain)
     if (sl.length >= mr) do
     {
-        a = kernels[mri](sl.length!1, sl.stride!1, sl.stride!0, sl.ptr, a);
+        a = kernels[mri](sl.length!1, sl._stride!1, sl._stride!0, sl._iterator, a);
         sl.popFrontExactly(mr);
     }
     while (!mri && sl.length >= mr);
@@ -364,7 +364,7 @@ void pack_a_sym(size_t P, F, T)(scope const(F)* ptr, sizediff_t str0, sizediff_t
 
 version(none)
 pragma(inline, false)
-void pack_b_triangular(bool upper, bool inverseDiagonal, size_t P, T, C)(Slice!(2, const(C)*) sl, T* b)
+void pack_b_triangular(bool upper, bool inverseDiagonal, size_t P, T, C)(Slice!(SliceKind.universal, [2], const(C)*) sl, T* b)
 {
     assert(sl.length!0 == sl.length!1);
 
@@ -378,10 +378,10 @@ void pack_b_triangular(bool upper, bool inverseDiagonal, size_t P, T, C)(Slice!(
             length += nr;
         else
             size_t length = sl.length;
-        if (sl.stride!0 == 1)
-            b = pack_b_dense_nano!(nr, P)(length, sl.stride!1, sl.ptr, b);
+        if (sl._stride!0 == 1)
+            b = pack_b_dense_nano!(nr, P)(length, sl._stride!1, sl._iterator, b);
         else
-            b = pack_b_strided_nano!(nr, P)(length, sl.stride!1, sl.stride!0, sl.ptr, b);
+            b = pack_b_strided_nano!(nr, P)(length, sl._stride!1, sl._stride!0, sl._iterator, b);
         static if (inverseDiagonal)
         {
             auto a = cast(T[P]*) b;

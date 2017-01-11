@@ -18,14 +18,7 @@ module glas.ndslice;
 version(LDC)
     pragma(LDC_no_moduleinfo);
 
-version(Have_mir)
-{
-    import mir.ndslice.slice: Slice;
-}
-else
-{
-    import std.experimental.ndslice.slice: Slice, Structure;
-}
+import mir.ndslice.slice: Slice, SliceKind;
 
 extern(C) nothrow @nogc @system:
 
@@ -90,9 +83,9 @@ Params:
             $(LREF ConjA), $(LREF ConjB).
 Returns: 0 on success and error code otherwise.
 +/
-int glas_validate_gemm(Structure!2 as, Structure!2 bs, Structure!2 cs, ulong settings = 0);
+//int glas_validate_gemm(Structure!2 as, Structure!2 bs, Structure!2 cs, ulong settings = 0);
 /// ditto
-alias validate_gemm = glas_validate_gemm;
+//alias validate_gemm = glas_validate_gemm;
 
 /++
 Validates input data for SYMM operations.
@@ -107,9 +100,9 @@ Params:
             $(LREF ConjA) flag specifies if the matrix A is hermitian.
 Returns: 0 on success and error code otherwise.
 +/
-int glas_validate_symm(Structure!2 as, Structure!2 bs, Structure!2 cs, ulong settings = 0);
+//int glas_validate_symm(Structure!2 as, Structure!2 bs, Structure!2 cs, ulong settings = 0);
 /// ditto
-alias validate_symm = glas_validate_symm;
+//alias validate_symm = glas_validate_symm;
 
 /++
 Performs general matrix-matrix multiplication.
@@ -128,13 +121,13 @@ Unified_alias: `gemm`
 
 BLAS: SGEMM, DGEMM, CGEMM, ZGEMM
 +/
-void glas_sgemm(float alpha, Slice!(2, const(float)*) asl, Slice!(2, const(float)*) bsl, float beta, Slice!(2, float*) csl, ulong settings = 0);
+void glas_sgemm(float alpha, Slice!(SliceKind.universal, [2], const(float)*) asl, Slice!(SliceKind.universal, [2], const(float)*) bsl, float beta, Slice!(SliceKind.universal, [2], float*) csl, ulong settings = 0);
 /// ditto
-void glas_dgemm(double alpha, Slice!(2, const(double)*) asl, Slice!(2, const(double)*) bsl, double beta, Slice!(2, double*) csl, ulong settings = 0);
+void glas_dgemm(double alpha, Slice!(SliceKind.universal, [2], const(double)*) asl, Slice!(SliceKind.universal, [2], const(double)*) bsl, double beta, Slice!(SliceKind.universal, [2], double*) csl, ulong settings = 0);
 /// ditto
-void glas_cgemm(cfloat alpha, Slice!(2, const(cfloat)*) asl, Slice!(2, const(cfloat)*) bsl, cfloat beta, Slice!(2, cfloat*) csl, ulong settings = 0);
+void glas_cgemm(cfloat alpha, Slice!(SliceKind.universal, [2], const(cfloat)*) asl, Slice!(SliceKind.universal, [2], const(cfloat)*) bsl, cfloat beta, Slice!(SliceKind.universal, [2], cfloat*) csl, ulong settings = 0);
 /// ditto
-void glas_zgemm(cdouble alpha, Slice!(2, const(cdouble)*) asl, Slice!(2, const(cdouble)*) bsl, cdouble beta, Slice!(2, cdouble*) csl, ulong settings = 0);
+void glas_zgemm(cdouble alpha, Slice!(SliceKind.universal, [2], const(cdouble)*) asl, Slice!(SliceKind.universal, [2], const(cdouble)*) bsl, cdouble beta, Slice!(SliceKind.universal, [2], cdouble*) csl, ulong settings = 0);
 
 /// ditto
 alias gemm = glas_sgemm;
@@ -170,13 +163,13 @@ Unified_alias: `symm`
 
 BLAS: SSYMM, DSYMM, CSYMM, ZSYMM, SHEMM, DHEMM, CHEMM, ZHEMM
 +/
-void glas_ssymm(float alpha, Slice!(2, const(float)*) asl, Slice!(2, const(float)*) bsl, float beta, Slice!(2, float*) csl, ulong settings = 0);
+void glas_ssymm(float alpha, Slice!(SliceKind.universal, [2], const(float)*) asl, Slice!(SliceKind.universal, [2], const(float)*) bsl, float beta, Slice!(SliceKind.universal, [2], float*) csl, ulong settings = 0);
 /// ditto
-void glas_dsymm(double alpha, Slice!(2, const(double)*) asl, Slice!(2, const(double)*) bsl, double beta, Slice!(2, double*) csl, ulong settings = 0);
+void glas_dsymm(double alpha, Slice!(SliceKind.universal, [2], const(double)*) asl, Slice!(SliceKind.universal, [2], const(double)*) bsl, double beta, Slice!(SliceKind.universal, [2], double*) csl, ulong settings = 0);
 /// ditto
-void glas_csymm(cfloat alpha, Slice!(2, const(cfloat)*) asl, Slice!(2, const(cfloat)*) bsl, cfloat beta, Slice!(2, cfloat*) csl, ulong settings = 0);
+void glas_csymm(cfloat alpha, Slice!(SliceKind.universal, [2], const(cfloat)*) asl, Slice!(SliceKind.universal, [2], const(cfloat)*) bsl, cfloat beta, Slice!(SliceKind.universal, [2], cfloat*) csl, ulong settings = 0);
 /// ditto
-void glas_zsymm(cdouble alpha, Slice!(2, const(cdouble)*) asl, Slice!(2, const(cdouble)*) bsl, cdouble beta, Slice!(2, cdouble*) csl, ulong settings = 0);
+void glas_zsymm(cdouble alpha, Slice!(SliceKind.universal, [2], const(cdouble)*) asl, Slice!(SliceKind.universal, [2], const(cdouble)*) bsl, cdouble beta, Slice!(SliceKind.universal, [2], cdouble*) csl, ulong settings = 0);
 
 /// ditto
 alias symm = glas_ssymm;
@@ -196,21 +189,21 @@ Unified_alias: `scal`
 
 BLAS: SSCSCAL, DSCSCAL, CSCSCAL, ZSCSCAL, CSCAL, ZSCAL
 +/
-void glas_sscal(float a, Slice!(1, float*) xsl);
+void glas_sscal(float a, Slice!(SliceKind.universal, [1], float*) xsl);
 /// ditto
-void glas_dscal(double a, Slice!(1, double*) xsl);
+void glas_dscal(double a, Slice!(SliceKind.universal, [1], double*) xsl);
 /// ditto
-void glas_csscal(float a, Slice!(1, cfloat*) xsl);
+void glas_csscal(float a, Slice!(SliceKind.universal, [1], cfloat*) xsl);
 /// ditto
-void glas_cscal(cfloat a, Slice!(1, cfloat*) xsl);
+void glas_cscal(cfloat a, Slice!(SliceKind.universal, [1], cfloat*) xsl);
 /// ditto
-void glas_csIscal(ifloat a, Slice!(1, cfloat*) xsl);
+void glas_csIscal(ifloat a, Slice!(SliceKind.universal, [1], cfloat*) xsl);
 /// ditto
-void glas_zdscal(double a, Slice!(1, cdouble*) xsl);
+void glas_zdscal(double a, Slice!(SliceKind.universal, [1], cdouble*) xsl);
 /// ditto
-void glas_zscal(cdouble a, Slice!(1, cdouble*) xsl);
+void glas_zscal(cdouble a, Slice!(SliceKind.universal, [1], cdouble*) xsl);
 /// ditto
-void glas_zdIscal(idouble a, Slice!(1, cdouble*) xsl);
+void glas_zdIscal(idouble a, Slice!(SliceKind.universal, [1], cdouble*) xsl);
 
 /// ditto
 void _glas_sscal(float a, size_t n, size_t incx, float* x);

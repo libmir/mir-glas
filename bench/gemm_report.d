@@ -30,8 +30,8 @@ import std.algorithm.comparison;
 import std.stdio;
 import std.exception;
 import std.getopt;
-import std.experimental.ndslice;
 import glas.ndslice;
+import mir.ndslice;
 
 alias C = float;
 //alias C = double;
@@ -175,24 +175,4 @@ void fillRNG(T)(Slice!(2, T*) sl)
 			e = cast(T) uniform(-100, 100);
 		}
 	}
-}
-
-static if (__VERSION__ < 2072)
-{
-    import std.experimental.ndslice.slice: Slice;
-    import ldc.attributes : fastmath;
-
-    @fastmath:
-    pragma(inline, true)
-    @property T* ptr(T)(Slice!(2, T*) slice)
-    {
-        return &(slice.front.front());
-    }
-
-    static if (__VERSION__ < 2072)
-    pragma(inline, true)
-    @property T* ptr(T)(Slice!(1, T*) slice)
-    {
-        return &(slice.front());
-    }
 }

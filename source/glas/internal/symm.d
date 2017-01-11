@@ -1,3 +1,4 @@
+
 /++
 Copyright: Copyright © 2016-, Ilya Yaroshenko.
 License: $(HTTP boost.org/LICENSE_1_0.txt, Boost License 1.0).
@@ -8,7 +9,7 @@ pragma(LDC_no_moduleinfo);
 
 import std.traits;
 import std.meta;
-import std.experimental.ndslice.slice : Slice;
+import mir.ndslice.slice : Slice, SliceKind;
 
 import ldc.attributes;
 import ldc.intrinsics;
@@ -28,10 +29,10 @@ nothrow @nogc
 void symm_impl(C)
 (
     C alpha,
-    Slice!(2, const(C)*) asl,
-    Slice!(2, const(C)*) bsl,
+    Slice!(SliceKind.universal, [2], const(C)*) asl,
+    Slice!(SliceKind.universal, [2], const(C)*) bsl,
     C beta,
-    Slice!(2, C*) csl,
+    Slice!(SliceKind.universal, [2], C*) csl,
     ulong settings,
 )
 {
@@ -39,28 +40,28 @@ void symm_impl(C)
     assert(asl.length!1 == bsl.length!0, "constraint: asl.length!1 == bsl.length!0");
     assert(csl.length!0 == asl.length!0, "constraint: csl.length!0 == asl.length!0");
     assert(csl.length!1 == bsl.length!1, "constraint: csl.length!1 == bsl.length!1");
-    assert(csl.stride!0 == +1
-        || csl.stride!0 == -1
-        || csl.stride!1 == +1
-        || csl.stride!1 == -1, "constraint: csl.stride!0 or csl.stride!1 must be equal to +/-1");
+    assert(csl._stride!0 == +1
+        || csl._stride!0 == -1
+        || csl._stride!1 == +1
+        || csl._stride!1 == -1, "constraint: csl._stride!0 or csl._stride!1 must be equal to +/-1");
 
     mixin prefix3;
-    import std.experimental.ndslice.iteration: reversed, transposed;
+    import mir.ndslice.dynamic: reversed, transposed;
     mixin RegisterConfig!(P, T);
     //#########################################################
     if (llvm_expect(csl.empty!0 || csl.empty!1, false))
         return;
-    if (llvm_expect(csl.stride!0 < 0, false))
+    if (llvm_expect(csl._stride!0 < 0, false))
     {
         csl = csl.reversed!0;
         asl = asl.reversed!0;
     }
-    if (llvm_expect(csl.stride!1 < 0, false))
+    if (llvm_expect(csl._stride!1 < 0, false))
     {
         csl = csl.reversed!1;
         bsl = bsl.reversed!1;
     }
-    if (csl.stride!0 != 1)
+    if (csl._stride!0 != 1)
     {
         asl = asl.transposed;
         bsl = bsl.transposed;
@@ -79,10 +80,10 @@ void symm_impl(C)
             hem = -hem;
         }
     }
-    assert(csl.stride!0 == 1);
+    assert(csl._stride!0 == 1);
     if (llvm_expect(asl.empty!1 || alpha == 0, false))
     {
-        gemm_fast_path(beta, csl.length!1, csl.stride!1, csl.length!0, csl.ptr);
+        gemm_fast_path(beta, csl.length!1, csl._stride!1, csl.length!0, csl._iterator);
         return;
     }
     //#########################################################
@@ -180,7 +181,7 @@ void symm_impl(C)
                     kc = asl.length!0 - j;
                 ////////////////////////
                 size_t i;
-                auto bsl_ptr = bsl.ptr;
+                auto bsl_ptr = bsl._iterator;
                 auto cslm = csl;
                 auto mc = mc;
                 //======================
@@ -188,7 +189,7 @@ void symm_impl(C)
                 {
                     if (asl.length!0 - i < mc)
                         mc = asl.length!0 - i;
-                    pack_a_sym!(P, C, T)(asl.ptr, asl.stride!0, asl.stride!1, i, j, mc, kc, a, pack_a_kernels.ptr, pack_a_tri_kernel, main_mr);
+                    pack_a_sym!(P, C, T)(asl._iterator, asl._stride!0, asl._stride!1, i, j, mc, kc, a, pack_a_kernels.ptr, pack_a_tri_kernel, main_mr);
                     //======================
                     gebp!(P, T, C)(
                         mc,
@@ -198,10 +199,10 @@ void symm_impl(C)
                         b,
                         incb,
                         bsl_ptr,
-                        bsl.stride!0,
-                        bsl.stride!1,
-                        cast(T*) cslm.ptr,
-                        cslm.stride!1,
+                        bsl._stride!0,
+                        bsl._stride!1,
+                        cast(T*) cslm._iterator,
+                        cslm._stride!1,
                         *cast(T[P][2]*)&alpha_beta,
                         pack_b_kernels.ptr,
                         kernels,
@@ -290,7 +291,7 @@ void symm_impl(C)
                     kc = bsl.length!1;
                 ////////////////////////
                 auto bslp = bsl[0 .. $, 0 .. kc];
-                auto asl_ptr = asl.ptr;
+                auto asl_ptr = asl._iterator;
                 auto cslm = csl;
                 auto mc = mc;
                 //======================
@@ -309,11 +310,11 @@ void symm_impl(C)
                         b,
                         incb,
                         asl_ptr,
-                        asl.stride!0,
-                        asl.stride!1,
+                        asl._stride!0,
+                        asl._stride!1,
                         j,
-                        cast(T*) cslm.ptr,
-                        cslm.stride!1,
+                        cast(T*) cslm._iterator,
+                        cslm._stride!1,
                         *cast(T[P][2]*)&alpha_beta,
                         pack_b_tri_kernel,
                         pack_b_kernels.ptr,

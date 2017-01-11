@@ -7,7 +7,7 @@ module glas.internal.l1_;
 
 pragma(LDC_no_moduleinfo);
 
-import std.experimental.ndslice.slice: Slice;
+import mir.ndslice.slice: Slice, SliceKind;
 import ldc.intrinsics: llvm_expect;
 import glas.ndslice;
 import glas.fortran;
@@ -19,7 +19,7 @@ q{
 
     import glas.ndslice;
     import glas.fortran;
-    import std.experimental.ndslice.slice: Slice;
+    import mir.ndslice.slice: Slice, SliceKind;
     import ldc.intrinsics: llvm_expect;
     import ldc.attributes: fastmath;
     import glas.internal.utility;
@@ -42,10 +42,10 @@ q{
 
     void glas_} ~ prefix!Type ~ q{scal(
         T a,
-        Slice!(1, T*) xsl,
+        Slice!(SliceKind.universal, [1], T*) xsl,
         )
     {
-        glas.ndslice.scal(a, xsl.length, xsl.stride, xsl.ptr);
+        glas.ndslice.scal(a, xsl.length, xsl._stride, xsl._iterator);
     }
 
     int } ~ prefix!Type ~ q{scal_(
@@ -79,10 +79,10 @@ q{
     static if (isComplex!T)
     void glas_} ~ prefix!Type ~ prefix!(realType!Type) ~ q{scal(
         R a,
-        Slice!(1, T*) xsl,
+        Slice!(SliceKind.universal, [1], T*) xsl,
         )
     {
-        glas.ndslice.scal(a, xsl.length, xsl.stride, xsl.ptr);
+        glas.ndslice.scal(a, xsl.length, xsl._stride, xsl._iterator);
     }
 
     static if (isComplex!T)
@@ -111,10 +111,10 @@ q{
     static if (isComplex!T)
     void glas_} ~ prefix!Type ~ prefix!(realType!Type) ~ q{scal(
         I a,
-        Slice!(1, T*) xsl,
+        Slice!(SliceKind.universal, [1], T*) xsl,
         )
     {
-        glas.ndslice.scal(a, xsl.length, xsl.stride, xsl.ptr);
+        glas.ndslice.scal(a, xsl.length, xsl._stride, xsl._iterator);
     }
 
     static if (isComplex!T)
