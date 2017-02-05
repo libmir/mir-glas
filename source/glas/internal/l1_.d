@@ -5,8 +5,6 @@ Authors: Ilya Yaroshenko
 +/
 module glas.internal.l1_;
 
-pragma(LDC_no_moduleinfo);
-
 import mir.ndslice.slice: Slice, SliceKind;
 import ldc.intrinsics: llvm_expect;
 import glas.ndslice;

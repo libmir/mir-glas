@@ -15,9 +15,6 @@ Note: $(LINK2 , ndslice) uses is row major representation.
 +/
 module glas.ndslice;
 
-version(LDC)
-    pragma(LDC_no_moduleinfo);
-
 version(D_Ddoc)
 {
     enum SliceKind
