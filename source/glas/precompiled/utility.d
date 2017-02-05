@@ -10,7 +10,7 @@ import glas.ndslice;
 import glas.fortran;
 import ldc.attributes: weak;
 import ldc.intrinsics: llvm_expect;
-//import mir.ndslice.slice: Structure;
+import mir.ndslice.slice: Structure;
 
 extern(C) @system nothrow @nogc pragma(inline, false):
 
@@ -33,42 +33,42 @@ string glas_error(int error_code)
     return _errors[error_code];
 }
 
-//int glas_validate_gemm_common(ref const Structure!2 as, ref const Structure!2 bs, ref const Structure!2 cs)
-//{
-//    if (llvm_expect(as.lengths[1] != bs.lengths[0], false))
-//        return 2;
-//    if (llvm_expect(cs.lengths[0] != as.lengths[0], false))
-//        return 3;
-//    if (llvm_expect(cs.lengths[1] != bs.lengths[1], false))
-//        return 4;
-//    auto s0 = cs.strides[0] >= 0 ? cs.strides[0] : -cs.strides[0];
-//    auto s1 = cs.strides[1] >= 0 ? cs.strides[1] : -cs.strides[1];
-//    if (llvm_expect(s0 != 1 && s1 != 1, false))        
-//        return 5;
-//    if (llvm_expect(s0 < cs.lengths[0] && s1 < cs.lengths[1], false))
-//        return 7;        
-//    return 0;
-//}
+int glas_validate_gemm_common(ref const Structure!2 as, ref const Structure!2 bs, ref const Structure!2 cs)
+{
+    if (llvm_expect(as.lengths[1] != bs.lengths[0], false))
+        return 2;
+    if (llvm_expect(cs.lengths[0] != as.lengths[0], false))
+        return 3;
+    if (llvm_expect(cs.lengths[1] != bs.lengths[1], false))
+        return 4;
+    auto s0 = cs.strides[0] >= 0 ? cs.strides[0] : -cs.strides[0];
+    auto s1 = cs.strides[1] >= 0 ? cs.strides[1] : -cs.strides[1];
+    if (llvm_expect(s0 != 1 && s1 != 1, false))        
+        return 5;
+    if (llvm_expect(s0 < cs.lengths[0] && s1 < cs.lengths[1], false))
+        return 7;        
+    return 0;
+}
 
-//int glas_validate_gemm(Structure!2 as, Structure!2 bs, Structure!2 cs, ulong settings)
-//{
-//    if (llvm_expect(settings & ~(ConjA | ConjB), false))
-//        return 1;
-//    if (auto ret = glas_validate_gemm_common(as, bs, cs))
-//        return ret;
-//    return 0;
-//}
+int glas_validate_gemm(Structure!2 as, Structure!2 bs, Structure!2 cs, ulong settings)
+{
+    if (llvm_expect(settings & ~(ConjA | ConjB), false))
+        return 1;
+    if (auto ret = glas_validate_gemm_common(as, bs, cs))
+        return ret;
+    return 0;
+}
 
-//int glas_validate_symm(Structure!2 as, Structure!2 bs, Structure!2 cs, ulong settings)
-//{
-//    if (llvm_expect(settings & ~(ConjA | ConjB | Left | Right | Upper | Lower), false))
-//        return 1;
-//    if (llvm_expect(as.lengths[0] != as.lengths[1], false))
-//        return 6;
-//    if (auto ret = glas_validate_gemm_common(as, bs, cs))
-//        return ret;
-//    return 0;
-//}
+int glas_validate_symm(Structure!2 as, Structure!2 bs, Structure!2 cs, ulong settings)
+{
+    if (llvm_expect(settings & ~(ConjA | ConjB | Left | Right | Upper | Lower), false))
+        return 1;
+    if (llvm_expect(as.lengths[0] != as.lengths[1], false))
+        return 6;
+    if (auto ret = glas_validate_gemm_common(as, bs, cs))
+        return ret;
+    return 0;
+}
 
 /* -- LAPACK auxiliary routine (preliminary version) -- */
 /* Univ. of Tennessee, Univ. of California Berkeley, NAG Ltd., */

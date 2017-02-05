@@ -27,7 +27,6 @@ q{
     import glas.fortran;
     import glas.internal.utility;
 
-
     private alias T = } ~ Type.stringof ~ q{;
 
     export extern(C) @system nothrow @nogc pragma(inline, false):

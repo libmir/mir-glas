@@ -18,7 +18,7 @@ module glas.ndslice;
 version(LDC)
     pragma(LDC_no_moduleinfo);
 
-import mir.ndslice.slice: Slice, SliceKind;
+import mir.ndslice.slice: Slice, SliceKind, Structure;
 
 extern(C) nothrow @nogc @system:
 
@@ -83,9 +83,9 @@ Params:
             $(LREF ConjA), $(LREF ConjB).
 Returns: 0 on success and error code otherwise.
 +/
-//int glas_validate_gemm(Structure!2 as, Structure!2 bs, Structure!2 cs, ulong settings = 0);
+int glas_validate_gemm(Structure!2 as, Structure!2 bs, Structure!2 cs, ulong settings = 0);
 /// ditto
-//alias validate_gemm = glas_validate_gemm;
+alias validate_gemm = glas_validate_gemm;
 
 /++
 Validates input data for SYMM operations.
@@ -100,9 +100,9 @@ Params:
             $(LREF ConjA) flag specifies if the matrix A is hermitian.
 Returns: 0 on success and error code otherwise.
 +/
-//int glas_validate_symm(Structure!2 as, Structure!2 bs, Structure!2 cs, ulong settings = 0);
+int glas_validate_symm(Structure!2 as, Structure!2 bs, Structure!2 cs, ulong settings = 0);
 /// ditto
-//alias validate_symm = glas_validate_symm;
+alias validate_symm = glas_validate_symm;
 
 /++
 Performs general matrix-matrix multiplication.
