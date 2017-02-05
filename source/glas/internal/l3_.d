@@ -83,8 +83,6 @@ q{
         )
     {
 
-        import core.stdc.stdio;
-        printf("r");
 
         auto  tra = toUpper(transa);
         auto  trb = toUpper(transb);
@@ -159,9 +157,6 @@ q{
             ref const FortranInt ldc,
         )
     {
-                import core.stdc.stdio;
-        printf("!!eeeeee\n");
-
         return symm_impl_(side, uplo, m, n, alpha, a, lda, b, ldb, beta, c, ldc, false);
     }
 
@@ -186,9 +181,6 @@ q{
             ref const FortranInt ldc,
         )
     {
-                import core.stdc.stdio;
-        printf("!!eeeeee\n");
-
         return symm_impl_(side, uplo, m, n, alpha, a, lda, b, ldb, beta, c, ldc, true);
     }
 };
@@ -233,50 +225,6 @@ package(glas) int symm_impl_(T)(
     )
 {
 
-        import core.stdc.stdio;
-        printf("eeeeee\n");
-        printf("eeeeee\n");
-        printf("eeeeee\n");
-        printf("eeeeee\n");
-        printf("eeeeee\n");
-        printf("eeeeee\n");
-        printf("eeeeee\n");
-        printf("eeeeee\n");
-        printf("eeeeee\n");
-        printf("eeeeee\n");
-        printf("eeeeee\n");
-        printf("eeeeee\n");
-        printf("eeeeee\n");
-        printf("eeeeee\n");
-        printf("eeeeee\n");
-        printf("eeeeee\n");
-        printf("eeeeee\n");
-        printf("eeeeee\n");
-        printf("eeeeee\n");
-        printf("eeeeee\n");
-        printf("eeeeee\n");
-        printf("eeeeee\n");
-        printf("eeeeee\n");
-        printf("eeeeee\n");
-        printf("eeeeee\n");
-        printf("eeeeee\n");
-        printf("eeeeee\n");
-        printf("eeeeee\n");
-        printf("eeeeee\n");
-        printf("eeeeee\n");
-        printf("eeeeee\n");
-        printf("eeeeee\n");
-        printf("eeeeee\n");
-        printf("eeeeee\n");
-        printf("eeeeee\n");
-        printf("eeeeee\n");
-        printf("eeeeee\n");
-        printf("eeeeee\n");
-        printf("eeeeee\n");
-        printf("eeeeee\n");
-        printf("eeeeee\n");
-        printf("eeeeee\n");
-        printf("eeeeee\n");
 
     auto  _side = toUpper(side);
     auto  _uplo = toUpper(uplo);

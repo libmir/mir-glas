@@ -46,3 +46,5 @@ __.SYMDEF SORTED
 examples/gemm_example
 
 examples/symm_example
+
+out.txt
