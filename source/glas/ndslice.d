@@ -18,7 +18,21 @@ module glas.ndslice;
 version(LDC)
     pragma(LDC_no_moduleinfo);
 
-import mir.ndslice.slice: Slice, SliceKind, Structure;
+version(D_Ddoc)
+{
+    enum SliceKind
+    {
+        universal,
+        canonical,
+        contiguous,
+    }
+    struct Structure(size_t N) {}
+    struct Slice(SliceKind kind, size_t[] packs, Iterator) {}
+}
+else
+{
+    import mir.ndslice.slice: Slice, SliceKind, Structure;
+}
 
 extern(C) nothrow @nogc @system:
 
