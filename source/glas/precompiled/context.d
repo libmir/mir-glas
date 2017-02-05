@@ -5,8 +5,6 @@ Authors: Ilya Yaroshenko
 +/
 module glas.precompiled.context;
 
-pragma(LDC_no_moduleinfo);
-
 import glas.internal.memory;
 
 package(glas) __gshared uint c1;

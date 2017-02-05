@@ -5,7 +5,7 @@ Authors: Ilya Yaroshenko
 +/
 module glas.internal.l1;
 
-import std.experimental.ndslice.slice: Slice;
+import mir.ndslice.slice: Slice, SliceKind;
 import ldc.attributes: fastmath;
 import glas.internal.utility;
 import ldc.intrinsics: llvm_expect;

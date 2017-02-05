@@ -53,8 +53,7 @@ A compiler, for example GCC, may require `mir-cpuid` to be passed after `mir-gla
 
 Documentation can be found at http://docs.glas.dlang.io/.
 
-GLAS API is based on [`ndslice`](http://dlang.org/phobos/std_experimental_ndslice.html).
-Both `mir.ndslice` and `std.experimental.ndslice` are supported.
+GLAS API is based on the new `ndslice` from [mir-algorithm](https://github.com/libmir/mir-algorithm).
 Other languages can use simple structure definition.
 [Examples](examples/) are available for C and for Dlang.
 
@@ -210,4 +209,4 @@ Five steps
 
 GLAS is a lower level library than Eigen. For example, GLAS can be an Eigen BLAS back-end in the future
 Lazy Evaluation and Aliasing can be easily implemented in D.
-Explicit composition of operations can be done using [mir.ndslice.algorithm](http://docs.mir.dlang.io/latest/mir_ndslice_algorithm.html#mapSlice) and `std.experimental.ndslice` (>=2.072). [`mapSlice`](http://dlang.org/phobos-prerelease/std_experimental_ndslice_selection.html#.mapSlice), which is a generic way to perform any lazy operations you want.
+Explicit composition of operations can be done using `mir.ndslice.algorithm` and multidimensional `map` from `mir.ndslice.topology`, which is a generic way to perform any lazy operations you want.

@@ -4,7 +4,6 @@ License: $(HTTP boost.org/LICENSE_1_0.txt, Boost License 1.0).
 Authors: Ilya Yaroshenko
 +/
 module glas.internal.blocking;
-pragma(LDC_no_moduleinfo);
 
 import std.meta;
 import std.traits;

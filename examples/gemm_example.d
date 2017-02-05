@@ -25,42 +25,19 @@
 }
 +/
 import glas.ndslice;
+import mir.ndslice;
 
 alias T = double;
 
-version(Have_mir)
-{
-    pragma(msg, "Mir based configuration");
-    import mir.ndslice;
-}
-else
-{
-    pragma(msg, "Phobos based configuration");
-    import std.experimental.ndslice;
-    static if (__VERSION__ < 2072)
-    {
-        version = OldAPI;
-        alias ConstMatrix = Slice!(2, const(T)*);
-        auto slice(T,  size_t N)(size_t[N] shape...)
-        {
-            size_t len = 1;
-            foreach(l; shape)
-                len *= l;
-            return new T[len].sliced(shape);
-        }
-    }
-    else version = HaveImplicitConstCast;
-}
-
 int main()
 {
-    auto a = slice!T(3, 5);
+    auto a = slice!T(3, 5).universal;
     a[] =
         [[-5,  1,  7, 7, -4],
          [-1, -5,  6, 3, -3],
          [-5, -2, -3, 6,  0]];
 
-    auto b = slice!T(5, 4);
+    auto b = slice!T(5, 4).universal;
     b[] =
         [[-5.0, -3,  3,  1],
          [ 4.0,  3,  6,  4],
@@ -68,7 +45,7 @@ int main()
          [-1.0,  9,  4,  8],
          [  9.0, 8,  3, -2]];
 
-    auto c = slice!T(3, 4);
+    auto c = slice!T(3, 4).universal;
 
     auto alpha = 1.0;
     auto beta  = 0.0;
@@ -80,10 +57,7 @@ int main()
         return 1;
     }
 
-    version (HaveImplicitConstCast)
-        gemm(alpha, a, b, beta, c);
-    else
-        gemm(alpha, cast(ConstMatrix)a, cast(ConstMatrix)b, beta, c);
+    gemm(alpha, a, b, beta, c);
 
     return c ==
         [[-42.0,  35,  -7, 77],

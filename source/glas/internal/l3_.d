@@ -5,9 +5,7 @@ Authors: Ilya Yaroshenko
 +/
 module glas.internal.l3_;
 
-pragma(LDC_no_moduleinfo);
-
-import std.experimental.ndslice.slice: Slice;
+import mir.ndslice.slice: Slice, SliceKind;
 import ldc.intrinsics: llvm_expect;
 
 import glas.ndslice;
@@ -20,13 +18,12 @@ q{
     pragma(LDC_no_moduleinfo);
 
 
-    import std.experimental.ndslice.slice: Slice;
+    import mir.ndslice.slice: Slice, SliceKind;
     import ldc.attributes;
     import ldc.intrinsics: llvm_expect;
     import glas.ndslice;
     import glas.fortran;
     import glas.internal.utility;
-
 
     private alias T = } ~ Type.stringof ~ q{;
 
@@ -35,10 +32,10 @@ q{
     void glas_} ~ prefix!Type ~ q{gemm
         (
             T alpha,
-                Slice!(2, const(T)*) asl,
-                Slice!(2, const(T)*) bsl,
+                Slice!(SliceKind.universal, [2], const(T)*) asl,
+                Slice!(SliceKind.universal, [2], const(T)*) bsl,
             T beta,
-                Slice!(2,        T*) csl,
+                Slice!(SliceKind.universal, [2],        T*) csl,
             ulong settings,
         )
     {
@@ -49,10 +46,10 @@ q{
     void glas_} ~ prefix!Type ~ q{symm
         (
             T alpha,
-                Slice!(2, const(T)*) asl,
-                Slice!(2, const(T)*) bsl,
+                Slice!(SliceKind.universal, [2], const(T)*) asl,
+                Slice!(SliceKind.universal, [2], const(T)*) bsl,
             T beta,
-                Slice!(2,        T*) csl,
+                Slice!(SliceKind.universal, [2],        T*) csl,
             ulong settings,
         )
     {
@@ -63,13 +60,13 @@ q{
     int } ~ prefix!Type ~ q{gemm_(
         ref const char transa,
         ref const char transb,
-        ref const 
+        ref const
 
         FortranInt m,
-        ref const 
+        ref const
 
         FortranInt n,
-        ref const 
+        ref const
 
         FortranInt k,
         ref const T alpha,
@@ -82,6 +79,8 @@ q{
             ref const FortranInt ldc,
         )
     {
+
+
         auto  tra = toUpper(transa);
         auto  trb = toUpper(transb);
 
@@ -89,7 +88,6 @@ q{
         auto notb = trb == 'N';
         auto conja = tra == 'C';
         auto conjb = trb == 'C';
-
         
         FortranInt info = void;
         
@@ -118,18 +116,9 @@ q{
             info = 13;
         else
         {
-            static if (__VERSION__ < 2072)
-            {
-                auto asl = _toSlice!(2, const(T)*)([m, k], nota ? [1, lda] : [lda, 1], a);
-                auto bsl = _toSlice!(2, const(T)*)([k, n], notb ? [1, ldb] : [ldb, 1], b);
-                auto csl = _toSlice!(2,       T *)([m, n],        [1, ldc],            c);
-            }
-            else
-            {
-                auto asl = Slice!(2, const(T)*)([m, k], nota ? [1, lda] : [lda, 1], a);
-                auto bsl = Slice!(2, const(T)*)([k, n], notb ? [1, ldb] : [ldb, 1], b);
-                auto csl = Slice!(2,       T *)([m, n],        [1, ldc],            c);
-            }
+            auto asl = _matrix!(const(T))([m, k], nota ? [1, lda] : [lda, 1], a);
+            auto bsl = _matrix!(const(T))([k, n], notb ? [1, ldb] : [ldb, 1], b);
+            auto csl = _matrix!(T)([m, n],        [1, ldc],            c);
             ulong settings;
             static if (isComplex!T)
             {
@@ -149,10 +138,10 @@ q{
     int } ~ prefix!Type ~ q{symm_(
         ref const char side,
         ref const char uplo,
-        ref const 
+        ref const
 
         FortranInt m,
-        ref const 
+        ref const
 
         FortranInt n,
         ref const T alpha,
@@ -172,10 +161,10 @@ q{
     int } ~ prefix!Type ~ q{hemm_(
         ref const char side,
         ref const char uplo,
-        ref const 
+        ref const
 
         FortranInt m,
-        ref const 
+        ref const
 
         FortranInt n,
         ref const T alpha,
@@ -193,6 +182,15 @@ q{
     }
 };
 
+pragma(inline, true)
+auto _matrix(T)(size_t[2] lengths, sizediff_t[2] strides, T* ptr)
+{
+    Slice!(SliceKind.universal, [2], T*) ret;
+    ret._lengths = lengths;
+    ret._strides = strides;
+    ret._iterator = ptr;
+    return ret;
+}
 
 pragma(inline, true)
 package(glas) auto toUpper()(dchar c)
@@ -223,6 +221,8 @@ package(glas) int symm_impl_(T)(
     bool conj,
     )
 {
+
+
     auto  _side = toUpper(side);
     auto  _uplo = toUpper(uplo);
     auto s = _side != 'L';
@@ -255,18 +255,9 @@ package(glas) int symm_impl_(T)(
         info = 12;
     else
     {
-        static if (__VERSION__ < 2072)
-        {
-            auto asl = _toSlice!(2, const(T)*)([k, k], [1, lda], a);
-            auto bsl = _toSlice!(2, const(T)*)([m, n], [1, ldb], b);
-            auto csl = _toSlice!(2,       T *)([m, n], [1, ldc], c);
-        }
-        else
-        {
-            auto asl = Slice!(2, const(T)*)([k, k], [1, lda], a);
-            auto bsl = Slice!(2, const(T)*)([m, n], [1, ldb], b);
-            auto csl = Slice!(2,       T *)([m, n], [1, ldc], c);
-        }
+        auto asl = _matrix!(const(T))([k, k], [1, lda], a);
+        auto bsl = _matrix!(const(T))([m, n], [1, ldb], b);
+        auto csl = _matrix!(T)([m, n], [1, ldc], c);
         ulong settings;
         static if (isComplex!T)
         {

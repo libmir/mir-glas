@@ -4,11 +4,10 @@ License: $(HTTP boost.org/LICENSE_1_0.txt, Boost License 1.0).
 Authors: Ilya Yaroshenko
 +/
 module glas.internal.gemm;
-pragma(LDC_no_moduleinfo);
 
 import std.traits;
 import std.meta;
-import std.experimental.ndslice.slice : Slice;
+import mir.ndslice.slice : Slice, SliceKind;
 
 import ldc.attributes;
 import ldc.intrinsics;
@@ -29,31 +28,31 @@ nothrow @nogc
 void gemm_impl(C)
 (
     C alpha,
-    Slice!(2, const(C)*) asl,
-    Slice!(2, const(C)*) bsl,
+    Slice!(SliceKind.universal, [2], const(C)*) asl,
+    Slice!(SliceKind.universal, [2], const(C)*) bsl,
     C beta,
-    Slice!(2, C*) csl,
+    Slice!(SliceKind.universal, [2], C*) _csl,
     ulong settings,
 )
 {
     mixin prefix3;
     mixin RegisterConfig!(P, T);
-    import std.experimental.ndslice.iteration: reversed, transposed;
+    import mir.ndslice.dynamic: reversed, transposed;
     //#########################################################
-    if (llvm_expect(csl.empty!0 || csl.empty!1, false))
+    if (llvm_expect(_csl.anyEmpty, false))
         return;
-    if (llvm_expect(csl.stride!0 < 0, false))
+    if (llvm_expect(_csl._stride!0 < 0, false))
     {
-        csl = csl.reversed!0;
+        _csl = _csl.reversed!0;
         asl = asl.reversed!0;
     }
-    if (llvm_expect(csl.stride!1 < 0, false))
+    if (llvm_expect(_csl._stride!1 < 0, false))
     {
-        csl = csl.reversed!1;
+        _csl = _csl.reversed!1;
         bsl = bsl.reversed!1;
     }
     // change row based to column based
-    if (csl.stride!0 != 1)
+    if (_csl._stride!0 != 1)
     {
         auto ca = settings & ConjA;
         auto cb = settings & ConjB;
@@ -65,20 +64,22 @@ void gemm_impl(C)
             auto tsl = asl;
         asl = bsl.transposed;
         bsl = tsl.transposed;
-        csl = csl.transposed;
+        _csl = _csl.transposed;
     }
-    assert(csl.stride!0 == 1);
+    assert(_csl._stride!0 == 1);
+    import mir.ndslice.topology: assumeCanonical;
+    auto csl = _csl.transposed.assumeCanonical;
     if (llvm_expect(asl.empty!1 || alpha == 0, false))
     {
-        gemm_fast_path(beta, csl.length!1, csl.stride!1, csl.length!0, csl.ptr);
+        gemm_fast_path(beta, csl.length!0, csl._stride!0, csl.length!1, csl._iterator);
         return;
     }
     //#########################################################
     PackKernel!(C, T)[mr_chain.length] pack_a_kernels = void;
     PackKernel!(C, T)[nr_chain.length] pack_b_kernels = void;
-    Kernel!(P, T)   [nr_chain.length]   beta_kernels = void;
-    Kernel!(P, T)   [nr_chain.length]    one_kernels = void;
-    Kernel!(P, T)*                           kernels = void;
+    Kernel!(P, T)    [nr_chain.length]   beta_kernels = void;
+    Kernel!(P, T)    [nr_chain.length]    one_kernels = void;
+    Kernel!(P, T)*                            kernels = void;
 
     static if (P == 2)
     {
@@ -139,7 +140,7 @@ void gemm_impl(C)
                 kc = asl.length!1;
             ////////////////////////
             auto aslp = asl[0 .. $, 0 .. kc];
-            auto bsl_ptr = bsl.ptr;
+            auto bsl_ptr = bsl._iterator;
             auto cslm = csl;
             auto mc = mc;
             //======================
@@ -158,17 +159,17 @@ void gemm_impl(C)
                     b,
                     incb,
                     bsl_ptr,
-                    bsl.stride!0,
-                    bsl.stride!1,
-                    cast(T*) cslm.ptr,
-                    cslm.stride!1,
+                    bsl._stride!0,
+                    bsl._stride!1,
+                    cast(T*) cslm._iterator,
+                    cslm._stride!0,
                     *cast(T[P][2]*)&alpha_beta,
                     pack_b_kernels.ptr,
                     kernels,
                     );
                 ////////////////////////
                 bsl_ptr = null;
-                cslm.popFrontExactly!0(mc);
+                cslm.popFrontExactly!1(mc);
                 aslp.popFrontExactly!0(mc);
             }
             while (aslp.length!0);

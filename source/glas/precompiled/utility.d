@@ -4,13 +4,12 @@ License: $(HTTP boost.org/LICENSE_1_0.txt, Boost License 1.0).
 Authors: Ilya Yaroshenko
 +/
 module glas.precompiled.utility;
-pragma(LDC_no_moduleinfo);
 
 import glas.ndslice;
 import glas.fortran;
 import ldc.attributes: weak;
 import ldc.intrinsics: llvm_expect;
-import std.experimental.ndslice.slice: Structure;
+import mir.ndslice.slice: Structure;
 
 extern(C) @system nothrow @nogc pragma(inline, false):
 

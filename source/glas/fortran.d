@@ -11,9 +11,6 @@ Authors: Ilya Yaroshenko
 +/
 module glas.fortran;
 
-version(LDC)
-	pragma(LDC_no_moduleinfo);
-
 /// Alias for Fortran77 integer.
 alias FortranInt = int;
 
