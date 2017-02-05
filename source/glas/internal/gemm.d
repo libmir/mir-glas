@@ -78,9 +78,9 @@ void gemm_impl(C)
     //#########################################################
     PackKernel!(C, T)[mr_chain.length] pack_a_kernels = void;
     PackKernel!(C, T)[nr_chain.length] pack_b_kernels = void;
-    Kernel!(P, T)   [nr_chain.length]   beta_kernels = void;
-    Kernel!(P, T)   [nr_chain.length]    one_kernels = void;
-    Kernel!(P, T)*                           kernels = void;
+    Kernel!(P, T)    [nr_chain.length]   beta_kernels = void;
+    Kernel!(P, T)    [nr_chain.length]    one_kernels = void;
+    Kernel!(P, T)*                            kernels = void;
 
     static if (P == 2)
     {

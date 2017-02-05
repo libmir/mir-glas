@@ -63,13 +63,13 @@ q{
     int } ~ prefix!Type ~ q{gemm_(
         ref const char transa,
         ref const char transb,
-        ref const 
+        ref const
 
         FortranInt m,
-        ref const 
+        ref const
 
         FortranInt n,
-        ref const 
+        ref const
 
         FortranInt k,
         ref const T alpha,
@@ -141,10 +141,10 @@ q{
     int } ~ prefix!Type ~ q{symm_(
         ref const char side,
         ref const char uplo,
-        ref const 
+        ref const
 
         FortranInt m,
-        ref const 
+        ref const
 
         FortranInt n,
         ref const T alpha,
@@ -164,10 +164,10 @@ q{
     int } ~ prefix!Type ~ q{hemm_(
         ref const char side,
         ref const char uplo,
-        ref const 
+        ref const
 
         FortranInt m,
-        ref const 
+        ref const
 
         FortranInt n,
         ref const T alpha,
