@@ -73,3 +73,19 @@ template prefix(T)
         enum prefix = "z";
     else static assert(0);
 }
+
+template prefix2(T)
+{
+    static if (is(T == float))
+        enum prefix2 = "s";
+    else
+    static if (is(T == double))
+        enum prefix2 = "d";
+    else
+    static if (is(T == cfloat))
+        enum prefix2 = "sc";
+    else
+    static if (is(T == cdouble))
+        enum prefix2 = "dz";
+    else static assert(0);
+}

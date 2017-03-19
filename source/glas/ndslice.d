@@ -326,6 +326,134 @@ alias axpy = _glas_caxpy;
 alias axpy = _glas_zaxpy;
 
 /++
+Returns the euclidean norm of a vector via the function.
+
+Pseudo_code: `sqrt( x'*x )`.
+
+Unified_alias: `nrm2`
+
+BLAS: SNRM2, DNRM2, SCNRM2, DZNRM2
++/
+float glas_snrm2(Slice!(SliceKind.universal, [1], const(float)*) xsl);
+/// ditto
+double glas_dnrm2(Slice!(SliceKind.universal, [1], const(double)*) xsl);
+/// ditto
+float glas_scnrm2(Slice!(SliceKind.universal, [1], const(cfloat)*) xsl);
+/// ditto
+double glas_dznrm2(Slice!(SliceKind.universal, [1], const(cdouble)*) xsl);
+
+/// ditto
+float _glas_snrm2(size_t n, ptrdiff_t incx, const(float)* x);
+/// ditto
+double _glas_dnrm2(size_t n, ptrdiff_t incx, const(double)* x);
+/// ditto
+float _glas_scnrm2(size_t n, ptrdiff_t incx, const(cfloat)* x);
+/// ditto
+double _glas_dznrm2(size_t n, ptrdiff_t incx, const(cdouble)* x);
+
+/// ditto
+alias nrm2 = glas_snrm2;
+/// ditto
+alias nrm2 = glas_dnrm2;
+/// ditto
+alias nrm2 = glas_scnrm2;
+/// ditto
+alias nrm2 = glas_dznrm2;
+
+/// ditto
+alias nrm2 = _glas_snrm2;
+/// ditto
+alias nrm2 = _glas_dnrm2;
+/// ditto
+alias nrm2 = _glas_scnrm2;
+/// ditto
+alias nrm2 = _glas_dznrm2;
+
+/++
+Takes the sum of the absolute values.
+
+Unified_alias: `asum`
+
+BLAS: SASUM, DASUM, SCASUM, DZASUM
++/
+float glas_sasum(Slice!(SliceKind.universal, [1], const(float)*) xsl);
+/// ditto
+double glas_dasum(Slice!(SliceKind.universal, [1], const(double)*) xsl);
+/// ditto
+float glas_scasum(Slice!(SliceKind.universal, [1], const(cfloat)*) xsl);
+/// ditto
+double glas_dzasum(Slice!(SliceKind.universal, [1], const(cdouble)*) xsl);
+
+/// ditto
+float _glas_sasum(size_t n, ptrdiff_t incx, const(float)* x);
+/// ditto
+double _glas_dasum(size_t n, ptrdiff_t incx, const(double)* x);
+/// ditto
+float _glas_scasum(size_t n, ptrdiff_t incx, const(cfloat)* x);
+/// ditto
+double _glas_dzasum(size_t n, ptrdiff_t incx, const(cdouble)* x);
+
+/// ditto
+alias asum = glas_sasum;
+/// ditto
+alias asum = glas_dasum;
+/// ditto
+alias asum = glas_scasum;
+/// ditto
+alias asum = glas_dzasum;
+
+/// ditto
+alias asum = _glas_sasum;
+/// ditto
+alias asum = _glas_dasum;
+/// ditto
+alias asum = _glas_scasum;
+/// ditto
+alias asum = _glas_dzasum;
+
+/++
+Finds the index of the first element having maximum `|Re(.)| + |Im(.)|`.
+
+Unified_alias: `amax`
+
+BLAS: ISAMAX, IDAMAX, ICAMAX, IZAMAX
++/
+ptrdiff_t glas_isamax(Slice!(SliceKind.universal, [1], const(float)*) xsl);
+/// ditto
+ptrdiff_t glas_idamax(Slice!(SliceKind.universal, [1], const(double)*) xsl);
+/// ditto
+ptrdiff_t glas_icamax(Slice!(SliceKind.universal, [1], const(cfloat)*) xsl);
+/// ditto
+ptrdiff_t glas_izamax(Slice!(SliceKind.universal, [1], const(cdouble)*) xsl);
+
+/// ditto
+ptrdiff_t _glas_isamax(size_t n, ptrdiff_t incx, const(float)* x);
+/// ditto
+ptrdiff_t _glas_idamax(size_t n, ptrdiff_t incx, const(double)* x);
+/// ditto
+ptrdiff_t _glas_icamax(size_t n, ptrdiff_t incx, const(cfloat)* x);
+/// ditto
+ptrdiff_t _glas_izamax(size_t n, ptrdiff_t incx, const(cdouble)* x);
+
+/// ditto
+alias iamax = glas_isamax;
+/// ditto
+alias iamax = glas_idamax;
+/// ditto
+alias iamax = glas_icamax;
+/// ditto
+alias iamax = glas_izamax;
+
+/// ditto
+alias iamax = _glas_isamax;
+/// ditto
+alias iamax = _glas_idamax;
+/// ditto
+alias iamax = _glas_icamax;
+/// ditto
+alias iamax = _glas_izamax;
+
+/++
 `scal` scales a vector by a constant.
 
 Pseudo_code: `x := a x`.

@@ -24,6 +24,21 @@ int daxpy_(const FortranInt *n, const double *a, const double *x, const FortranI
 int caxpy_(const FortranInt *n, const float _Complex *a, const float _Complex *x, const FortranInt *incx, float _Complex *y, const FortranInt *incy);
 int zaxpy_(const FortranInt *n, const double _Complex *a, const double _Complex *x, const FortranInt *incx, double _Complex *y, const FortranInt *incy);
 
+float snrm2_(const FortranInt *n, const float *x, const FortranInt *incx);
+double dnrm2_(const FortranInt *n, const double *x, const FortranInt *incx);
+float scnrm2_(const FortranInt *n, const float _Complex *x, const FortranInt *incx);
+double dznrm2_(const FortranInt *n, const double _Complex *x, const FortranInt *incx);
+
+float sasum_(const FortranInt *n, const float *x, const FortranInt *incx);
+double dasum_(const FortranInt *n, const double *x, const FortranInt *incx);
+float scasum_(const FortranInt *n, const float _Complex *x, const FortranInt *incx);
+double dzasum_(const FortranInt *n, const double _Complex *x, const FortranInt *incx);
+
+FortranInt isamax_(const FortranInt *n, const float *x, const FortranInt *incx);
+FortranInt idamax_(const FortranInt *n, const double *x, const FortranInt *incx);
+FortranInt icamax_(const FortranInt *n, const float _Complex *x, const FortranInt *incx);
+FortranInt izamax_(const FortranInt *n, const double _Complex *x, const FortranInt *incx);
+
 int sscal_(const FortranInt *n, const float *a, float *x, const FortranInt *incx);
 int dscal_(const FortranInt *n, const double *a, double *x, const FortranInt *incx);
 int csscal_(const FortranInt *n, const float *a, float _Complex *x, const FortranInt *incx);

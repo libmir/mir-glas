@@ -167,9 +167,9 @@ The hardest part (GEMM) is already implemented.
    - [x] COPY - copy x into y
    - [x] AXPY - `y = a*x + y`. Note: requires addition optimization for complex numbers.
    - [ ] DOT - dot product
-   - [ ] NRM2 - Euclidean norm
-   - [ ] ASUM - sum of absolute values
-   - [ ] IAMAX - index of max abs value
+   - [x] NRM2 - Euclidean norm
+   - [x] ASUM - sum of absolute values
+   - [x] IAMAX - index of max abs value
 
 ## Porting to a new target
 

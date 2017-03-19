@@ -28,9 +28,10 @@ q{
 
     export extern(C) @system nothrow @nogc @fastmath pragma(inline, false):
 
+    alias R = realType!T;
+
     static if (isComplex!T)
     {
-        alias R = realType!T;
         alias I = imaginaryType!T;
     }
 
@@ -148,6 +149,93 @@ q{
         return 0;
     }
 
+    //////////// nrm2
+    R _glas_} ~ prefix2!Type ~ q{nrm2(
+        size_t n,
+        ptrdiff_t incx,
+        const(T)* x,
+        )
+    {
+        return glas.internal.l1.nrm2(n, incx, x);
+    }
+
+    R glas_} ~ prefix2!Type ~ q{nrm2(
+        Slice!(SliceKind.universal, [1], const(T)*) xsl,
+        )
+    {
+        return glas.ndslice.nrm2(xsl.length, xsl._stride, xsl._iterator);
+    }
+
+    R } ~ prefix2!Type ~ q{nrm2_(
+        ref const FortranInt n,
+        const(T)* x,
+        ref const FortranInt incx,
+        )
+    {
+        if(incx < 0)
+            x -= (n - 1) * incx;
+
+        return glas.ndslice.nrm2(n, incx, x);
+    }
+
+    //////////// asum
+    R _glas_} ~ prefix2!Type ~ q{asum(
+        size_t n,
+        ptrdiff_t incx,
+        const(T)* x,
+        )
+    {
+        return glas.internal.l1.asum(n, incx, x);
+    }
+
+    R glas_} ~ prefix2!Type ~ q{asum(
+        Slice!(SliceKind.universal, [1], const(T)*) xsl,
+        )
+    {
+        return glas.ndslice.asum(xsl.length, xsl._stride, xsl._iterator);
+    }
+
+    R } ~ prefix2!Type ~ q{asum_(
+        ref const FortranInt n,
+        const(T)* x,
+        ref const FortranInt incx,
+        )
+    {
+        if(incx < 0)
+            x -= (n - 1) * incx;
+
+        return glas.ndslice.asum(n, incx, x);
+    }
+
+    //////////// iamax
+    ptrdiff_t _glas_i} ~ prefix!Type ~ q{amax(
+        size_t n,
+        ptrdiff_t incx,
+        const(T)* x,
+        )
+    {
+        return glas.internal.l1.iamax(n, incx, x);
+    }
+
+    ptrdiff_t glas_i} ~ prefix!Type ~ q{amax(
+        Slice!(SliceKind.universal, [1], const(T)*) xsl,
+        )
+    {
+        return glas.ndslice.iamax(xsl.length, xsl._stride, xsl._iterator);
+    }
+
+    FortranInt i} ~ prefix!Type ~ q{amax_(
+        ref const FortranInt n,
+        const(T)* x,
+        ref const FortranInt incx,
+        )
+    {
+        if(incx < 0)
+            x -= (n - 1) * incx;
+
+        return cast(FortranInt)(glas.ndslice.iamax(n, incx, x) + 1);
+    }
+
     //////////// scal
     void _glas_} ~ prefix!Type ~ q{scal(
         T a,
@@ -174,6 +262,9 @@ q{
         ref const FortranInt incx,
         )
     {
+        if(incx < 0)
+            x -= (n - 1) * incx;
+
         glas.ndslice.scal(a, n, incx, x);
         return 0;
     }
@@ -206,6 +297,9 @@ q{
         ref const FortranInt incx,
         )
     {
+        if(incx < 0)
+            x -= (n - 1) * incx;
+
         glas.ndslice.scal(a, n, incx, x);
         return 0;
     }
@@ -238,6 +332,9 @@ q{
         ref const FortranInt incx,
         )
     {
+        if(incx < 0)
+            x -= (n - 1) * incx;
+
         glas.ndslice.scal(a, n, incx, x);
         return 0;
     }

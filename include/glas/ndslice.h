@@ -86,6 +86,33 @@ void _glas_daxpy(double a, size_t n, size_t incx, double* x, size_t incy, double
 void _glas_caxpy(float _Complex a, size_t n, size_t incx, float _Complex* x, size_t incy, float _Complex* y);
 void _glas_zaxpy(float _Complex a, size_t n, size_t incx, double _Complex* x, size_t incy, double _Complex* y);
 
+float glas_snrm2(struct glas_ConstVector xsl);
+double glas_dnrm2(struct glas_ConstVector xsl);
+float glas_scnrm2(struct glas_ConstVector xsl);
+double glas_dznrm2(struct glas_ConstVector xsl);
+float _glas_snrm2(size_t n, size_t incx, const float* x);
+double _glas_dnrm2(size_t n, size_t incx, const double* x);
+float _glas_scnrm2(size_t n, size_t incx, const float _Complex* x);
+double _glas_dznrm2(size_t n, size_t incx, const double _Complex* x);
+
+float glas_sasum(struct glas_ConstVector xsl);
+double glas_dasum(struct glas_ConstVector xsl);
+float glas_scasum(struct glas_ConstVector xsl);
+double glas_dzasum(struct glas_ConstVector xsl);
+float _glas_sasum(size_t n, size_t incx, const float* x);
+double _glas_dasum(size_t n, size_t incx, const double* x);
+float _glas_scasum(size_t n, size_t incx, const float _Complex* x);
+double _glas_dzasum(size_t n, size_t incx, const double _Complex* x);
+
+ptrdiff_t glas_isamax(struct glas_ConstVector xsl);
+ptrdiff_t glas_idamax(struct glas_ConstVector xsl);
+ptrdiff_t glas_icamax(struct glas_ConstVector xsl);
+ptrdiff_t glas_izamax(struct glas_ConstVector xsl);
+ptrdiff_t _glas_isamax(size_t n, size_t incx, const float* x);
+ptrdiff_t _glas_idamax(size_t n, size_t incx, const double* x);
+ptrdiff_t _glas_icamax(size_t n, size_t incx, const float _Complex* x);
+ptrdiff_t _glas_izamax(size_t n, size_t incx, const double _Complex* x);
+
 void glas_sscal(float a, struct glas_MutVector xsl);
 void glas_dscal(double a, struct glas_MutVector xsl);
 void glas_csscal(float a, struct glas_MutVector xsl);
