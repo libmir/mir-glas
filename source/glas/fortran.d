@@ -146,6 +146,60 @@ alias axpy_ = caxpy_;
 alias axpy_ = zaxpy_;
 
 /++
+Returns the euclidean norm of a vector via the function.
+
+Unified_alias: `nrm2_`
++/
+int snrm2_(ref const FortranInt n, const(float)* x, ref const FortranInt incx);
+/// ditto 
+int dnrm2_(ref const FortranInt n, const(double)* x, ref const FortranInt incx);
+/// ditto 
+int scnrm2_(ref const FortranInt n, const(cfloat)* x, ref const FortranInt incx);
+/// ditto 
+int dznrm2_(ref const FortranInt n, const(cdouble)* x, ref const FortranInt incx);
+
+alias nrm2_ = snrm2_;
+alias nrm2_ = dnrm2_;
+alias nrm2_ = scnrm2_;
+alias nrm2_ = dznrm2_;
+
+/++
+Takes the sum of the absolute values.
+
+Unified_alias: `asum_`
++/
+int sasum_(ref const FortranInt n, const(float)* x, ref const FortranInt incx);
+/// ditto 
+int dasum_(ref const FortranInt n, const(double)* x, ref const FortranInt incx);
+/// ditto 
+int scasum_(ref const FortranInt n, const(cfloat)* x, ref const FortranInt incx);
+/// ditto 
+int dzasum_(ref const FortranInt n, const(cdouble)* x, ref const FortranInt incx);
+
+alias asum_ = sasum_;
+alias asum_ = dasum_;
+alias asum_ = scasum_;
+alias asum_ = dzasum_;
+
+/++
+Finds the index of the first element having maximum `|Re(.)| + |Im(.)|`.
+
+Unified_alias: `iamax_`
++/
+int isamax_(ref const FortranInt n, const(float)* x, ref const FortranInt incx);
+/// ditto 
+int idamax_(ref const FortranInt n, const(double)* x, ref const FortranInt incx);
+/// ditto 
+int icamax_(ref const FortranInt n, const(cfloat)* x, ref const FortranInt incx);
+/// ditto 
+int izamax_(ref const FortranInt n, const(cdouble)* x, ref const FortranInt incx);
+
+alias iamax_ = isamax_;
+alias iamax_ = idamax_;
+alias iamax_ = icamax_;
+alias iamax_ = izamax_;
+
+/++
 `scal_` scales a vector by a constant.
 
 Unified_alias: `scal_`
