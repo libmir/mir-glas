@@ -28,10 +28,131 @@ q{
 
     export extern(C) @system nothrow @nogc @fastmath pragma(inline, false):
 
+    static if (isComplex!T)
+    {
+        alias R = realType!T;
+        alias I = imaginaryType!T;
+    }
+
+    //////////// copy
+    void _glas_} ~ prefix!Type ~ q{copy(
+        size_t n,
+        ptrdiff_t incx,
+        const(T)* x,
+        ptrdiff_t incy,
+        T* y,
+        )
+    {
+        glas.internal.l1.copy(n, incx, x, incy, y);
+    }
+
+    void glas_} ~ prefix!Type ~ q{copy(
+        Slice!(SliceKind.universal, [1], const(T)*) xsl,
+        Slice!(SliceKind.universal, [1], T*) ysl,
+        )
+    {
+        glas.ndslice.copy(xsl.length, xsl._stride, xsl._iterator, ysl._stride, ysl._iterator);
+    }
+
+    int } ~ prefix!Type ~ q{copy_(
+        ref const FortranInt n,
+        const(T)* x,
+        ref const FortranInt incx,
+        T* y,
+        ref const FortranInt incy,
+        )
+    {
+        if(incx < 0)
+            x -= (n - 1) * incx;
+        if(incy < 0)
+            y -= (n - 1) * incy;
+
+        glas.ndslice.copy(n, incx, x, incy, y);
+        return 0;
+    }
+
+    //////////// swap
+    void _glas_} ~ prefix!Type ~ q{swap(
+        size_t n,
+        ptrdiff_t incx,
+        T* x,
+        ptrdiff_t incy,
+        T* y,
+        )
+    {
+        glas.internal.l1.swap(n, incx, x, incy, y);
+    }
+
+    void glas_} ~ prefix!Type ~ q{swap(
+        Slice!(SliceKind.universal, [1], T*) xsl,
+        Slice!(SliceKind.universal, [1], T*) ysl,
+        )
+    {
+        glas.ndslice.swap(xsl.length, xsl._stride, xsl._iterator, ysl._stride, ysl._iterator);
+    }
+
+    int } ~ prefix!Type ~ q{swap_(
+        ref const FortranInt n,
+        T* x,
+        ref const FortranInt incx,
+        T* y,
+        ref const FortranInt incy,
+        )
+    {
+        if(incx < 0)
+            x -= (n - 1) * incx;
+        if(incy < 0)
+            y -= (n - 1) * incy;
+
+        glas.ndslice.swap(n, incx, x, incy, y);
+        return 0;
+    }
+
+    //////////// axpy
+    void _glas_} ~ prefix!Type ~ q{axpy(
+        T a,
+        size_t n,
+        ptrdiff_t incx,
+        const(T)* x,
+        ptrdiff_t incy,
+        T* y,
+        )
+    {
+        glas.internal.l1.axpy(a, n, incx, x, incy, y);
+    }
+
+    void glas_} ~ prefix!Type ~ q{axpy(
+        T a,
+        Slice!(SliceKind.universal, [1], const(T)*) xsl,
+        Slice!(SliceKind.universal, [1], T*) ysl,
+        )
+    {
+        glas.ndslice.axpy(a, xsl.length, xsl._stride, xsl._iterator, ysl._stride, ysl._iterator);
+    }
+
+    int } ~ prefix!Type ~ q{axpy_(
+        ref const FortranInt n,
+        ref const T a,
+        const(T)* x,
+        ref const FortranInt incx,
+        T* y,
+        ref const FortranInt incy,
+        )
+    {
+        if(incx < 0)
+            x -= (n - 1) * incx;
+        if(incy < 0)
+            y -= (n - 1) * incy;
+
+        glas.ndslice.axpy(a, n, incx, x, incy, y);
+        return 0;
+    }
+
+    //////////// scal
     void _glas_} ~ prefix!Type ~ q{scal(
         T a,
         size_t length,
-        size_t stride,
+        ptrdiff_t stride,
         T* ptr,
         )
     {
@@ -58,16 +179,10 @@ q{
     }
 
     static if (isComplex!T)
-    {
-        alias R = realType!T;
-        alias I = imaginaryType!T;
-    }
-
-    static if (isComplex!T)
     void _glas_} ~ prefix!Type ~ prefix!(realType!Type) ~ q{scal(
         R a,
         size_t length,
-        size_t stride,
+        ptrdiff_t stride,
         T* ptr,
         )
     {
@@ -99,7 +214,7 @@ q{
     void _glas_} ~ prefix!Type ~ prefix!(realType!Type) ~ "I" ~ q{scal(
         I a,
         size_t length,
-        size_t stride,
+        ptrdiff_t stride,
         T* ptr,
         )
     {
