@@ -135,8 +135,12 @@ The hardest part (GEMM) is already implemented.
  - [ ] Shared library support - requires only DUB configuration fixes.
  - [ ] Level 3 - matrix-matrix operations
    - [x] GEMM - matrix matrix multiply
-   - [x] SYMM, HEMM - symmetric / hermitian matrix matrix multiply
-   - [ ] SYRK, HERK, SYR2K, HER2K - symmetric / hermitian rank-k / rank-2k update to a matrix
+   - [x] SYMM - symmetric matrix matrix multiply
+   - [x] HEMM - hermitian matrix matrix multiply
+   - [ ] SYRK - symmetric rank-k update to a matrix
+   - [ ] HERK - hermitian rank-k update to a matrix
+   - [ ] SYR2K - symmetric rank-2k update to a matrix
+   - [ ] HER2K - hermitian rank-2k update to a matrix
    - [ ] TRMM - triangular matrix matrix multiply
    - [ ] TRSM - solving triangular matrix with multiple right hand sides
  - [ ] Level 2 - matrix-vector operations
