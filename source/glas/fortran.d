@@ -92,6 +92,60 @@ alias hemm_ = chemm_;
 alias hemm_ = zhemm_;
 
 /++
+Copies a vector, `x`, to a vector, `y`.
+
+Unified_alias: `copy_`
++/
+int scopy_(ref const FortranInt n, const(float)* x, ref const FortranInt incx, float* y, ref const FortranInt incy);
+/// ditto 
+int dcopy_(ref const FortranInt n, const(double)* x, ref const FortranInt incx, double* y, ref const FortranInt incy);
+/// ditto 
+int ccopy_(ref const FortranInt n, const(cfloat)* x, ref const FortranInt incx, cfloat* y, ref const FortranInt incy);
+/// ditto 
+int zcopy_(ref const FortranInt n, const(cdouble)* x, ref const FortranInt incx, cdouble* y, ref const FortranInt incy);
+
+alias copy_ = scopy_;
+alias copy_ = dcopy_;
+alias copy_ = ccopy_;
+alias copy_ = zcopy_;
+
+/++
+Interchanges two vectors.
+
+Unified_alias: `swap_`
++/
+int sswap_(ref const FortranInt n, float* x, ref const FortranInt incx, float* y, ref const FortranInt incy);
+/// ditto 
+int dswap_(ref const FortranInt n, double* x, ref const FortranInt incx, double* y, ref const FortranInt incy);
+/// ditto 
+int cswap_(ref const FortranInt n, cfloat* x, ref const FortranInt incx, cfloat* y, ref const FortranInt incy);
+/// ditto 
+int zswap_(ref const FortranInt n, cdouble* x, ref const FortranInt incx, cdouble* y, ref const FortranInt incy);
+
+alias swap_ = sswap_;
+alias swap_ = dswap_;
+alias swap_ = cswap_;
+alias swap_ = zswap_;
+
+/++
+Copies a vector, `x`, to a vector, `y`.
+
+Unified_alias: `axpy_`
++/
+int saxpy_(ref const FortranInt n, ref const float a, const(float)* x, ref const FortranInt incx, float* y, ref const FortranInt incy);
+/// ditto 
+int daxpy_(ref const FortranInt n, ref const double a, const(double)* x, ref const FortranInt incx, double* y, ref const FortranInt incy);
+/// ditto 
+int caxpy_(ref const FortranInt n, ref const cfloat a, const(cfloat)* x, ref const FortranInt incx, cfloat* y, ref const FortranInt incy);
+/// ditto 
+int zaxpy_(ref const FortranInt n, ref const cdouble a, const(cdouble)* x, ref const FortranInt incx, cdouble* y, ref const FortranInt incy);
+
+alias axpy_ = saxpy_;
+alias axpy_ = daxpy_;
+alias axpy_ = caxpy_;
+alias axpy_ = zaxpy_;
+
+/++
 `scal_` scales a vector by a constant.
 
 Unified_alias: `scal_`

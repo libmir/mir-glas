@@ -162,10 +162,10 @@ The hardest part (GEMM) is already implemented.
    - [ ] ROTMG - setup modified Givens rotation
    - [ ] ROT - apply Givens rotation
    - [ ] ROTM - apply modified Givens rotation
-   - [ ] SWAP - swap x and y
+   - [x] SWAP - swap x and y
    - [x] SCAL - `x = a*x`. Note: requires addition optimization for complex numbers.
-   - [ ] COPY - copy x into y
-   - [ ] AXPY - `y = a*x + y`
+   - [x] COPY - copy x into y
+   - [x] AXPY - `y = a*x + y`. Note: requires addition optimization for complex numbers.
    - [ ] DOT - dot product
    - [ ] NRM2 - Euclidean norm
    - [ ] ASUM - sum of absolute values

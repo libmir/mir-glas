@@ -59,6 +59,33 @@ struct ErrorString glas_error(int error_code);
 int glas_validate_gemm(struct glas_MatrixStructure as, struct glas_MatrixStructure bs, struct glas_MatrixStructure cs, unsigned long settings);
 int glas_validate_symm(struct glas_MatrixStructure as, struct glas_MatrixStructure bs, struct glas_MatrixStructure cs, unsigned long settings);
 
+void glas_sswap(struct glas_MutVector xsl, struct glas_MutVector ysl);
+void glas_dswap(struct glas_MutVector xsl, struct glas_MutVector ysl);
+void glas_cswap(struct glas_MutVector xsl, struct glas_MutVector ysl);
+void glas_zswap(struct glas_MutVector xsl, struct glas_MutVector ysl);
+void _glas_sswap(size_t n, size_t incx, float* x, size_t incy, float* y);
+void _glas_dswap(size_t n, size_t incx, double* x, size_t incy, double* y);
+void _glas_cswap(size_t n, size_t incx, float _Complex* x, size_t incy, float _Complex* y);
+void _glas_zswap(size_t n, size_t incx, double _Complex* x, size_t incy, double _Complex* y);
+
+void glas_scopy(struct glas_ConstVector xsl, struct glas_MutVector ysl);
+void glas_dcopy(struct glas_ConstVector xsl, struct glas_MutVector ysl);
+void glas_ccopy(struct glas_ConstVector xsl, struct glas_MutVector ysl);
+void glas_zcopy(struct glas_ConstVector xsl, struct glas_MutVector ysl);
+void _glas_scopy(size_t n, size_t incx, const float* x, size_t incy, float* y);
+void _glas_dcopy(size_t n, size_t incx, const double* x, size_t incy, double* y);
+void _glas_ccopy(size_t n, size_t incx, const float _Complex* x, size_t incy, float _Complex* y);
+void _glas_zcopy(size_t n, size_t incx, const double _Complex* x, size_t incy, double _Complex* y);
+
+void glas_sswap(float a, struct glas_MutVector xsl, struct glas_MutVector ysl);
+void glas_dswap(double a, struct glas_MutVector xsl, struct glas_MutVector ysl);
+void glas_cswap(float _Complex a, struct glas_MutVector xsl, struct glas_MutVector ysl);
+void glas_zswap(float _Complex a, struct glas_MutVector xsl, struct glas_MutVector ysl);
+void _glas_sswap(float a, size_t n, size_t incx, float* x, size_t incy, float* y);
+void _glas_dswap(double a, size_t n, size_t incx, double* x, size_t incy, double* y);
+void _glas_cswap(float _Complex a, size_t n, size_t incx, float _Complex* x, size_t incy, float _Complex* y);
+void _glas_zswap(float _Complex a, size_t n, size_t incx, double _Complex* x, size_t incy, double _Complex* y);
+
 void glas_sscal(float a, struct glas_MutVector xsl);
 void glas_dscal(double a, struct glas_MutVector xsl);
 void glas_csscal(float a, struct glas_MutVector xsl);

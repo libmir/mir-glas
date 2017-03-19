@@ -191,6 +191,140 @@ alias symm = glas_csymm;
 /// ditto
 alias symm = glas_zsymm;
 
+pure:
+
+/++
+`copy` copies a vector, `x`, to a vector, `y`.
+
+Pseudo_code: `y := x`.
+
+Unified_alias: `copy`
+
+BLAS: SCOPY, DCOPY, CCOPY, ZCOPY
++/
+void glas_scopy(Slice!(SliceKind.universal, [1], const(float)*) xsl, Slice!(SliceKind.universal, [1], float*) ysl);
+/// ditto
+void glas_dcopy(Slice!(SliceKind.universal, [1], const(double)*) xsl, Slice!(SliceKind.universal, [1], double*) ysl);
+/// ditto
+void glas_ccopy(Slice!(SliceKind.universal, [1], const(cfloat)*) xsl, Slice!(SliceKind.universal, [1], float*) ysl);
+/// ditto
+void glas_zcopy(Slice!(SliceKind.universal, [1], const(cdouble)*) xsl, Slice!(SliceKind.universal, [1], cdouble*) ysl);
+
+/// ditto
+void _glas_scopy(size_t n, ptrdiff_t incx, const(float)* x, ptrdiff_t incy, float* y);
+/// ditto
+void _glas_dcopy(size_t n, ptrdiff_t incx, const(double)* x, ptrdiff_t incy, double* y);
+/// ditto
+void _glas_ccopy(size_t n, ptrdiff_t incx, const(cfloat)* x, ptrdiff_t incy, cfloat* y);
+/// ditto
+void _glas_zcopy(size_t n, ptrdiff_t incx, const(cdouble)* x, ptrdiff_t incy, cdouble* y);
+
+/// ditto
+alias copy = glas_scopy;
+/// ditto
+alias copy = glas_dcopy;
+/// ditto
+alias copy = glas_ccopy;
+/// ditto
+alias copy = glas_zcopy;
+
+/// ditto
+alias copy = _glas_scopy;
+/// ditto
+alias copy = _glas_dcopy;
+/// ditto
+alias copy = _glas_ccopy;
+/// ditto
+alias copy = _glas_zcopy;
+
+/++
+`swap` interchanges two vectors.
+
+Pseudo_code: `x <-> y`.
+
+Unified_alias: `swap`
+
+BLAS: SSWAP, DSWAP, CSWAP, ZSWAP
++/
+void glas_sswap(Slice!(SliceKind.universal, [1], float*) xsl, Slice!(SliceKind.universal, [1], float*) ysl);
+/// ditto
+void glas_dswap(Slice!(SliceKind.universal, [1], double*) xsl, Slice!(SliceKind.universal, [1], double*) ysl);
+/// ditto
+void glas_cswap(Slice!(SliceKind.universal, [1], cfloat*) xsl, Slice!(SliceKind.universal, [1], float*) ysl);
+/// ditto
+void glas_zswap(Slice!(SliceKind.universal, [1], cdouble*) xsl, Slice!(SliceKind.universal, [1], cdouble*) ysl);
+
+/// ditto
+void _glas_sswap(size_t n, ptrdiff_t incx, float* x, ptrdiff_t incy, float* y);
+/// ditto
+void _glas_dswap(size_t n, ptrdiff_t incx, double* x, ptrdiff_t incy, double* y);
+/// ditto
+void _glas_cswap(size_t n, ptrdiff_t incx, cfloat* x, ptrdiff_t incy, cfloat* y);
+/// ditto
+void _glas_zswap(size_t n, ptrdiff_t incx, cdouble* x, ptrdiff_t incy, cdouble* y);
+
+/// ditto
+alias swap = glas_sswap;
+/// ditto
+alias swap = glas_dswap;
+/// ditto
+alias swap = glas_cswap;
+/// ditto
+alias swap = glas_zswap;
+
+/// ditto
+alias swap = _glas_sswap;
+/// ditto
+alias swap = _glas_dswap;
+/// ditto
+alias swap = _glas_cswap;
+/// ditto
+alias swap = _glas_zswap;
+
+/++
+Constant times a vector plus a vector.
+
+Pseudo_code: `y += a * x`.
+
+Unified_alias: `axpy`
+
+BLAS: SAXPY, DAXPY, CAXPY, ZAXPY
++/
+void glas_saxpy(float a, Slice!(SliceKind.universal, [1], const(float)*) xsl, Slice!(SliceKind.universal, [1], float*) ysl);
+/// ditto
+void glas_daxpy(double a, Slice!(SliceKind.universal, [1], const(double)*) xsl, Slice!(SliceKind.universal, [1], double*) ysl);
+/// ditto
+void glas_caxpy(cfloat a, Slice!(SliceKind.universal, [1], const(cfloat)*) xsl, Slice!(SliceKind.universal, [1], float*) ysl);
+/// ditto
+void glas_zaxpy(cdouble a, Slice!(SliceKind.universal, [1], const(cdouble)*) xsl, Slice!(SliceKind.universal, [1], cdouble*) ysl);
+
+/// ditto
+void _glas_saxpy(float a, size_t n, ptrdiff_t incx, const(float)* x, ptrdiff_t incy, float* y);
+/// ditto
+void _glas_daxpy(double a, size_t n, ptrdiff_t incx, const(double)* x, ptrdiff_t incy, double* y);
+/// ditto
+void _glas_caxpy(cfloat a, size_t n, ptrdiff_t incx, const(cfloat)* x, ptrdiff_t incy, cfloat* y);
+/// ditto
+void _glas_zaxpy(cdouble a, size_t n, ptrdiff_t incx, const(cdouble)* x, ptrdiff_t incy, cdouble* y);
+
+/// ditto
+alias axpy = glas_saxpy;
+/// ditto
+alias axpy = glas_daxpy;
+/// ditto
+alias axpy = glas_caxpy;
+/// ditto
+alias axpy = glas_zaxpy;
+
+/// ditto
+alias axpy = _glas_saxpy;
+/// ditto
+alias axpy = _glas_daxpy;
+/// ditto
+alias axpy = _glas_caxpy;
+/// ditto
+alias axpy = _glas_zaxpy;
+
 /++
 `scal` scales a vector by a constant.
 
@@ -198,7 +332,7 @@ Pseudo_code: `x := a x`.
 
 Unified_alias: `scal`
 
-BLAS: SSCSCAL, DSCSCAL, CSCSCAL, ZSCSCAL, CSCAL, ZSCAL
+BLAS: SSSCAL, DSSCAL, CSSCAL, ZSSCAL, CSCAL, ZSCAL
 +/
 void glas_sscal(float a, Slice!(SliceKind.universal, [1], float*) xsl);
 /// ditto
@@ -217,21 +351,21 @@ void glas_zscal(cdouble a, Slice!(SliceKind.universal, [1], cdouble*) xsl);
 void glas_zdIscal(idouble a, Slice!(SliceKind.universal, [1], cdouble*) xsl);
 
 /// ditto
-void _glas_sscal(float a, size_t n, size_t incx, float* x);
+void _glas_sscal(float a, size_t n, ptrdiff_t incx, float* x);
 /// ditto
-void _glas_dscal(double a, size_t n, size_t incx, double* x);
+void _glas_dscal(double a, size_t n, ptrdiff_t incx, double* x);
 /// ditto
-void _glas_csscal(float a, size_t n, size_t incx, cfloat* x);
+void _glas_csscal(float a, size_t n, ptrdiff_t incx, cfloat* x);
 /// ditto
-void _glas_cscal(cfloat a, size_t n, size_t incx, cfloat* x);
+void _glas_cscal(cfloat a, size_t n, ptrdiff_t incx, cfloat* x);
 /// ditto
-void _glas_csIscal(ifloat a, size_t n, size_t incx, cfloat* x);
+void _glas_csIscal(ifloat a, size_t n, ptrdiff_t incx, cfloat* x);
 /// ditto
-void _glas_zdscal(double a, size_t n, size_t incx, cdouble* x);
+void _glas_zdscal(double a, size_t n, ptrdiff_t incx, cdouble* x);
 /// ditto
-void _glas_zscal(cdouble a, size_t n, size_t incx, cdouble* x);
+void _glas_zscal(cdouble a, size_t n, ptrdiff_t incx, cdouble* x);
 /// ditto
-void _glas_zdIscal(idouble a, size_t n, size_t incx, cdouble* x);
+void _glas_zdIscal(idouble a, size_t n, ptrdiff_t incx, cdouble* x);
 
 /// ditto
 alias scal = glas_sscal;
