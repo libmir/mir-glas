@@ -19,10 +19,10 @@ int dswap_(const FortranInt *n, double *x, const FortranInt *incx, double *y, co
 int cswap_(const FortranInt *n, float _Complex *x, const FortranInt *incx, float _Complex *y, const FortranInt *incy);
 int zswap_(const FortranInt *n, double _Complex *x, const FortranInt *incx, double _Complex *y, const FortranInt *incy);
 
-int scopy_(const FortranInt *n, const float *a, const float *x, const FortranInt *incx, float *y, const FortranInt *incy);
-int dcopy_(const FortranInt *n, const double *a, const double *x, const FortranInt *incx, double *y, const FortranInt *incy);
-int ccopy_(const FortranInt *n, const float _Complex *a, const float _Complex *x, const FortranInt *incx, float _Complex *y, const FortranInt *incy);
-int zcopy_(const FortranInt *n, const double _Complex *a, const double _Complex *x, const FortranInt *incx, double _Complex *y, const FortranInt *incy);
+int saxpy_(const FortranInt *n, const float *a, const float *x, const FortranInt *incx, float *y, const FortranInt *incy);
+int daxpy_(const FortranInt *n, const double *a, const double *x, const FortranInt *incx, double *y, const FortranInt *incy);
+int caxpy_(const FortranInt *n, const float _Complex *a, const float _Complex *x, const FortranInt *incx, float _Complex *y, const FortranInt *incy);
+int zaxpy_(const FortranInt *n, const double _Complex *a, const double _Complex *x, const FortranInt *incx, double _Complex *y, const FortranInt *incy);
 
 int sscal_(const FortranInt *n, const float *a, float *x, const FortranInt *incx);
 int dscal_(const FortranInt *n, const double *a, double *x, const FortranInt *incx);

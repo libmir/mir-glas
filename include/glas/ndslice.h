@@ -77,14 +77,14 @@ void _glas_dcopy(size_t n, size_t incx, const double* x, size_t incy, double* y)
 void _glas_ccopy(size_t n, size_t incx, const float _Complex* x, size_t incy, float _Complex* y);
 void _glas_zcopy(size_t n, size_t incx, const double _Complex* x, size_t incy, double _Complex* y);
 
-void glas_sswap(float a, struct glas_MutVector xsl, struct glas_MutVector ysl);
-void glas_dswap(double a, struct glas_MutVector xsl, struct glas_MutVector ysl);
-void glas_cswap(float _Complex a, struct glas_MutVector xsl, struct glas_MutVector ysl);
-void glas_zswap(float _Complex a, struct glas_MutVector xsl, struct glas_MutVector ysl);
-void _glas_sswap(float a, size_t n, size_t incx, float* x, size_t incy, float* y);
-void _glas_dswap(double a, size_t n, size_t incx, double* x, size_t incy, double* y);
-void _glas_cswap(float _Complex a, size_t n, size_t incx, float _Complex* x, size_t incy, float _Complex* y);
-void _glas_zswap(float _Complex a, size_t n, size_t incx, double _Complex* x, size_t incy, double _Complex* y);
+void glas_saxpy(float a, struct glas_MutVector xsl, struct glas_MutVector ysl);
+void glas_daxpy(double a, struct glas_MutVector xsl, struct glas_MutVector ysl);
+void glas_caxpy(float _Complex a, struct glas_MutVector xsl, struct glas_MutVector ysl);
+void glas_zaxpy(float _Complex a, struct glas_MutVector xsl, struct glas_MutVector ysl);
+void _glas_saxpy(float a, size_t n, size_t incx, float* x, size_t incy, float* y);
+void _glas_daxpy(double a, size_t n, size_t incx, double* x, size_t incy, double* y);
+void _glas_caxpy(float _Complex a, size_t n, size_t incx, float _Complex* x, size_t incy, float _Complex* y);
+void _glas_zaxpy(float _Complex a, size_t n, size_t incx, double _Complex* x, size_t incy, double _Complex* y);
 
 void glas_sscal(float a, struct glas_MutVector xsl);
 void glas_dscal(double a, struct glas_MutVector xsl);
