@@ -128,7 +128,9 @@ Copy `libmir-glas.a` to your project or add its directory to the library path.
 We are open for contributing!
 The hardest part (GEMM) is already implemented.
 
+ - [x] CI testing with Netlib's BLAS test suite.
  - [x] CI testing with Netlib's CBLAS test suite.
+ - [ ] CI testing with Netlib's LAPACK test suite.
  - [ ] CI testing with Netlib's LAPACKE test suite.
  - [ ] Multi-threading
  - [ ] GPU back-end
@@ -161,16 +163,20 @@ The hardest part (GEMM) is already implemented.
    - [ ] HPR - hermitian packed rank 1 operation `A := alpha*x*conjg( x' ) + A`
    - [ ] HER2 - hermitian rank 2 operation
    - [ ] HPR2 - hermitian packed rank 2 operation
- - [ ] Level 1 - vector-vector and scalar operations. Note: [Mir](https://github.com/libmir/mir) already provides generic implementation.
-   - [ ] ROTG - setup Givens rotation
-   - [ ] ROTMG - setup modified Givens rotation
-   - [ ] ROT - apply Givens rotation
-   - [ ] ROTM - apply modified Givens rotation
+ - [x] Level 1 - vector-vector and scalar operations. Note: [Mir](https://github.com/libmir/mir) already provides generic implementation.
+   - [x] ROTG - setup Givens rotation
+   - [x] ROTMG - setup modified Givens rotation
+   - [X] ROT - apply Givens rotation
+   - [x] ROTM - apply modified Givens rotation
    - [x] SWAP - swap x and y
    - [x] SCAL - `x = a*x`. Note: requires addition optimization for complex numbers.
    - [x] COPY - copy x into y
    - [x] AXPY - `y = a*x + y`. Note: requires addition optimization for complex numbers.
-   - [ ] DOT - dot product
+   - [x] DOT - dot product
+   - [x] DOTU - dot product. Note: requires addition optimization for complex numbers.
+   - [x] DOTC - dot product, conjugating the first vector. Note: requires addition optimization for complex numbers.
+   - [x] DSDOT - dot product with extended precision accumulation and result
+   - [x] SDSDOT - dot product with extended precision accumulation
    - [x] NRM2 - Euclidean norm
    - [x] ASUM - sum of absolute values
    - [x] IAMAX - index of max abs value
