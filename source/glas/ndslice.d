@@ -325,6 +325,187 @@ alias axpy = _glas_caxpy;
 /// ditto
 alias axpy = _glas_zaxpy;
 
+
+/++
+Applies a  plane rotation.
+
+Unified_alias: `rot`
+
+BLAS: SROT, DROT, CSROT, ZDROT
++/
+void glas_srot(Slice!(SliceKind.universal, [1], float*) xsl, Slice!(SliceKind.universal, [1], float*) ysl, float c, float s);
+/// ditto
+void glas_drot(Slice!(SliceKind.universal, [1], double*) xsl, Slice!(SliceKind.universal, [1], double*) ysl, double c, double s);
+/// ditto
+void glas_csrot(Slice!(SliceKind.universal, [1], cfloat*) xsl, Slice!(SliceKind.universal, [1], float*) ysl, float c, float s);
+/// ditto
+void glas_zdrot(Slice!(SliceKind.universal, [1], cdouble*) xsl, Slice!(SliceKind.universal, [1], cdouble*) ysl, double c, double s);
+
+/// ditto
+void _glas_srot(size_t n, ptrdiff_t incx, float* x, ptrdiff_t incy, float* y, float c, float s);
+/// ditto
+void _glas_drot(size_t n, ptrdiff_t incx, double* x, ptrdiff_t incy, double* y, double c, double s);
+/// ditto
+void _glas_csrot(size_t n, ptrdiff_t incx, cfloat* x, ptrdiff_t incy, cfloat* y, float c, float s);
+/// ditto
+void _glas_zdrot(size_t n, ptrdiff_t incx, cdouble* x, ptrdiff_t incy, cdouble* y, double c, double s);
+
+/// ditto
+alias rot = glas_srot;
+/// ditto
+alias rot = glas_drot;
+/// ditto
+alias rot = glas_csrot;
+/// ditto
+alias rot = glas_zdrot;
+
+/// ditto
+alias rot = _glas_srot;
+/// ditto
+alias rot = _glas_drot;
+/// ditto
+alias rot = _glas_csrot;
+/// ditto
+alias rot = _glas_zdrot;
+
+
+/++
+Applies a modified plane rotation.
+
+Unified_alias: `rotn`
+
+BLAS: SROTM, DROTM
++/
+void glas_srotm(Slice!(SliceKind.universal, [1], float*) xsl, Slice!(SliceKind.universal, [1], float*) ysl, ref const float[5] sparam);
+/// ditto
+void glas_drotm(Slice!(SliceKind.universal, [1], double*) xsl, Slice!(SliceKind.universal, [1], double*) ysl, ref const double[5] sparam);
+
+/// ditto
+void _glas_srotm(size_t n, ptrdiff_t incx, float* x, ptrdiff_t incy, float* y, ref const float[5] sparam);
+/// ditto
+void _glas_drotm(size_t n, ptrdiff_t incx, double* x, ptrdiff_t incy, double* y, ref const double[5] sparam);
+
+/// ditto
+alias rotm = glas_srotm;
+/// ditto
+alias rotm = glas_drotm;
+
+/// ditto
+alias rotm = _glas_srotm;
+/// ditto
+alias rotm = _glas_drotm;
+
+/++
+Forms the dot product of two vectors.
+Uses unrolled loops for increments equal to one.
+
+Unified_alias: `dot`
+
+Pseudo_code: `X^T * Y`
+
+BLAS: SDOT, DDOT
++/
+float glas_sdot(Slice!(SliceKind.universal, [1], const(float)*) xsl, Slice!(SliceKind.universal, [1], const(float)*) ysl);
+/// ditto
+double glas_ddot(Slice!(SliceKind.universal, [1], const(double)*) xsl, Slice!(SliceKind.universal, [1], const(double)*) ysl);
+
+/// ditto
+float _glas_sdot(size_t n, ptrdiff_t incx, const(float)* x, ptrdiff_t incy, const(float)* y);
+/// ditto
+double _glas_ddot(size_t n, ptrdiff_t incx, const(double)* x, ptrdiff_t incy, const(double)* y);
+
+/// ditto
+alias dot = glas_sdot;
+/// ditto
+alias dot = glas_ddot;
+
+/// ditto
+alias dot = _glas_sdot;
+/// ditto
+alias dot = _glas_ddot;
+
+/++
+Compute the inner product of two vectors with extended
+precision accumulation and result.
+Uses unrolled loops for increments equal to one.
+
+Unified_alias: `dot`
+
+Pseudo_code: `X^T * Y`
+
+BLAS: DSDOT
++/
+double glas_dsdot(Slice!(SliceKind.universal, [1], const(float)*) xsl, Slice!(SliceKind.universal, [1], const(float)*) ysl);
+
+/// ditto
+double _glas_dsdot(size_t n, ptrdiff_t incx, const(float)* x, ptrdiff_t incy, const(float)* y);
+
+/// ditto
+alias dsdot = glas_dsdot;
+
+/// ditto
+alias dsdot = _glas_dsdot;
+
+/++
+Forms the dot product of two complex vectors.
+Uses unrolled loops for increments equal to one.
+
+Unified_alias: `dotu`
+
+Pseudo_code: `X^T * Y`
+
+BLAS: CDOTU, ZDOTU
++/
+cfloat glas_cdotu(Slice!(SliceKind.universal, [1], const(cfloat)*) xsl, Slice!(SliceKind.universal, [1], const(cfloat)*) ysl);
+/// ditto
+cdouble glas_zdotu(Slice!(SliceKind.universal, [1], const(cdouble)*) xsl, Slice!(SliceKind.universal, [1], const(cdouble)*) ysl);
+
+/// ditto
+cfloat _glas_cdotu(size_t n, ptrdiff_t incx, const(cfloat)* x, ptrdiff_t incy, const(cfloat)* y);
+/// ditto
+cdouble _glas_zdotu(size_t n, ptrdiff_t incx, const(cdouble)* x, ptrdiff_t incy, const(cdouble)* y);
+
+/// ditto
+alias dotu = glas_cdotu;
+/// ditto
+alias dotu = glas_zdotu;
+
+/// ditto
+alias dotu = _glas_cdotu;
+/// ditto
+alias dotu = _glas_zdotu;
+
+
+/++
+Forms the dot product of two complex vectors.
+Uses unrolled loops for increments equal to one.
+
+Unified_alias: `dotc`
+
+Pseudo_code: `X^H * Y`
+
+BLAS: CDOTC, ZDOTC
++/
+cfloat glas_cdotc(Slice!(SliceKind.universal, [1], const(cfloat)*) xsl, Slice!(SliceKind.universal, [1], const(cfloat)*) ysl);
+/// ditto
+cdouble glas_zdotc(Slice!(SliceKind.universal, [1], const(cdouble)*) xsl, Slice!(SliceKind.universal, [1], const(cdouble)*) ysl);
+
+/// ditto
+cfloat _glas_cdotc(size_t n, ptrdiff_t incx, const(cfloat)* x, ptrdiff_t incy, const(cfloat)* y);
+/// ditto
+cdouble _glas_zdotc(size_t n, ptrdiff_t incx, const(cdouble)* x, ptrdiff_t incy, const(cdouble)* y);
+
+/// ditto
+alias dotc = glas_cdotc;
+/// ditto
+alias dotc = glas_zdotc;
+
+/// ditto
+alias dotc = _glas_cdotc;
+/// ditto
+alias dotc = _glas_zdotc;
+
+
 /++
 Returns the euclidean norm of a vector via the function.
 
