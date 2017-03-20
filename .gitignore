@@ -38,6 +38,7 @@ web
 *.zip
 BLAS*
 CBLAS
+lapack*
 *.tgz
 
 

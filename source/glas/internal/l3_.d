@@ -130,7 +130,7 @@ q{
             glas.ndslice.gemm(alpha, asl, bsl, beta, csl, settings);
             return 0;
         }
-        enum name = prefix!T ~ "GEMM";
+        enum name = prefix!T.upper ~ "GEMM ";
         xerbla_(name.ptr, info);
         return 0;
     }
@@ -271,8 +271,8 @@ package(glas) int symm_impl_(T)(
         glas.ndslice.symm(alpha, asl, bsl, beta, csl, settings);
         return 0;
     }
-    enum nameSYMM = prefix!T ~ "SYMM";
-    enum nameHEMM = prefix!T ~ "HEMM";
+    enum nameSYMM = prefix!T.upper ~ "SYMM ";
+    enum nameHEMM = prefix!T.upper ~ "HEMM ";
     xerbla_(conj ? nameHEMM.ptr : nameSYMM.ptr, info);
     return 0;
 }

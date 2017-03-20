@@ -90,7 +90,6 @@ template prefix2(T)
     else static assert(0);
 }
 
-
 template prefix2r(T)
 {
     static if (is(T == float))
@@ -105,4 +104,15 @@ template prefix2r(T)
     static if (is(T == cdouble))
         enum prefix2r = "zd";
     else static assert(0);
+}
+
+string upper()(string str)
+{
+    auto ret = new char[str.length];
+    foreach(i, char c; str)
+        if ('a' <= c && c <= 'z')
+            ret[i] = cast(char)(c - 'a' + 'A');
+        else
+            ret[i] = c;
+    return cast(string) ret;
 }

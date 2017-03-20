@@ -465,7 +465,7 @@ void rotm(T, R = realType!T)(size_t len, sizediff_t incx, T* x, sizediff_t incy,
 		return;
 	if (incx == 1 && incy == 1)
 	{
-		if (sflag < zero)
+		if (sflag < 0)
 		{
 			const sh11 = sparam[1];
 			const sh12 = sparam[3];
@@ -483,7 +483,7 @@ void rotm(T, R = realType!T)(size_t len, sizediff_t incx, T* x, sizediff_t incy,
 			while(--len);
 		}
 		else
-		if (sflag == zero)
+		if (sflag == 0)
 		{
 			const sh12 = sparam[3];
 			const sh21 = sparam[2];
@@ -516,7 +516,7 @@ void rotm(T, R = realType!T)(size_t len, sizediff_t incx, T* x, sizediff_t incy,
 	}
 	else
 	{
-		if (sflag < zero)
+		if (sflag < 0)
 		{
 			const sh11 = sparam[1];
 			const sh12 = sparam[3];
@@ -534,7 +534,7 @@ void rotm(T, R = realType!T)(size_t len, sizediff_t incx, T* x, sizediff_t incy,
 			while(--len);
 		}
 		else
-		if (sflag == zero)
+		if (sflag == 0)
 		{
 			const sh12 = sparam[3];
 			const sh21 = sparam[2];
@@ -628,14 +628,22 @@ void rotg(T)(ref T da, ref T db, ref T c, ref T s)
 void rotmg(T)(ref T dd1, ref T dd2, ref T dx1, ref T dy1, ref T[5] dparam)
 	if (!isComplex!T)
 {
-	T dflag = void;
-	T dh11 = void;
-	T dh12 = void;
-	T dh21 = void;
-	T dh22 = void;
-	T gam = 4096;
-	T gamsq = 16777216;
-	T rgamsq = 5.9604645e-8;
+	enum T gam = 4096;
+	enum T gamsq = 16777216;
+	enum T rgamsq = 5.9604645e-8;
+
+	T dflag = 0;
+	T dh11 = 0;
+	T dh12 = 0;
+	T dh21 = 0;
+	T dh22 = 0;
+	T dp1 = 0;
+	T dp2 = 0;
+	T dq1 = 0;
+	T dq2 = 0;
+	T dtemp = 0;
+	T du = 0;
+ 
 	if (dd1 < 0)
 	{
 		dflag = -1;
@@ -649,21 +657,21 @@ void rotmg(T)(ref T dd1, ref T dd2, ref T dx1, ref T dy1, ref T[5] dparam)
 	}
 	else
 	{
-		auto dp2 = dd2 * dy1;
+		dp2 = dd2*dy1;
 		if (dp2 == 0)
 		{
 			dflag = -2;
 			dparam[1 - 1] = dflag;
 			return;
 		}
-		auto dp1 = dd1 * dx1;
-		auto dq2 = dp2 * dy1;
-		auto dq1 = dp1 * dx1;
+		dp1 = dd1*dx1;
+		dq2 = dp2*dy1;
+		dq1 = dp1*dx1;
 		if (llvm_fabs(dq1) > llvm_fabs(dq2))
 		{
-			dh21 = -dy1 / dx1;
-			dh12 = dp2 / dp1;
-			auto du = 1 - dh12 * dh21;
+			dh21 = -dy1/dx1;
+			dh12 = dp2/dp1;
+			du = 1 - dh12*dh21;
 			if (du > 0)
 			{
 				dflag = 0;
@@ -671,34 +679,35 @@ void rotmg(T)(ref T dd1, ref T dd2, ref T dx1, ref T dy1, ref T[5] dparam)
 				dd2 = dd2/du;
 				dx1 = dx1*du;
 			}
+		}
+		else
+		{
+			if (dq2 < 0)
+			{
+				dflag = -1;
+				dh11 = 0;
+				dh12 = 0;
+				dh21 = 0;
+				dh22 = 0;
+				dd1 = 0;
+				dd2 = 0;
+				dx1 = 0;
+			}
 			else
 			{
-				if (dq2 < 0)
-				{
-					dflag = -1;
-					dh11 = 0;
-					dh12 = 0;
-					dh21 = 0;
-					dh22 = 0;
-					dd1 = 0;
-					dd2 = 0;
-					dx1 = 0;
-				}
-				else
-				{
-					dflag = 1;
-					dh11 = dp1 / dp2;
-					dh22 = dx1 / dy1;
-					du = 1 + dh11 * dh22;
-					auto dtemp = dd2 / du;
-					dd2 = dd1 / du;
-					dd1 = dtemp;
-					dx1 = dy1 * du;
-				}
+				dflag = 1;
+				dh11 = dp1/dp2;
+				dh22 = dx1/dy1;
+				du = 1 + dh11*dh22;
+				dtemp = dd2/du;
+				dd2 = dd1/du;
+				dd1 = dtemp;
+				dx1 = dy1*du;
 			}
-	   }
-	   if (dd1)
-	   {
+		}
+
+		if (dd1 != 0)
+		{
 			while ((dd1 <= rgamsq) || (dd1 >= gamsq))
 			{
 				if (dflag == 0)
@@ -715,22 +724,23 @@ void rotmg(T)(ref T dd1, ref T dd2, ref T dx1, ref T dy1, ref T[5] dparam)
 				}
 				if (dd1 <= rgamsq)
 				{
-					dd1 = dd1 * (gam * gam);
-					dx1 = dx1 / gam;
-					dh11 = dh11 / gam;
-					dh12 = dh12 / gam;
+					dd1 = dd1*(gam * gam);
+					dx1 = dx1/gam;
+					dh11 = dh11/gam;
+					dh12 = dh12/gam;
 				}
 				else
 				{
-					dd1 = dd1 / (gam * gam);
-					dx1 = dx1 * gam;
-					dh11 = dh11 * gam;
-					dh12 = dh12 * gam;
+					dd1 = dd1/(gam * gam);
+					dx1 = dx1*gam;
+					dh11 = dh11*gam;
+					dh12 = dh12*gam;
 				}
 			}
-	   }
-	   if (dd2)
-	   {
+		}
+
+		if (dd2 != 0)
+		{
 			while ( (llvm_fabs(dd2) <= rgamsq) || (llvm_fabs(dd2) >= gamsq) )
 			{
 				if (dflag == 0)
@@ -747,19 +757,20 @@ void rotmg(T)(ref T dd1, ref T dd2, ref T dx1, ref T dy1, ref T[5] dparam)
 				}
 				if (llvm_fabs(dd2) <= rgamsq)
 				{
-					dd2 = dd2 * (gam * gam);
-					dh21 = dh21 / gam;
-					dh22 = dh22 / gam;
+					dd2 = dd2*(gam * gam);
+					dh21 = dh21/gam;
+					dh22 = dh22/gam;
 				}
 				else
 				{
-					dd2 = dd2 / (gam * gam);
-					dh21 = dh21 * gam;
-					dh22 = dh22 * gam;
+					dd2 = dd2/(gam * gam);
+					dh21 = dh21*gam;
+					dh22 = dh22*gam;
 				}
-		  	}
-	   }
+			}
+		}
 	}
+
 	if (dflag < 0)
 	{
 		dparam[2 - 1] = dh11;
@@ -778,7 +789,6 @@ void rotmg(T)(ref T dd1, ref T dd2, ref T dx1, ref T dy1, ref T[5] dparam)
 		dparam[5 - 1] = dh22;
 	}
 	dparam[1 - 1] = dflag;
-	return;
 }
 
 T hypot(T : float)(in T x, in T y) @safe pure nothrow @nogc

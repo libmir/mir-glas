@@ -22,7 +22,7 @@ ar cr libblas_mix.a \
 	cgemv.o cgbmv.o chemv.o chbmv.o chpmv.o ctrmv.o ctbmv.o ctpmv.o ctrsv.o ctbsv.o \
 	ctpsv.o cgerc.o cgeru.o cher.o chpr.o cher2.o chpr2.o csyrk.o csyr2k.o ctrmm.o ctrsm.o cherk.o cher2k.o dcabs1.o \
 	zgemv.o zgbmv.o zhemv.o zhbmv.o \
-	zhpmv.o ztrmv.o ztbmv.o ztpmv.o ztrsv.o ztbsv.o ztpsv.o zgerc.o zgeru.o zher.o zhpr.o zher2.o zhpr2.o zsyrk.o zsyr2k.o\
+	zhpmv.o ztrmv.o ztbmv.o ztpmv.o ztrsv.o ztbsv.o ztpsv.o zgerc.o zgeru.o zher.o zhpr.o zher2.o zhpr2.o zsyrk.o zsyr2k.o \
 	ztrmm.o ztrsm.o zherk.o zher2k.o lsame.o xerbla_array.o \
 	../*.o ../mir-cpuid-$CPUID/mir-cpuid/*.o 
 ranlib libblas_mix.a

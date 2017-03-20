@@ -205,6 +205,49 @@ q{
         return 0;
     }
 
+    //////////// rotm
+    static if (!isComplex!T)
+    void _glas_} ~ prefix2r!Type ~ q{rotm(
+        size_t n,
+        ptrdiff_t incx,
+        T* x,
+        ptrdiff_t incy,
+        T* y,
+        ref const T[5] param,
+        )
+    {
+        glas.internal.l1.rotm(n, incx, x, incy, y, param);
+    }
+
+    static if (!isComplex!T)
+    void glas_} ~ prefix2r!Type ~ q{rotm(
+        Slice!(SliceKind.universal, [1], T*) xsl,
+        Slice!(SliceKind.universal, [1], T*) ysl,
+        ref const T[5] param,
+        )
+    {
+        glas.ndslice.rotm(xsl.length, xsl._stride, xsl._iterator, ysl._stride, ysl._iterator, param);
+    }
+
+    static if (!isComplex!T)
+    int } ~ prefix2r!Type ~ q{rotm_(
+        ref const FortranInt n,
+        T* x,
+        ref const FortranInt incx,
+        T* y,
+        ref const FortranInt incy,
+        ref const T[5] param,
+        )
+    {
+        if(incx < 0)
+            x -= (n - 1) * incx;
+        if(incy < 0)
+            y -= (n - 1) * incy;
+
+        glas.ndslice.rotm(n, incx, x, incy, y, param);
+        return 0;
+    }
+
     //////////// dot
     static if (is(T == float) || is(T == double))
     T _glas_} ~ prefix!Type ~ q{dot(

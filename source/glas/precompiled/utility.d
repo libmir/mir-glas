@@ -92,6 +92,10 @@ int glas_validate_symm(Structure!2 as, Structure!2 bs, Structure!2 cs, ulong set
 @weak int xerbla_(in char* srname, ref FortranInt info)
 {
     import core.stdc.stdio;
-    printf("** On entry to %6s, parameter number %2i had an illegal value\n", srname, info);
+    static if (FortranInt.sizeof == 8)
+        enum fmt = " ** On entry to %6s parameter number %2ld had an illegal value\n";
+    else
+        enum fmt = " ** On entry to %6s parameter number %2d had an illegal value\n";
+    printf(fmt, srname, info);
     return 0;
 }
