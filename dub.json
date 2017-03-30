@@ -14,7 +14,7 @@
             "dflags-ldc": ["-betterC", "-linkonce-templates", "-enable-cross-module-inlining"]
         },
     },
-    "dependencies": {"mir-algorithm" : "~>0.4.2"},
+    "dependencies": {"mir-algorithm" : "~>0.4.3"},
     "configurations": [
         {
             "name": "auto-native",

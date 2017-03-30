@@ -9,7 +9,8 @@
         "mir-glas":{
             "path": "../"
         },
-        "mir-cpuid": "~>0.4.2"
+        "mir-cpuid": "~>0.4.2",
+        "mir-random": "~>0.2.3"
     }
 }
 +/
@@ -20,21 +21,25 @@
 // Note: GLAS is single thread for now.
 // $ dub build --compiler=ldmd2 -b release --single gemm_report.d
 // $ ./gemm_report
-import std.math;
 import std.traits;
 import std.datetime;
 import std.conv;
-import std.algorithm.comparison;
 import std.stdio;
-import std.exception;
 import std.getopt;
+import mir.random;
+import mir.random.variable: UniformVariable;
+import mir.random.algorithm: field;
 import glas.ndslice;
 import mir.ndslice;
+import mir.internal.utility: isComplex, realType;
+import mir.utility;
 
 alias C = float;
 //alias C = double;
 //alias C = cfloat;
 //alias C = cdouble;
+
+alias R = realType!C;
 
 size_t[] reportValues = [
 	10, 20, 30, 40, 50, 60, 70, 80, 90, 100,
@@ -54,19 +59,17 @@ void main(string[] args)
 	}
 
 	writeln("m=n=k,GLAS(thread_count=1),BLAS(thread_count=?)");
+	auto rng = Random(unpredictableSeed);
+	auto var = UniformVariable!int(-100, 100);
 	foreach(m; reportValues)
 	{
 		auto n = m;
 		auto k = m;
 
-		auto d = new C[m * n].sliced(m, n);
-		auto c = new C[m * n].sliced(m, n);
-		auto a = new C[m * k].sliced(m, k);
-		auto b = new C[k * n].sliced(k, n);
-
-		fillRNG(c);
-		fillRNG(a);
-		fillRNG(b);
+		auto d = rng.field!C(var).slicedField(m, n).slice;
+		auto c = rng.field!C(var).slicedField(m, n).slice;
+		auto a = rng.field!C(var).slicedField(m, k).slice;
+		auto b = rng.field!C(var).slicedField(k, n).slice;
 
 		d[] = c[];
 
@@ -147,27 +150,5 @@ void main(string[] args)
 		
 		/// Result
 		writefln("%s,%s,%s", m, (m * n * k * 2) / nsecsGLAS, (m * n * k * 2) / nsecsBLAS);
-	}
-}
-
-enum bool isComplex(C)
-     = is(Unqual!C == creal)
-    || is(Unqual!C == cdouble)
-    || is(Unqual!C == cfloat);
-
-void fillRNG(T, SliceKind kind)(Slice!(kind, [2], T*) sl)
-{
-	import std.random;
-	foreach(row; sl)
-	foreach(ref e; row)
-	{
-		static if(isComplex!T)
-		{
-			e = uniform(-100, 100) + uniform(-100, 100) * 1i;
-		}
-		else
-		{
-			e = cast(T) uniform(-100, 100);
-		}
 	}
 }
