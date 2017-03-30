@@ -28,6 +28,8 @@ CBLAS API can be provided by linking with [Netlib's CBLAS](http://netlib.org/bla
 GLAS can be used with DMD and LDC but 
 [LDC (LLVM D Compiler)](https://github.com/ldc-developers/ldc) >= `1.1.0 beta 6` should be installed in common path anyway.
 
+Note performance issue #18.
+
 GLAS can be included automatically in a project using [dub](http://code.dlang.org/) (the D package manager).
 DUB will build GLAS and CPUID manually with LDC.
 
