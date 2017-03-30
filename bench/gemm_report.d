@@ -2,17 +2,15 @@
 /+ dub.json:
 {
 	"name": "gemm_report",
-	"dependencies": {"mir-glas": {"path": ".."}, },
 	"libs": ["blas"],
     "lflags": ["-L$MIR_GLAS_PACKAGE_DIR", "-L$MIR_CPUID_PACKAGE_DIR", "-L.."],
     "dependencies": {
 		"cblas": "~>1.0.0",
         "mir-glas":{
             "path": "../"
-        }
-        "mir-cpuid": "~>0.4.2",
-    },
-	"dflags-ldc": ["-mcpu=native"],
+        },
+        "mir-cpuid": "~>0.4.2"
+    }
 }
 +/
 	//"lflags": ["-L/opt/intel/mkl/lib"],
@@ -100,13 +98,13 @@ void main(string[] args)
 					cast(cblas.blasint) n,
 					cast(cblas.blasint) k,
 					& alpha,
-					a.ptr,
-					cast(cblas.blasint) a.stride,
-					b.ptr,
-					cast(cblas.blasint) b.stride,
+					a.iterator,
+					cast(cblas.blasint) a._stride,
+					b.iterator,
+					cast(cblas.blasint) b._stride,
 					& beta,
-					d.ptr,
-					cast(cblas.blasint) d.stride);
+					d.iterator,
+					cast(cblas.blasint) d._stride);
 				else
 				cblas.gemm(
 					cblas.Order.RowMajor,
@@ -116,13 +114,13 @@ void main(string[] args)
 					cast(cblas.blasint) n,
 					cast(cblas.blasint) k,
 					alpha,
-					a.ptr,
-					cast(cblas.blasint) a.stride,
-					b.ptr,
-					cast(cblas.blasint) b.stride,
+					a.iterator,
+					cast(cblas.blasint) a._stride,
+					b.iterator,
+					cast(cblas.blasint) b._stride,
 					beta,
-					d.ptr,
-					cast(cblas.blasint) d.stride);
+					d.iterator,
+					cast(cblas.blasint) d._stride);
 
 			}
 			sw.stop;
@@ -140,10 +138,7 @@ void main(string[] args)
 		{
 			StopWatch sw;
 			sw.start;
-			static if (__VERSION__ < 2072)
-				gemm(alpha, cast(Slice!(2, const(C)*))a, cast(Slice!(2, const(C)*))b, beta, c);
-			else
-				gemm(alpha, a, b, beta, c);
+			gemm(alpha, a.universal, b.universal, beta, c.universal);
 			sw.stop;
 			auto newns = sw.peek.to!Duration.total!"nsecs".to!double;
 			//writefln("_GLAS (single thread)               : %5s GFLOPS", (m * n * k * 2) / newns);
@@ -160,7 +155,7 @@ enum bool isComplex(C)
     || is(Unqual!C == cdouble)
     || is(Unqual!C == cfloat);
 
-void fillRNG(T)(Slice!(2, T*) sl)
+void fillRNG(T, SliceKind kind)(Slice!(kind, [2], T*) sl)
 {
 	import std.random;
 	foreach(row; sl)
