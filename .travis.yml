@@ -25,6 +25,7 @@ script:
 matrix:
     allow_failures:
     - {d: ldc-1.2.0-beta1}
+    - {os: osx}
 
 
 notifications:
