@@ -130,63 +130,78 @@ mixin template SSE2()
 
 alias FPU = M8;
 
+version(LDC_LLVM_400)
+{
+    pragma(msg, "PERFORMANCE NOTE:
+    =======================================================================
+    LLVM 4.0 has a bug in register renaming.
+    Computation kernels are not optimal!
+    For more details see issue https://github.com/libmir/mir-glas/issues/18
+    =======================================================================");
+    enum six = 5;
+}
+else
+{
+    enum six = 6;
+}
+
 mixin template AVX512_S()
 {
-    enum size_t _broadcast = 6;
+    enum size_t _broadcast = six;
     alias _simd_type_chain = AliasSeq!(__vector(float[16])[4], __vector(float[16])[2], __vector(float[16])[1], __vector(float[8])[1], __vector(float[4])[1], __vector(float[2])[1], float[1]);
 }
 
 mixin template AVX512_D()
 {
-    enum size_t _broadcast = 6;
+    enum size_t _broadcast = six;
     alias _simd_type_chain = AliasSeq!(__vector(double[8])[4], __vector(double[8])[2], __vector(double[8])[1], __vector(double[4])[1], __vector(double[2])[1], double[1]);
 }
 
 mixin template AVX512_C()
 {
-    enum size_t _broadcast = 6;
+    enum size_t _broadcast = six;
     alias _simd_type_chain = AliasSeq!(__vector(float[16])[2], __vector(float[16])[1], __vector(float[8])[1], __vector(float[4])[1], __vector(float[2])[1], float[1]);
 }
 
 mixin template AVX512_Z()
 {
-    enum size_t _broadcast = 6;
+    enum size_t _broadcast = six;
     alias _simd_type_chain = AliasSeq!(__vector(double[8])[2], __vector(double[8])[1], __vector(double[4])[1], __vector(double[2])[1], double[1]);
 }
 
 mixin template AVX_S()
 {
-    enum size_t _broadcast = 6;
+    enum size_t _broadcast = six;
     alias _simd_type_chain = AliasSeq!(__vector(float[8])[2], __vector(float[8])[1], __vector(float[4])[1], __vector(float[2])[1], float[1]);
 }
 
 mixin template AVX_D()
 {
-    enum size_t _broadcast = 6;
+    enum size_t _broadcast = six;
     alias _simd_type_chain = AliasSeq!(__vector(double[4])[2], __vector(double[4])[1], __vector(double[2])[1], double[1]);
 }
 
 mixin template AVX_C()
 {
-    enum size_t _broadcast = 6;
+    enum size_t _broadcast = six;
     alias _simd_type_chain = AliasSeq!(__vector(float[8])[1], __vector(float[4])[1], __vector(float[2])[1], float[1]);
 }
 
 mixin template AVX_Z()
 {
-    enum size_t _broadcast = 6;
+    enum size_t _broadcast = six;
     alias _simd_type_chain = AliasSeq!(__vector(double[4])[1], __vector(double[2])[1], double[1]);
 }
 
 mixin template SSE2_S()
 {
-    enum size_t _broadcast = 6;
+    enum size_t _broadcast = six;
     alias _simd_type_chain = AliasSeq!(__vector(float[4])[2], __vector(float[4])[1], __vector(float[2])[1], float[1]);
 }
 
 mixin template SSE2_D()
 {
-    enum size_t _broadcast = 6;
+    enum size_t _broadcast = six;
     alias _simd_type_chain = AliasSeq!(__vector(double[2])[2], __vector(double[2])[1], double[1]);
 }
 
@@ -206,7 +221,7 @@ mixin template M16()
 {
     static if (P == 1)
     {
-        enum size_t _broadcast = 6;
+        enum size_t _broadcast = six;
         alias _simd_type_chain = AliasSeq!(T[2], T[1]);
     }
     else
