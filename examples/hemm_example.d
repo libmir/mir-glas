@@ -3,25 +3,11 @@
 {
     "name": "hemm_example",
     "targetType":"executable",
-    "systemDependencies": "Example requires libmir-cpuid and libmir-glas",
     "lflags": ["-L$MIR_GLAS_PACKAGE_DIR", "-L$MIR_CPUID_PACKAGE_DIR", "-L.."],
     "dependencies": {
-        "mir-glas":{
-            "path": "../"
-        },
+        "mir-glas":{ "path": "../" },
         "mir-cpuid": "~>0.4.2"
-    },
-    "configurations": [
-        {
-            "name": "std"
-        },
-        {
-            "name": "mir",
-            "dependencies": {
-                "mir": "~>0.22.0"
-            }
-        }
-    ]
+    }
 }
 +/
 import mir.ndslice;
