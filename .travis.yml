@@ -21,6 +21,11 @@ script:
  - cd bench/ && dub gemm_report.d && cd ../
  - bash -e test.sh
 
+matrix:
+    allow_failures:
+    - {d: ldc-1.2.0-beta1}
+
+
 notifications:
   email:
     - ilyayaroshenko@gmail.com
