@@ -9,7 +9,7 @@ d:
 addons:
   apt:
     packages:
-      - blas
+      - libblas-dev
       - gcc
       - gfortran
 branches:
