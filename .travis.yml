@@ -4,9 +4,12 @@ os:
 language: d
 d:
  - ldc-1.1.0
+ - ldc-1.1.1
+ - ldc-1.2.0-beta2
 addons:
   apt:
     packages:
+      - blas
       - gcc
       - gfortran
 branches:
