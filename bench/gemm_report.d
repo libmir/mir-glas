@@ -3,14 +3,14 @@
 {
 	"name": "gemm_report",
 	"libs": ["blas"],
-    "lflags": ["-L$MIR_GLAS_PACKAGE_DIR", "-L$MIR_CPUID_PACKAGE_DIR", "-L.."],
-    "dependencies": {
+	"lflags": ["-L$MIR_GLAS_PACKAGE_DIR", "-L$MIR_CPUID_PACKAGE_DIR", "-L.."],
+	"dependencies": {
 		"cblas": "~>1.0.0",
-        "mir-glas":{
-            "path": "../"
-        },
-        "mir-cpuid": "~>0.4.2"
-    }
+		"mir-glas":{
+			"path": "../"
+		},
+		"mir-cpuid": "~>0.4.2"
+	}
 }
 +/
 	//"lflags": ["-L/opt/intel/mkl/lib"],
@@ -151,9 +151,9 @@ void main(string[] args)
 }
 
 enum bool isComplex(C)
-     = is(Unqual!C == creal)
-    || is(Unqual!C == cdouble)
-    || is(Unqual!C == cfloat);
+	 = is(Unqual!C == creal)
+	|| is(Unqual!C == cdouble)
+	|| is(Unqual!C == cfloat);
 
 void fillRNG(T, SliceKind kind)(Slice!(kind, [2], T*) sl)
 {
