@@ -57,5 +57,6 @@ build_script:
 
 test_script:
  - pwd
+ - dir
  - cd examples/ && dub --single gemm_example.d && cd ../
  - cd examples/ && dub --single hemm_example.d && cd ../
