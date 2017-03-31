@@ -1,6 +1,7 @@
 sudo: false
 os:
  - linux
+ - osx
 language: d
 d:
  - ldc-1.1.0
