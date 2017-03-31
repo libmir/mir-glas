@@ -7,7 +7,8 @@
 	"dependencies": {
 		"cblas": "~>1.0.0",
 		"mir-glas":{ "path": "../" },
-		"mir-cpuid": "~>0.4.2"
+		"mir-cpuid": "~>0.4.2",
+		"mir-random": "~>0.2.3"
 	}
 }
 +/
@@ -18,16 +19,18 @@
 // Note: GLAS is single thread for now.
 // $ dub build --compiler=ldmd2 -b release --single gemm_report.d
 // $ ./gemm_report
-import std.math;
 import std.traits;
 import std.datetime;
 import std.conv;
-import std.algorithm.comparison;
 import std.stdio;
-import std.exception;
 import std.getopt;
 import glas.ndslice;
 import mir.ndslice;
+import mir.utility: min;
+import mir.internal.utility: isComplex;
+import mir.random;
+import mir.random.algorithm;
+import mir.random.variable;
 
 alias C = float;
 //alias C = double;
@@ -50,21 +53,18 @@ void main(string[] args)
 		defaultGetoptPrinter("Parameters:", helpInformation.options);
 		return;
 	}
-
+	auto rng = Random(unpredictableSeed);
+	auto var = UniformVariable!int(-100, 100);
 	writeln("m=n=k,GLAS(thread_count=1),BLAS(thread_count=?)");
 	foreach(m; reportValues)
 	{
 		auto n = m;
 		auto k = m;
 
-		auto d = new C[m * n].sliced(m, n);
-		auto c = new C[m * n].sliced(m, n);
-		auto a = new C[m * k].sliced(m, k);
-		auto b = new C[k * n].sliced(k, n);
-
-		fillRNG(c);
-		fillRNG(a);
-		fillRNG(b);
+		auto d = rng.field!C(var).slicedField(m, n).slice;
+		auto c = rng.field!C(var).slicedField(m, n).slice;
+		auto a = rng.field!C(var).slicedField(m, k).slice;
+		auto b = rng.field!C(var).slicedField(k, n).slice;
 
 		d[] = c[];
 
@@ -145,27 +145,5 @@ void main(string[] args)
 		
 		/// Result
 		writefln("%s,%s,%s", m, (m * n * k * 2) / nsecsGLAS, (m * n * k * 2) / nsecsBLAS);
-	}
-}
-
-enum bool isComplex(C)
-	 = is(Unqual!C == creal)
-	|| is(Unqual!C == cdouble)
-	|| is(Unqual!C == cfloat);
-
-void fillRNG(T, SliceKind kind)(Slice!(kind, [2], T*) sl)
-{
-	import std.random;
-	foreach(row; sl)
-	foreach(ref e; row)
-	{
-		static if(isComplex!T)
-		{
-			e = uniform(-100, 100) + uniform(-100, 100) * 1i;
-		}
-		else
-		{
-			e = cast(T) uniform(-100, 100);
-		}
 	}
 }
