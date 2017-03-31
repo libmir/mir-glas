@@ -20,9 +20,9 @@ mixin template RegisterConfig(size_t P, T)
                 mixin FPU;
         else
         version(X86_64)
-            //static if (__traits(targetHasFeature, "avx512f"))
-            //    mixin AVX512F;
-            //else
+            static if (__traits(targetHasFeature, "avx512f"))
+                mixin AVX512F;
+            else
             static if (__traits(targetHasFeature, "avx"))
                 mixin AVX;
             else
@@ -133,7 +133,7 @@ alias FPU = M8;
 mixin template AVX512_S()
 {
     enum size_t _broadcast = 6;
-    alias _simd_type_chain = AliasSeq!(__vector(float[8])[4], __vector(float[16])[2], __vector(float[16])[1], __vector(float[8])[1], __vector(float[4])[1], __vector(float[2])[1], float[1]);
+    alias _simd_type_chain = AliasSeq!(__vector(float[16])[4], __vector(float[16])[2], __vector(float[16])[1], __vector(float[8])[1], __vector(float[4])[1], __vector(float[2])[1], float[1]);
 }
 
 mixin template AVX512_D()
