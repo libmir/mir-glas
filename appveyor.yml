@@ -56,5 +56,6 @@ build_script:
  - echo dummy build script - dont remove me
 
 test_script:
+ - pwd
  - cd examples/ && dub --single gemm_example.d && cd ../
  - cd examples/ && dub --single hemm_example.d && cd ../
