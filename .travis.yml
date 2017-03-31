@@ -17,9 +17,9 @@ branches:
   only:
     - master
 script:
- - cd examples/ && dub gemm_example.d && cd ../
- - cd examples/ && dub hemm_example.d && cd ../
- - cd bench/ && dub gemm_report.d && cd ../
+ - cd examples/ && dub --single gemm_example.d && cd ../
+ - cd examples/ && dub --single hemm_example.d && cd ../
+ - cd bench/ && dub --single gemm_report.d && cd ../
  - bash -e test.sh
 
 matrix:
