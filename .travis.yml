@@ -10,6 +10,7 @@ addons:
   apt:
     packages:
       - libblas-dev
+      - libcblas-dev
       - gcc
       - gfortran
 branches:
