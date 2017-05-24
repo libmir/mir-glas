@@ -6,7 +6,7 @@
     "lflags": ["-L$MIR_GLAS_PACKAGE_DIR", "-L$MIR_CPUID_PACKAGE_DIR", "-L.."],
     "dependencies": {
         "mir-glas":{ "path": "../" },
-        "mir-cpuid": "~>0.4.2"
+        "mir-cpuid": "~>0.5.2"
     }
 }
 +/
