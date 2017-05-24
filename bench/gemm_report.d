@@ -5,10 +5,11 @@
 	"libs": ["blas"],
 	"lflags": ["-L$MIR_GLAS_PACKAGE_DIR", "-L$MIR_CPUID_PACKAGE_DIR", "-L.."],
 	"dependencies": {
-		"cblas": "~>1.0.0",
+		"cblas": "~>2.0.0",
 		"mir-glas":{ "path": "../" },
-		"mir-cpuid": "~>0.4.2",
-		"mir-random": "~>0.2.3"
+		"mir-cpuid": "~>0.5.2",
+		"mir-random": "~>0.2.5",
+		"mir-algorithm": "~>0.6.5"
 	}
 }
 +/
@@ -24,10 +25,13 @@ import std.datetime;
 import std.conv;
 import std.stdio;
 import std.getopt;
+import mir.random;
+import mir.random.variable: UniformVariable;
+import mir.random.algorithm: field;
 import glas.ndslice;
 import mir.ndslice;
 import mir.utility: min;
-import mir.internal.utility: isComplex;
+import mir.internal.utility: isComplex, realType;
 import mir.random;
 import mir.random.algorithm;
 import mir.random.variable;
@@ -36,6 +40,8 @@ alias C = float;
 //alias C = double;
 //alias C = cfloat;
 //alias C = cdouble;
+
+alias R = realType!C;
 
 size_t[] reportValues = [
 	10, 20, 30, 40, 50, 60, 70, 80, 90, 100,
@@ -87,23 +93,6 @@ void main(string[] args)
 			static if(!(is(C == real) || is(C == creal) || is(C : long)))
 			{
 				static import cblas;
-				static if(isComplex!C)
-				cblas.gemm(
-					cblas.Order.RowMajor,
-					cblas.Transpose.NoTrans,
-					cblas.Transpose.NoTrans,
-					cast(cblas.blasint) m,
-					cast(cblas.blasint) n,
-					cast(cblas.blasint) k,
-					& alpha,
-					a.iterator,
-					cast(cblas.blasint) a._stride,
-					b.iterator,
-					cast(cblas.blasint) b._stride,
-					& beta,
-					d.iterator,
-					cast(cblas.blasint) d._stride);
-				else
 				cblas.gemm(
 					cblas.Order.RowMajor,
 					cblas.Transpose.NoTrans,

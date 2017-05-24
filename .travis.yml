@@ -4,9 +4,8 @@ os:
  - osx
 language: d
 d:
- - ldc-1.1.0
- - ldc-1.1.1
- - ldc-1.2.0-beta1
+ - ldc-1.2.0
+ - ldc-1.3.0-beta1
 addons:
   apt:
     packages:
@@ -17,14 +16,14 @@ branches:
   only:
     - master
 script:
- - cd examples/ && dub --single gemm_example.d && cd ../
- - cd examples/ && dub --single hemm_example.d && cd ../
- - cd bench/ && dub --single gemm_report.d && cd ../
+ - cd examples/ && dub --single --build=release gemm_example.d && cd ../
+ - cd examples/ && dub --single --build=release hemm_example.d && cd ../
+ - cd bench/ && dub --single --build=release gemm_report.d && cd ../
  - bash -e test.sh
 
 matrix:
     allow_failures:
-    - {d: ldc-1.2.0-beta1}
+    - {d: ldc-1.2.0}
     - {os: osx}
 
 
