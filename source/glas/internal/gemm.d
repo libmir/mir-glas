@@ -379,6 +379,16 @@ dot_reg_basic (
             ai[p][m] = a[0][p][m];
 
         static if (P == 1)
+        //foreach (n; Iota!N)
+        //{
+        //    foreach (p; Iota!P)
+        //        bi[n][p] = b[0][n][p];
+        //    foreach (m; Iota!M)
+        //    {
+        //        reg[n][0][m] += ai[0][m] * bi[n][0];
+        //    }
+        //}
+        //else
         foreach (u; Iota!(N/2 + N%2))
         {
             alias um = Iota!(2*u, 2*u + 2 > N ? 2*u + 1 : 2*u + 2);
@@ -409,7 +419,12 @@ dot_reg_basic (
         length--;
     }
     while (length);
-    load_nano(c, reg);
+
+    foreach (n; Iota!N)
+    foreach (p; Iota!P)
+    foreach (m; Iota!M)
+        c[n][p][m] = reg[n][p][m];
+
     return a;
 }
 

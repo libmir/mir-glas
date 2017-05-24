@@ -3,15 +3,13 @@
 {
 	"name": "gemm_report",
 	"libs": ["blas"],
-    "lflags": ["-L$MIR_GLAS_PACKAGE_DIR", "-L$MIR_CPUID_PACKAGE_DIR", "-L.."],
-    "dependencies": {
+	"lflags": ["-L$MIR_GLAS_PACKAGE_DIR", "-L$MIR_CPUID_PACKAGE_DIR", "-L.."],
+	"dependencies": {
 		"cblas": "~>1.0.0",
-        "mir-glas":{
-            "path": "../"
-        },
-        "mir-cpuid": "~>0.4.2",
-        "mir-random": "~>0.2.3"
-    }
+		"mir-glas":{ "path": "../" },
+		"mir-cpuid": "~>0.4.2",
+		"mir-random": "~>0.2.3"
+	}
 }
 +/
 	//"lflags": ["-L/opt/intel/mkl/lib"],
@@ -31,8 +29,11 @@ import mir.random.variable: UniformVariable;
 import mir.random.algorithm: field;
 import glas.ndslice;
 import mir.ndslice;
+import mir.utility: min;
 import mir.internal.utility: isComplex, realType;
-import mir.utility;
+import mir.random;
+import mir.random.algorithm;
+import mir.random.variable;
 
 alias C = float;
 //alias C = double;
@@ -57,7 +58,8 @@ void main(string[] args)
 		defaultGetoptPrinter("Parameters:", helpInformation.options);
 		return;
 	}
-
+	auto rng = Random(unpredictableSeed);
+	auto var = UniformVariable!int(-100, 100);
 	writeln("m=n=k,GLAS(thread_count=1),BLAS(thread_count=?)");
 	auto rng = Random(unpredictableSeed);
 	auto var = UniformVariable!int(-100, 100);

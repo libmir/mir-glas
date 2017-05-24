@@ -49,3 +49,5 @@ examples/gemm_example
 examples/symm_example
 
 out.txt
+
+bench/gemm_report
