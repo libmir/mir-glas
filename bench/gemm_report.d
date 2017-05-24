@@ -61,8 +61,6 @@ void main(string[] args)
 	auto rng = Random(unpredictableSeed);
 	auto var = UniformVariable!int(-100, 100);
 	writeln("m=n=k,GLAS(thread_count=1),BLAS(thread_count=?)");
-	auto rng = Random(unpredictableSeed);
-	auto var = UniformVariable!int(-100, 100);
 	foreach(m; reportValues)
 	{
 		auto n = m;

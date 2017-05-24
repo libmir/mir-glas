@@ -4,9 +4,8 @@ os:
  - osx
 language: d
 d:
- - ldc-1.1.0
- - ldc-1.1.1
- - ldc-1.2.0-beta1
+ - ldc-1.2.0
+ - ldc-1.3.0-beta1
 addons:
   apt:
     packages:
@@ -24,7 +23,7 @@ script:
 
 matrix:
     allow_failures:
-    - {d: ldc-1.2.0-beta1}
+    - {d: ldc-1.2.0}
     - {os: osx}
 
 
