@@ -2,7 +2,7 @@
 /+ dub.json:
 {
 	"name": "gemm_report",
-	"libs": ["blas", "cblas"],
+	"libs": ["blas"],
 	"lflags": ["-L$MIR_GLAS_PACKAGE_DIR", "-L$MIR_CPUID_PACKAGE_DIR", "-L.."],
 	"dependencies": {
 		"cblas": "~>2.0.0",
