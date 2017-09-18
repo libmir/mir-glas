@@ -20,12 +20,6 @@ script:
  - cd bench/ && dub --single --build=release gemm_report.d && cd ../
  - bash -e test.sh
 
-matrix:
-    allow_failures:
-    - {d: ldc-1.4.0}
-    - {os: osx}
-
-
 notifications:
   email:
     - ilyayaroshenko@gmail.com
