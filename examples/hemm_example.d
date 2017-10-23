@@ -50,5 +50,5 @@ int main()
 
     gemm(alpha, a, b, beta, d);
 
-    return c == d ? 0 : -1;
+    return all!"a == b"(c, d) ? 0 : -1;
 }
