@@ -1,6 +1,5 @@
 [![Dub downloads](https://img.shields.io/dub/dt/mir-glas.svg)](http://code.dlang.org/packages/mir-glas)
 [![License](https://img.shields.io/dub/l/mir-glas.svg)](http://code.dlang.org/packages/mir-glas)
-[![Bountysource](https://www.bountysource.com/badge/team?team_id=145399&style=bounties_received)](https://www.bountysource.com/teams/libmir)
 [![Gitter](https://img.shields.io/gitter/room/libmir/public.svg)](https://gitter.im/libmir/public)
 
 [![Latest version](https://img.shields.io/dub/v/mir-glas.svg)](http://code.dlang.org/packages/mir-glas)
