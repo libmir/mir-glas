@@ -4,7 +4,7 @@ os:
  - osx
 language: d
 d:
- - 1.5.0-beta1
+ - ldc-beta
 addons:
   apt:
     packages:
