@@ -4,6 +4,7 @@ os:
  - osx
 language: d
 d:
+ - ldc
  - ldc-beta
 addons:
   apt:
