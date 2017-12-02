@@ -172,6 +172,9 @@ Params:
 
 Unified_alias: `symm`
 
+If your matrix is not SliceKind.universal, you can use `mir.ndslice.topology.universal` 
+to convert it before passing it.
+
 BLAS: SSYMM, DSYMM, CSYMM, ZSYMM, SHEMM, DHEMM, CHEMM, ZHEMM
 +/
 void glas_ssymm(float alpha, Slice!(SliceKind.universal, [2], const(float)*) asl, Slice!(SliceKind.universal, [2], const(float)*) bsl, float beta, Slice!(SliceKind.universal, [2], float*) csl, ulong settings = 0);
