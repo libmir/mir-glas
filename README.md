@@ -74,7 +74,6 @@ There are two files:
 #### Compiler installation
 
 [LDC (LLVM D Compiler)](https://github.com/ldc-developers/ldc) >= `1.1.0 beta 6` is required to build a project.
-`1.1.0` version is not released yet.
 You may want to build LDC from source or use [LDC 1.1.0 beta 6](https://github.com/ldc-developers/ldc/releases/tag/v1.1.0-beta2).
 Beta 2 generates a lot of warnings that can be ignored. Beta 3 is not supported.
 
