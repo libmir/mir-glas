@@ -590,7 +590,7 @@ q{
     }
 
     static if (isComplex!T)
-    void glas_} ~ prefix!Type ~ prefix!(realType!Type) ~ q{scal(
+    void glas_} ~ prefix!Type ~ prefix!(realType!Type) ~ "I" ~ q{scal(
         I a,
         Slice!(SliceKind.universal, [1], T*) xsl,
         )

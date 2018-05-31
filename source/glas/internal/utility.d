@@ -31,7 +31,7 @@ template realType(C)
         alias realType = typeof(Unqual!C.init.re);
     else
     static if (isImaginary!C)
-        alias realType = typeof(Uqual!C.init.im);
+        alias realType = typeof(Unqual!C.init.im);
     else
         alias realType = Unqual!C;
 }
