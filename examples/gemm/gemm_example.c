@@ -1,5 +1,5 @@
-// gcc -std=c99 -I../include -c gemm_example.c -o gemm_example.o
-// gcc gemm_example.o -L../ -lmir-glas -lmir-cpuid -o gemm_example
+// gcc -std=c99 -I../../include -c gemm_example.c -o gemm_example.o
+// gcc gemm_example.o -L../../ -lmir-glas -lmir-cpuid -o gemm_example
 // ./gemm_example
 #include <stdio.h>
 #include <string.h>

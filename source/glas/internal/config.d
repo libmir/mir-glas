@@ -130,19 +130,19 @@ mixin template SSE2()
 
 alias FPU = M8;
 
-version(LDC_LLVM_400)
+version(LDC_LLVM_300)
+{
+    enum six = 6;
+}
+else
 {
     pragma(msg, "PERFORMANCE NOTE:
     =======================================================================
-    LLVM 4.0 has a bug in register renaming.
+    LLVM >=4.0 has a bug in register renaming.
     Computation kernels are not optimal!
     For more details see issue https://github.com/libmir/mir-glas/issues/18
     =======================================================================");
     enum six = 5;
-}
-else
-{
-    enum six = 6;
 }
 
 mixin template AVX512_S()

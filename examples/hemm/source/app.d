@@ -1,18 +1,5 @@
-#!/usr/bin/env dub
-/+ dub.json:
-{
-    "name": "hemm_example",
-    "targetType":"executable",
-    "lflags": ["-L$MIR_GLAS_PACKAGE_DIR", "-L$MIR_CPUID_PACKAGE_DIR", "-L.."],
-    "dependencies": {
-        "mir-glas":{ "path": "../" },
-        "mir-cpuid": "~>0.5.2",
-        "mir-algorithm": "~>0.6.21"
-    }
-}
-+/
-import mir.ndslice;
 import glas.ndslice;
+import mir.ndslice;
 
 alias T = cdouble;
 

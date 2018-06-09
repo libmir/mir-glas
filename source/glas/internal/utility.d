@@ -106,13 +106,13 @@ template prefix2r(T)
     else static assert(0);
 }
 
-string upper()(string str)
-{
-    auto ret = new char[str.length];
-    foreach(i, char c; str)
-        if ('a' <= c && c <= 'z')
-            ret[i] = cast(char)(c - 'a' + 'A');
-        else
-            ret[i] = c;
-    return cast(string) ret;
-}
+// string upper()(string str)
+// {
+//     auto ret = new char[str.length];
+//     foreach(i, char c; str)
+//         if ('a' <= c && c <= 'z')
+//             ret[i] = cast(char)(c - 'a' + 'A');
+//         else
+//             ret[i] = c;
+//     return cast(string) ret;
+// }

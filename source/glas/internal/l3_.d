@@ -60,15 +60,9 @@ q{
     int } ~ prefix!Type ~ q{gemm_(
         ref const char transa,
         ref const char transb,
-        ref const
-
-        FortranInt m,
-        ref const
-
-        FortranInt n,
-        ref const
-
-        FortranInt k,
+        ref const FortranInt m,
+        ref const FortranInt n,
+        ref const FortranInt k,
         ref const T alpha,
             const(T)* a,
             ref const FortranInt lda,
@@ -130,7 +124,7 @@ q{
             glas.ndslice.gemm(alpha, asl, bsl, beta, csl, settings);
             return 0;
         }
-        enum name = prefix!T.upper ~ "GEMM ";
+        enum name = prefix!T[0].toUpper ~ "GEMM ";
         xerbla_(name.ptr, info);
         return 0;
     }
@@ -138,12 +132,8 @@ q{
     int } ~ prefix!Type ~ q{symm_(
         ref const char side,
         ref const char uplo,
-        ref const
-
-        FortranInt m,
-        ref const
-
-        FortranInt n,
+        ref const FortranInt m,
+        ref const FortranInt n,
         ref const T alpha,
             const(T)* a,
             ref const FortranInt lda,
@@ -161,12 +151,8 @@ q{
     int } ~ prefix!Type ~ q{hemm_(
         ref const char side,
         ref const char uplo,
-        ref const
-
-        FortranInt m,
-        ref const
-
-        FortranInt n,
+        ref const FortranInt m,
+        ref const FortranInt n,
         ref const T alpha,
             const(T)* a,
             ref const FortranInt lda,
@@ -193,9 +179,9 @@ auto _matrix(T)(size_t[2] lengths, sizediff_t[2] strides, T* ptr)
 }
 
 pragma(inline, true)
-package(glas) auto toUpper()(dchar c)
+package(glas) auto toUpper()(char c)
 {
-    return dchar(c & 0b1101_1111);
+    return char(c & 0b1101_1111);
 }
 
 pragma(inline, true)
@@ -271,8 +257,8 @@ package(glas) int symm_impl_(T)(
         glas.ndslice.symm(alpha, asl, bsl, beta, csl, settings);
         return 0;
     }
-    enum nameSYMM = prefix!T.upper ~ "SYMM ";
-    enum nameHEMM = prefix!T.upper ~ "HEMM ";
+    enum nameSYMM = prefix!T[0].toUpper ~ "SYMM ";
+    enum nameHEMM = prefix!T[0].toUpper ~ "HEMM ";
     xerbla_(conj ? nameHEMM.ptr : nameSYMM.ptr, info);
     return 0;
 }

@@ -99,3 +99,6 @@ int glas_validate_symm(Structure!2 as, Structure!2 bs, Structure!2 cs, ulong set
     printf(fmt, srname, info);
     return 0;
 }
+
+version(Posix)
+@weak extern (C) void _d_dso_registry() {}

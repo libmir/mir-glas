@@ -18,10 +18,10 @@ branches:
 install:
   - if [ $TRAVIS_OS_NAME = osx ]; then brew install gcc; fi
 script:
- - cd examples/ && dub --single --build=release gemm_example.d && cd ../
- - cd examples/ && dub --single --build=release hemm_example.d && cd ../
- - cd bench/ && dub --single --build=release gemm_report.d && cd ../
- - bash -e test.sh
+ - dub --build=release --root examples/gemm
+ - dub --build=release --root examples/hemm
+#  - cd bench/ && dub --single --build=release gemm_report.d && cd ../
+#  - bash -e test.sh
 
 notifications:
   email:

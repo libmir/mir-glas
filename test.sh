@@ -1,6 +1,6 @@
 ARCH=x86_64
 BLAS=3.7.0
-CPUID=0.4.2
+CPUID=0.5.3
 dub build --arch=$ARCH --build-mode=singleFile --force --config=static --parallel --build=target-native --compiler=ldmd2
 ar -x libmir-glas.a
 dub fetch mir-cpuid --version=$CPUID --cache=local
@@ -47,18 +47,30 @@ rm -rf BLAS-$BLAS
 rm -rf CBLAS
 rm -rf mir-cpuid-$CPUID
 rm -f *.o
-cd examples
-echo "D examples ..."
-dub -v --single gemm_example.d
-dub -v --single hemm_example.d
-echo "C examples ..."
-rm -rf .dub
-gcc -std=c99 -I../include -c gemm_example.c -o gemm_example.o
-gcc -std=c99 -I../include -c hemm_example.c -o hemm_example.o
-gcc gemm_example.o -L../ -lmir-glas -lmir-cpuid -o gemm_example
-gcc hemm_example.o -L../ -lmir-glas -lmir-cpuid -o hemm_example
-./gemm_example
-./hemm_example
-rm -f gemm_example
-rm -f hemm_example
-cd ..
+
+# cd examples
+
+# echo "D examples ..."
+
+# dub -v --root=gemm
+# rm -rf gemm/.dub
+# dub -v --root=hemm
+# rm -rf hemm/.dub
+
+# echo "C examples ..."
+
+# cd gemm
+# gcc -std=c99 -I../../include -c gemm_example.c -o gemm_example.o
+# gcc gemm_example.o -L../../ -lmir-glas -lmir-cpuid -o gemm_example
+# ./gemm_example
+# rm -f gemm_example
+# cd ..
+
+# cd hemm
+# gcc -std=c99 -I../../include -c gemm_example.c -o gemm_example.o
+# gcc gemm_example.o -L../../ -lmir-glas -lmir-cpuid -o gemm_example
+# ./hemm_example
+# rm -f hemm_example
+# cd ..
+
+# cd ..

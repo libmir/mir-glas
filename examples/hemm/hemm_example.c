@@ -1,5 +1,5 @@
-// gcc -std=c99 -I../include -c hemm_example.c -o hemm_example.o
-// gcc hemm_example.o -L../ -lmir-glas -lmir-cpuid -o hemm_example
+// gcc -std=c99 -I../../include -c hemm_example.c -o hemm_example.o
+// gcc hemm_example.o -L../../ -lmir-glas -lmir-cpuid -o hemm_example
 // ./hemm_example
 #include <complex.h>
 #include <stdio.h>
