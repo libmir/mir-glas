@@ -83,5 +83,5 @@ build_script:
 test_script:
  - pwd
  - dir
- - cd examples/ && dub -v --single --build=release gemm_example.d && cd ../
- - cd examples/ && dub -v --single --build=release hemm_example.d && cd ../
+ - dub -v --build=release --root=examples/gemm
+ - dub -v --build=release --root=examples/hemm
