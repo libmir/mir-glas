@@ -50,9 +50,7 @@ DUB will build GLAS and CPUID manually with LDC.
 `mir-glas` can be used like a common C library. It should be linked with `mir-cpuid`.
 A compiler, for example GCC, may require `mir-cpuid` to be passed after `mir-glas`: `-lmir-glas -lmir-cpuid`.
 
-### GLAS API and Documentation
-
-Documentation can be found at http://docs.glas.dlang.io/.
+### GLAS API
 
 GLAS API is based on the new `ndslice` from [mir-algorithm](https://github.com/libmir/mir-algorithm).
 Other languages can use simple structure definition.
